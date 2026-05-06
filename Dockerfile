@@ -1,4 +1,4 @@
-# ─── Etapa base ───────────────────────────────
+    # ─── Etapa base ───────────────────────────────
 FROM node:22-alpine AS base
 
 # Define la carpeta de trabajo dentro del contenedor

@@ -1,15 +1,16 @@
-import app from './app';
+import app from './app.js';
+import { CloseBD, ConnectDB } from './config/bd-init.js';
 
-import { DEFAULTS } from './config/env.js';
+import { env } from './config/env.js';
 
-const PORT = process.env.PORT || DEFAULTS.PORT;
+const PORT = process.env.PORT || env.PORT;
 
 let server;
 
 async function startServer() {
   try {
-    // await connectDB();
-    // console.log('✅ Base de datos conectada correctamente');
+    await ConnectDB();
+    console.log('✅ Base de datos conectada correctamente');
     server = app.listen(PORT, () => {
       console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
       console.log(`🌍 Ambiente: ${process.env.NODE_ENV}`);
@@ -30,8 +31,8 @@ process.on('SIGINT', async () => {
   console.log('🛑 SIGINT recibido. Cerrando...');
   try {
     if (server) await new Promise((res) => server.close(res));
-    // await CloseBD(); // cierra pool SQL
-    // console.log('✅ Conexión a PostgreSQL cerrada');
+    await CloseBD(); // cierra pool SQL
+    console.log('✅ Conexión a PostgreSQL cerrada');
     process.exit(0);
   } catch (e) {
     console.error('❌ Error al cerrar:', e);

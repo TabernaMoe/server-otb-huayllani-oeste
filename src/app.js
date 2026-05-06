@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import { errorHandler } from './middlewares/errorHandler.middlewares.js';
 
 const app = express();
 
@@ -10,5 +11,14 @@ if (process.env.NODE_ENV === 'development') {
 }
 app.use(cors());
 app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'API funcionando',
+  });
+});
+
+app.use(errorHandler);
 
 export default app;
