@@ -67,3 +67,12 @@ export const socioModel = sequelize.define(
     timestamps: false,
   },
 );
+
+usuarioModel.hasOne(socioModel, {
+  as: 'usuario_socio',
+  foreignKey: 'user_id',
+});
+socioModel.belongsTo(usuarioModel, {
+  as: 'socio_usuario',
+  foreignKey: 'user_id',
+});

@@ -28,7 +28,6 @@ module.exports = {
       ci_expedido_socio: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
       },
       nombres_socio: {
         type: Sequelize.STRING,
