@@ -60,6 +60,11 @@ export const socioModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    esta_inhabilitado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
   {
     tableName: 'socios',

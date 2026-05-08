@@ -10,16 +10,6 @@ module.exports = {
         primaryKey: true,
         allowNull: false,
       },
-      tipo_accion_id: {
-        type: Sequelize.BIGINT,
-        allowNull: false,
-        references: {
-          model: 'tipos_acciones',
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT',
-      },
       calle_ramal_id: {
         type: Sequelize.BIGINT,
         allowNull: false,
@@ -39,6 +29,10 @@ module.exports = {
         },
         onUpdate: 'CASCADE',
         onDelete: 'RESTRICT',
+      },
+      fecha_creacion: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW,
       },
       codigo_interno_accion: {
         type: Sequelize.INTEGER,
@@ -64,14 +58,18 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
-
-      cobrar_accion: {
-        type: Sequelize.BOOLEAN,
+      estado_accion: {
+        type: Sequelize.ENUM('ACTIVO', 'INACTIVO', 'ANULADO'),
+        allowNull: false,
+        defaultValue: 'ACTIVO',
       },
     });
   },
 
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('acciones');
+    await queryInterface.sequelize.query(
+      'DROP TYPE IF EXISTS "enum_acciones_estado_accion";',
+    );
   },
 };

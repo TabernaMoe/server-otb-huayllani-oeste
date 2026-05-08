@@ -57,7 +57,6 @@ export class SocioServices {
     return dataId;
   }
   static async create(payload) {
-    console.log(payload);
     const dataCreate = await sequelize.transaction(async (t) => {
       const { ci_socio } = payload;
 

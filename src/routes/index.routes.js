@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import SociosRoutes from '../modules/socios/routes/socio.routes.js';
+import SociosRoutes from '../modules/sociosAcciones/routes/socio.routes.js';
 
 const routes = new Router();
 

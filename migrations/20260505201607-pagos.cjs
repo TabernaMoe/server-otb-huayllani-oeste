@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('pago_accion', {
+    await queryInterface.createTable('pagos', {
       id: {
         type: Sequelize.BIGINT,
         primaryKey: true,
@@ -25,25 +25,30 @@ module.exports = {
         allowNull: false,
       },
       metodo_pago: {
-        type: Sequelize.ENUM('efectivo', 'qr'),
-        defaultValue: 'efectivo',
+        type: Sequelize.ENUM('EFECTIVO', 'QR'),
         allowNull: false,
       },
       fecha_pago: {
-        type: Sequelize.DATEONLY,
-        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW,
       },
       observaciones_pago: {
         type: Sequelize.STRING,
-        allowNull: false,
+      },
+      etado_pago: {
+        type: Sequelize.ENUM('VALIDAD', 'ANULADO'),
+        defaultValue: 'VALIDO',
       },
     });
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('pago_accion');
+    await queryInterface.dropTable('pagos');
     await queryInterface.sequelize.query(
-      'DROP TYPE IF EXISTS "enum_pago_accion_metodo_pago";',
+      'DROP TYPE IF EXISTS "enum_pagos_metodo_pago";',
+    );
+    await queryInterface.sequelize.query(
+      'DROP TYPE IF EXISTS "enum_pagos_etado_pago";',
     );
   },
 };

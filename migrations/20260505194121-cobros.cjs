@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('cobro_accion', {
+    await queryInterface.createTable('cobros', {
       id: {
         type: Sequelize.BIGINT,
         primaryKey: true,
@@ -20,19 +20,22 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'RESTRICT',
       },
-      accion_id: {
-        type: Sequelize.BIGINT,
-        references: {
-          model: 'acciones',
-          key: 'id',
-        },
-        allowNull: false,
-        onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT',
+
+      tipo_cobro: {
+        type: Sequelize.ENUM('ACCION', 'CAMBIO_NOMBRE_ACCION', 'OTRO'),
       },
+
+      referencia_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+
       concepto_cobro: {
         type: Sequelize.STRING,
-        allowNull: false,
+      },
+
+      descripcion: {
+        type: Sequelize.STRING,
       },
       monto_total_cobro: {
         type: Sequelize.DECIMAL(10, 2),
@@ -47,18 +50,12 @@ module.exports = {
         allowNull: false,
       },
       estado_cobro: {
-        type: Sequelize.ENUM('pendiente', 'pagado', 'parcial', 'anulado'),
-        defaultValue: 'pendiente',
-        allowNull: false,
+        type: Sequelize.ENUM('PENDIENTE', 'PAGADO', 'PARCIAL', 'ANULADO'),
+        defaultValue: 'PENDIENTE',
       },
       fecha_emision: {
-        type: Sequelize.DATEONLY,
-        allowNull: false,
-      },
-      created_at: {
         type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        defaultValue: Sequelize.NOW,
       },
     });
   },
@@ -66,7 +63,10 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('cobro_accion');
     await queryInterface.sequelize.query(
-      'DROP TYPE IF EXISTS "enum_cobro_accion_estado_cobro";',
+      'DROP TYPE IF EXISTS "enum_cobros_estado_cobro";',
+    );
+    await queryInterface.sequelize.query(
+      'DROP TYPE IF EXISTS "enum_cobros_tipo_cobro";',
     );
   },
 };

@@ -16,9 +16,8 @@ module.exports = {
         unique: true,
       },
       costo_tipos_acciones: {
-        type: Sequelize.STRING,
+        type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
-        unique: true,
       },
     });
   },

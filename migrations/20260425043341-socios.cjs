@@ -60,6 +60,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      estado: {
+        type: Sequelize.ENUM('habilitado', 'inhabilitado'),
+        defaultValue: 'habilitado',
+        allowNull: false,
+      },
     });
   },
 
@@ -69,7 +74,7 @@ module.exports = {
       'DROP TYPE IF EXISTS "enum_socios_genero_socio";',
     );
     await queryInterface.sequelize.query(
-      'DROP TYPE IF EXISTS "enum_socios_estado_accion";',
+      'DROP TYPE IF EXISTS "enum_socios_estado";',
     );
   },
 };
