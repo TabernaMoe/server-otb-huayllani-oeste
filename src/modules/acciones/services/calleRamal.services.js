@@ -1,6 +1,6 @@
 import { Op, Sequelize } from 'sequelize';
-import { calleRamalModel as services } from '../models/calleRamal.model.js';
-import { accionModel } from '../models/accion.model.js';
+import { calleRamalModel as model } from '../../../models/acciones/calleRamal.model.js';
+import { accionModel } from '../../../models/acciones/accion.model.js';
 
 export class calleRamalServices {
   static async getAll(page = 1, limit = 10, search = '') {
@@ -16,7 +16,7 @@ export class calleRamalServices {
         },
       ];
     }
-    const { count, rows } = await services.findAndCountAll({
+    const { count, rows } = await model.findAndCountAll({
       where,
       limit,
       offset,
@@ -31,7 +31,7 @@ export class calleRamalServices {
     };
   }
   static async getId(id) {
-    const dataId = await services.findByPk(id, { raw: true });
+    const dataId = await model.findByPk(id, { raw: true });
     if (!dataId) {
       const err = new Error('No se encontro la calle');
       err.statuCode = 403;
@@ -40,14 +40,21 @@ export class calleRamalServices {
     return dataId;
   }
   static async create(payload) {
-    const dataCreated = await services.create(payload);
+    const dataCreated = await model.create(payload);
     return dataCreated;
   }
-  static async update(payload) {
-    const dataUpdated = await services.update(payload);
+  static async update(id, payload) {
+    const dataSearh = await model.findByPk(id);
+    if (!dataSearh) {
+      const err = new Error('No existe la calle');
+      err.statusCode = 404;
+      throw err;
+    }
+    await dataSearh.update(payload);
+    return dataSearh;
   }
   static async delete(id) {
-    const calleSearch = await services.findByPk(id);
+    const calleSearch = await model.findByPk(id);
     if (!calleSearch) {
       const err = new Error('No se encontro la calle');
       err.statuCode = 403;

@@ -1,5 +1,5 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../config/database.js';
+import { sequelize } from '../../config/database.js';
 
 export const calleRamalModel = sequelize.define(
   'calles_ramal',
@@ -17,7 +17,7 @@ export const calleRamalModel = sequelize.define(
   },
   {
     tableName: 'calles_ramal',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
   },
 );

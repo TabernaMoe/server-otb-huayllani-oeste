@@ -82,7 +82,7 @@ export const expedidoSchema = z.enum(
 /**
  * Género.
  */
-export const generoSchema = z.enum(['masculino', 'femenino'], {
+export const generoSchema = z.enum(['MASCULINO', 'FEMENINO'], {
   required_error: 'El género es obligatorio',
   invalid_type_error: 'El género no es válido',
 });
@@ -90,7 +90,7 @@ export const generoSchema = z.enum(['masculino', 'femenino'], {
 /**
  * Estado acción.
  */
-export const estadoAccionSchema = z.enum(['activo', 'pasivo'], {
+export const estadoAccionSchema = z.enum(['ACTIVO', 'PASIVO'], {
   required_error: 'El estado de acción es obligatorio',
   invalid_type_error: 'El estado de acción no es válido',
 });

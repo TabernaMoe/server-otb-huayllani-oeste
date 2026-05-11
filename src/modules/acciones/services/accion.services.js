@@ -1,37 +1,27 @@
 import { col, Op } from 'sequelize';
 import { sequelize } from '../../../config/database.js';
-import { accionModel } from '../models/accion.model.js';
-import { calleRamalModel } from '../models/calleRamal.model.js';
-import { socioModel } from '../models/socio.model.js';
-import { tipoAccionAccionModel } from '../models/tipoAccionAccion.model.js';
-import { tipoAccionModel } from '../models/tipoAccion.model.js';
-import { cobroAccionModel } from '../models/cobroAccion.model.js';
+import { accionModel } from '../../../models/acciones/accion.model.js';
+import { calleRamalModel } from '../../../models/acciones/calleRamal.model.js';
+import { socioModel } from '../../../models/socio.model.js';
+import { tipoAccionAccionModel } from '../../../models/acciones/tipoAccionAccion.model.js';
+import { tipoAccionModel } from '../../../models/acciones/tipoAccion.model.js';
+
+import { cobroModel } from '../../../models/cobro.model.js';
 
 export class accionServices {
   static async getAll(page = 1, limit = 10, search = '') {
     const offset = (page - 1) * limit;
     const where = {};
+
     if (search) {
       where[Op.or] = [
-        {
-          nombre_calle: {
-            [Op.iLike]: `%${search}%`,
-          },
-        },
+        { nombre_calle: { [Op.iLike]: `%${search}%` } },
+        // Si quieres buscar por campos de socio:
+        // { '$accion_socio.ci_socio$': { [Op.iLike]: `%${search}%` } }
       ];
     }
+
     const { count, rows } = await accionModel.findAndCountAll({
-      attributes: {
-        include: [
-          [col('accion_socio.ci_socio'), 'ci_socio'],
-          [col('accion_socio.primer_apellido_socio'), 'primer_apellido_socio'],
-          [
-            col('accion_socio.segundo_apellido_socio'),
-            'segundo_apellido_socio',
-          ],
-          [col('accion_calle.nombre_calle'), 'nombre_calle'],
-        ],
-      },
       where,
       limit,
       offset,
@@ -39,32 +29,45 @@ export class accionServices {
         {
           model: socioModel,
           as: 'accion_socio',
-          attributes: [],
+          attributes: [
+            'ci_socio',
+            'primer_apellido_socio',
+            'segundo_apellido_socio',
+          ], // ✅ Así se seleccionan
+          required: false, // LEFT JOIN
         },
         {
           model: calleRamalModel,
           as: 'accion_calle',
-          attributes: [],
+          attributes: ['nombre_calle'], // ✅ Así se seleccionan
+          required: false,
         },
         {
           model: tipoAccionModel,
-          as: 'acciones',
+          as: 'accionesTipos',
           attributes: ['nombre_tipos_acciones'],
-          through: {
-            attributes: [],
-          },
+          through: { attributes: [] },
+          required: false,
         },
       ],
       order: [['id', 'DESC']],
       distinct: true,
     });
 
+    const dataPlana = rows.map((row) => ({
+      ...row.toJSON(),
+      ci_socio: row.accion_socio?.ci_socio,
+      primer_apellido_socio: row.accion_socio?.primer_apellido_socio,
+      segundo_apellido_socio: row.accion_socio?.segundo_apellido_socio,
+      nombre_calle: row.accion_calle?.nombre_calle,
+    }));
+
     return {
       total: count,
       page,
       limit,
       totalPages: Math.ceil(count / limit),
-      data: rows,
+      data: dataPlana,
     };
   }
   static async getId(id) {
@@ -177,15 +180,17 @@ export class accionServices {
 
       const montoTotalAcciones = dataSearch.acciones.reduce(
         (acumulador, tipoAccion) =>
-          acumulador + tipoAccion.costo_tipos_acciones,
+          acumulador + Number(tipoAccion.costo_tipos_acciones),
         0,
       );
 
-      const cobroCreated = await cobroAccionModel.create(
+      const cobroAccion = await cobroModel.create(
         {
           socio_id: socioSearch.id,
-          accion_id: dataSearch.id,
-          concepto_cobro: `${socioSearch.ci_socio}${socioSearch.ci_expedido_socio} ${socioSearch.nombres_socio} ${socioSearch.primer_apellido_socio}`,
+          tipo_cobro: 'ACCION',
+          referencia_id: dataCreated.id,
+          concepto_cobro: 'Pago Accion',
+          descripcion: 'Cobro generado automáticamente por creación de acción',
           monto_total_cobro: montoTotalAcciones,
           monto_pagado_cobro: 0,
           saldo_cobro: montoTotalAcciones,
@@ -193,7 +198,7 @@ export class accionServices {
         { transaction: t },
       );
 
-      return { dataSearch, cobroCreated };
+      return { dataSearch, cobroAccion };
     });
     return created;
   }
@@ -298,5 +303,4 @@ export class accionServices {
       message: 'Acción desactivada correctamente',
     };
   }
-  static async changeNameAction(idVendedor, idComprador, idAccion) {}
 }

@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../config/database.js';
-import { usuarioModel } from '../../auth/model/usuario.model.js';
+import { sequelize } from '../config/database.js';
+import { usuarioModel } from './auth/usuario.model.js';
 
 export const socioModel = sequelize.define(
   'socios',
@@ -49,21 +49,16 @@ export const socioModel = sequelize.define(
       allowNull: false,
     },
     genero_socio: {
-      type: DataTypes.ENUM('masculino', 'femenino'),
+      type: DataTypes.ENUM('MASCULINO', 'FEMENINO'),
       allowNull: false,
     },
     estado_accion: {
-      type: DataTypes.ENUM('pasivo', 'activo'),
+      type: DataTypes.ENUM('PASIVO', 'ACTIVO', 'ANULADO'),
       allowNull: false,
     },
     direccion_socio: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    esta_inhabilitado: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
     },
   },
   {

@@ -18,6 +18,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      estado_usuario: {
+        type: Sequelize.ENUM('HABILITADO', 'INHABILITADO'),
+        defaultValue: 'HABILITADO',
+      },
     });
   },
 

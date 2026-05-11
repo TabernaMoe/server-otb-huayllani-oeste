@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../config/database.js';
+import { sequelize } from '../../config/database.js';
 
-export const tipoAccionModel = sequelize.define(
+export const  tipoAccionModel = sequelize.define(
   'tipos_acciones',
   {
     id: {
@@ -22,7 +22,7 @@ export const tipoAccionModel = sequelize.define(
   },
   {
     tableName: 'tipos_acciones',
-    timestamps: true,
+    timestamps: false,
     underscored: true,
   },
 );

@@ -1,6 +1,6 @@
-import { SocioServices as services } from '../services/socios.services.js';
+import { accionServices as services } from '../services/accion.services.js';
 
-export class SocioController {
+export class AccionController {
   static async getAll(req, res, next) {
     try {
       const page = Number(req.query.page) || 1;
@@ -33,9 +33,11 @@ export class SocioController {
     try {
       const payload = req.body;
       const dataCreated = await services.create(payload);
-      return res
-        .status(200)
-        .json({ ok: true, message: 'Socio creado correctamente', dataCreated });
+      return res.status(200).json({
+        ok: true,
+        message: 'Socio creado correctamente',
+        ...dataCreated,
+      });
     } catch (e) {
       next(e);
     }
@@ -54,13 +56,14 @@ export class SocioController {
       next(e);
     }
   }
-  static async delete(req, res, next) {
+
+  static async disable(req, res, next) {
     try {
       const { id } = req.params;
-      const dataDeleted = await services.delete(id);
+      const dataDisabled = await services.disable(id);
       return res.status(200).json({
         ok: true,
-        ...dataDeleted,
+        ...dataDisabled,
       });
     } catch (e) {
       next(e);

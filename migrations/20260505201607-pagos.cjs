@@ -14,7 +14,7 @@ module.exports = {
         type: Sequelize.BIGINT,
         allowNull: false,
         references: {
-          model: 'cobro_accion',
+          model: 'cobros',
           key: 'id',
         },
         onUpdate: 'CASCADE',
@@ -35,8 +35,8 @@ module.exports = {
       observaciones_pago: {
         type: Sequelize.STRING,
       },
-      etado_pago: {
-        type: Sequelize.ENUM('VALIDAD', 'ANULADO'),
+      estado_pago: {
+        type: Sequelize.ENUM('VALIDO', 'ANULADO'),
         defaultValue: 'VALIDO',
       },
     });
@@ -48,7 +48,7 @@ module.exports = {
       'DROP TYPE IF EXISTS "enum_pagos_metodo_pago";',
     );
     await queryInterface.sequelize.query(
-      'DROP TYPE IF EXISTS "enum_pagos_etado_pago";',
+      'DROP TYPE IF EXISTS "enum_pagos_estado_pago";',
     );
   },
 };

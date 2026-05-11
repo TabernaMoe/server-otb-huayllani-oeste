@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../config/database.js';
+import { sequelize } from '../../config/database.js';
 import { calleRamalModel } from './calleRamal.model.js';
-import { socioModel } from './socio.model.js';
+import { socioModel } from '../socio.model.js';
 
 export const accionModel = sequelize.define(
   'acciones',
@@ -20,7 +20,7 @@ export const accionModel = sequelize.define(
       type: DataTypes.BIGINT,
       allowNull: false,
       references: {
-        model: calleModel,
+        model: calleRamalModel,
         key: 'id',
       },
       onUpdate: 'CASCADE',

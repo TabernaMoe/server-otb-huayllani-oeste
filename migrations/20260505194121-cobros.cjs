@@ -61,12 +61,12 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('cobro_accion');
+    await queryInterface.dropTable('cobros');
     await queryInterface.sequelize.query(
-      'DROP TYPE IF EXISTS "enum_cobros_estado_cobro";',
+      'DROP TYPE IF EXISTS "enum_cobros_estado_cobro" CASCADE;',
     );
     await queryInterface.sequelize.query(
-      'DROP TYPE IF EXISTS "enum_cobros_tipo_cobro";',
+      'DROP TYPE IF EXISTS "enum_cobros_tipo_cobro" CASCADE;',
     );
   },
 };
