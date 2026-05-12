@@ -23,9 +23,10 @@ services:
       - ./.env
     volumes:
       - .:/app
-      - /app/node_modules
+      - node_modules_otb_backend:/app/node_modules
       - ./uploads:/app/uploads
     depends_on:
       - postgres
 volumes:
   postgres_data:
+  node_modules_otb_backend:
