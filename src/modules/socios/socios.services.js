@@ -8,36 +8,46 @@ export class SocioServices {
   static async getAll(page = 1, limit = 10, search = '', estado = '') {
     const offset = (page - 1) * limit;
 
-    let where = {};
+    estado = estado?.trim()?.toUpperCase() || '';
+    search = search?.trim() || '';
 
-    const valoresPermitidos = ['ACTIVO', 'PASIVO', 'ANULADO'];
-    // Validar que si se envió estado, sea válido
+    const valoresPermitidos = ['HABILITADO', 'DESHABILITADO'];
+
     if (estado && !valoresPermitidos.includes(estado)) {
       throw new Error(
         `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
       );
     }
 
-    if (!estado) {
-      where = {
-        estado_accion: {
-          [Op.ne]: 'ANULADO', // no mostrar los anulados
-        },
-      };
-    } else {
-      where.estado_accion = estado;
-    }
+    const where = estado ? { estado_socio: estado } : {};
 
-    // Si hay búsqueda, agregamos las condiciones OR
     if (search) {
       where = {
         [Op.and]: [
           where,
           {
             [Op.or]: [
-              { nombres_socio: { [Op.iLike]: `%${search}%` } },
-              { primer_apellido_socio: { [Op.iLike]: `%${search}%` } },
-              { segundo_apellido_socio: { [Op.iLike]: `%${search}%` } },
+              Sequelize.where(
+                Sequelize.fn(
+                  'concat',
+                  Sequelize.fn('COALESCE', Sequelize.col('nombres_socio'), ''),
+                  ' ',
+                  Sequelize.fn(
+                    'COALESCE',
+                    Sequelize.col('primer_apellido_socio'),
+                    '',
+                  ),
+                  ' ',
+                  Sequelize.fn(
+                    'COALESCE',
+                    Sequelize.col('segundo_apellido_socio'),
+                    '',
+                  ),
+                ),
+                {
+                  [Op.iLike]: `%${search}%`,
+                },
+              ),
               Sequelize.where(
                 Sequelize.cast(Sequelize.col('ci_socio'), 'TEXT'),
                 {
@@ -56,6 +66,7 @@ export class SocioServices {
       offset,
       order: [['id', 'DESC']],
     });
+
     return {
       total: count,
       page,
@@ -64,7 +75,72 @@ export class SocioServices {
       data: rows,
     };
   }
+  static async getAllDeleteds(page = 1, limit = 10, search = '') {
+    const offset = (page - 1) * limit;
 
+    search = search?.trim() || '';
+
+    let where = {
+      deleted_at: {
+        [Op.ne]: null,
+      },
+    };
+
+    if (search) {
+      where = {
+        [Op.and]: [
+          where,
+          {
+            [Op.or]: [
+              Sequelize.where(
+                Sequelize.fn(
+                  'concat',
+                  Sequelize.fn('COALESCE', Sequelize.col('nombres_socio'), ''),
+                  ' ',
+                  Sequelize.fn(
+                    'COALESCE',
+                    Sequelize.col('primer_apellido_socio'),
+                    '',
+                  ),
+                  ' ',
+                  Sequelize.fn(
+                    'COALESCE',
+                    Sequelize.col('segundo_apellido_socio'),
+                    '',
+                  ),
+                ),
+                {
+                  [Op.iLike]: `%${search}%`,
+                },
+              ),
+              Sequelize.where(
+                Sequelize.cast(Sequelize.col('ci_socio'), 'TEXT'),
+                {
+                  [Op.iLike]: `%${search}%`,
+                },
+              ),
+            ],
+          },
+        ],
+      };
+    }
+
+    const { count, rows } = await socioModel.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [['id', 'DESC']],
+      paranoid: false,
+    });
+
+    return {
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+      data: rows,
+    };
+  }
   static async getId(id) {
     const dataId = await socioModel.findByPk(id, { raw: true });
     if (!dataId) {
@@ -82,6 +158,7 @@ export class SocioServices {
         where: {
           ci_socio,
         },
+        paranoid: false,
         transaction: t,
       });
 
@@ -185,12 +262,44 @@ export class SocioServices {
     });
     return dataUpdate;
   }
-  static async disable(id) {
+  static async delete(id) {
     const dataDelete = await sequelize.transaction(async (t) => {
       const socioSearch = await socioModel.findByPk(id, {
         transaction: t,
-        raw: true,
       });
+      if (!socioSearch) {
+        const err = new Error('El socio no existe');
+        err.statusCode = 404;
+        throw err;
+      }
+      const usuarioSearch = await usuarioModel.findByPk(socioSearch.user_id, {
+        transaction: t,
+      });
+      if (!usuarioSearch) {
+        const err = new Error('El usuario del socio no existe');
+        err.statusCode = 404;
+        throw err;
+      }
+      await usuarioSearch.update(
+        { estado_usuario: 'DESHABILITADO' },
+        { transaction: t },
+      );
+
+      await socioSearch.destroy({ transaction: t });
+
+      return {
+        message: 'Socio eliminado correctamente',
+      };
+    });
+
+    return dataDelete;
+  }
+  static async toggleStatus(id) {
+    return await sequelize.transaction(async (t) => {
+      const socioSearch = await socioModel.findByPk(id, {
+        transaction: t,
+      });
+
       if (!socioSearch) {
         const err = new Error('El socio no existe');
         err.statusCode = 404;
@@ -199,28 +308,56 @@ export class SocioServices {
 
       const usuarioSearch = await usuarioModel.findByPk(socioSearch.user_id, {
         transaction: t,
-        raw: true,
       });
+
       if (!usuarioSearch) {
         const err = new Error('El usuario del socio no existe');
         err.statusCode = 404;
         throw err;
       }
-      await usuarioSearch.update(
-        { estado_usuario: 'INHABILITADO' },
+
+      const nuevoEstado =
+        socioSearch.estado_socio === 'HABILITADO'
+          ? 'DESHABILITADO'
+          : 'HABILITADO';
+
+      await socioSearch.update(
+        { estado_socio: nuevoEstado },
         { transaction: t },
       );
 
-      await socioSearch.update(
-        { estado_accion: 'ANULADO' },
+      await usuarioSearch.update(
+        { estado_usuario: nuevoEstado },
         { transaction: t },
       );
 
       return {
-        message: 'Socio inhabilitado correctamente',
+        message:
+          nuevoEstado === 'HABILITADO'
+            ? 'Socio habilitado correctamente'
+            : 'Socio deshabilitado correctamente',
+        estado: nuevoEstado,
       };
     });
+  }
+  static async restore(id) {
+    return await sequelize.transaction(async (t) => {
+      const socioSearch = await socioModel.findByPk(id, {
+        paranoid: false,
+        transaction: t,
+      });
 
-    return dataDelete;
+      if (!socioSearch) {
+        const err = new Error('Socio no encontrado');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      await socioSearch.restore({ transaction: t });
+
+      return {
+        message: 'Socio restaurado correctamente',
+      };
+    });
   }
 }

@@ -116,8 +116,8 @@ export const reqGenero = (label = 'Género', required = true) => {
 
   return schema;
 };
-export const reqEstadoAccion = (label = 'Estado', required = true) => {
-  let schema = z.enum(['PASIVO', 'ACTIVO', 'ANULADO'], {
+export const reqEstadoSocio = (label = 'Estado', required = true) => {
+  let schema = z.enum(['HABILITADO', 'DESHABILITADO'], {
     required_error: `Debe seleccionar ${label.toLowerCase()}`,
     invalid_type_error: `Debe seleccionar ${label.toLowerCase()}`,
   });

@@ -6,7 +6,7 @@ import {
   reqFecha,
   reqString,
   reqGenero,
-  reqEstadoAccion,
+  reqEstadoSocio,
 } from '../helpers/funcionesZod.js';
 export const socioSchema = z.object({
   ci_socio: reqCi(),
@@ -35,7 +35,7 @@ export const socioSchema = z.object({
   numero_celular_socio: reqCelular(),
   numero_telefono_socio: reqCelular('Telefono', false),
   genero_socio: reqGenero(),
-  estado_accion: reqEstadoAccion(),
+  estado_socio: reqEstadoSocio(),
   direccion_socio: reqString({
     label: 'Dirección',
     min: 5,

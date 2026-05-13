@@ -53,12 +53,25 @@ module.exports = {
         type: Sequelize.ENUM('MASCULINO', 'FEMENINO'),
         allowNull: false,
       },
-      estado_accion: {
-        type: Sequelize.ENUM('PASIVO', 'ACTIVO', 'ANULADO'),
+      estado_socio: {
+        type: Sequelize.ENUM('HABILITADO', 'DESHABILITADO'),
+        defaultValue: 'HABILITADO',
       },
       direccion_socio: {
         type: Sequelize.STRING,
         allowNull: false,
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      deleted_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
       },
     });
   },
@@ -69,7 +82,7 @@ module.exports = {
       'DROP TYPE IF EXISTS "enum_socios_genero_socio";',
     );
     await queryInterface.sequelize.query(
-      'DROP TYPE IF EXISTS "enum_socios_estado_accion";',
+      'DROP TYPE IF EXISTS "enum_socios_estado_socio";',
     );
   },
 };

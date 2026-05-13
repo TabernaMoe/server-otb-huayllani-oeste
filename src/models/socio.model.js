@@ -52,8 +52,8 @@ export const socioModel = sequelize.define(
       type: DataTypes.ENUM('MASCULINO', 'FEMENINO'),
       allowNull: false,
     },
-    estado_accion: {
-      type: DataTypes.ENUM('PASIVO', 'ACTIVO', 'ANULADO'),
+    estado_socio: {
+      type: DataTypes.ENUM('HABILITADO', 'DESABILITADO'),
       allowNull: false,
     },
     direccion_socio: {
@@ -63,8 +63,9 @@ export const socioModel = sequelize.define(
   },
   {
     tableName: 'socios',
+    paranoid: true,
     underscored: true,
-    timestamps: false,
+    timestamps: true,
   },
 );
 

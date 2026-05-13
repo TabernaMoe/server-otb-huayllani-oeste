@@ -19,7 +19,7 @@ module.exports = {
         allowNull: false,
       },
       estado_usuario: {
-        type: Sequelize.ENUM('HABILITADO', 'INHABILITADO'),
+        type: Sequelize.ENUM('HABILITADO', 'DESHABILITADO'),
         defaultValue: 'HABILITADO',
       },
     });

@@ -1,3 +1,5 @@
+import { accionModel } from '../models/acciones/accion.model.js';
+
 export const validarReferenciaCobro = async ({
   tipo_cobro,
   referencia_id,
