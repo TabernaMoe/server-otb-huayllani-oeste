@@ -19,12 +19,20 @@ services:
     restart: unless-stopped
     ports:
       - '3000:3000'
-    env_file:
-      - ./.env
     volumes:
       - .:/app
       - node_modules_otb_backend:/app/node_modules
       - ./uploads:/app/uploads
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=2002
+      - DB_NAME=bd_otb
+      - PORT=3000
+      - NODE_ENV=development
+      - JWT_SECRET=tu_secreto_aqui
+      - JWT_EXPIRES_IN=1h
     depends_on:
       - postgres
 volumes:
