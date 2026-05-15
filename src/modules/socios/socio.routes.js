@@ -6,6 +6,7 @@ import { socioSchema, updateSocioSchema } from '../../schema/socios.schema.js';
 const routes = new Router();
 
 routes.get('/', controller.getAll);
+routes.get('/select', controller.getAllSelect);
 routes.get('/deleteds', controller.getAllDeleteds);
 routes.patch('/toggle-status/:id', controller.toggleStatus);
 routes.patch('/restore/:id', controller.restore);

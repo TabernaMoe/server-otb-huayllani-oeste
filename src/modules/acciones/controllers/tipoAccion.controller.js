@@ -3,16 +3,12 @@ import { tipoAccionServices as services } from '../services/tipoAccion.services.
 export class AccionController {
   static async getAll(req, res, next) {
     try {
-      const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;
-      const search = req.query.search?.toString() || '';
-
-      const result = await services.getAll(page, limit, search);
+      const data = await services.getAll();
 
       return res.status(200).json({
         ok: true,
-        message: 'tipoAcciones obtenidos correctamente',
-        ...result,
+        message: 'Acciones obtenidas correctamente',
+        data,
       });
     } catch (e) {
       next(e);
@@ -24,7 +20,7 @@ export class AccionController {
       const dato = await services.getId(id);
       return res.status(200).json({
         ok: true,
-        message: 'tipoAcciones obtenido correctamente',
+        message: 'Acciones obtenido correctamente',
         dato,
       });
     } catch (e) {
@@ -37,7 +33,7 @@ export class AccionController {
       const dataCreated = await services.create(payload);
       return res.status(200).json({
         ok: true,
-        message: 'tipoAcciones creado correctamente',
+        message: 'Acciones creado correctamente',
         ...dataCreated,
       });
     } catch (e) {
@@ -51,7 +47,7 @@ export class AccionController {
       const dataUpdated = await services.update(id, payload);
       return res.status(200).json({
         ok: true,
-        message: 'tipoAcciones actuzalizado correctamente',
+        message: 'Acciones actuzalizado correctamente',
         dataUpdated,
       });
     } catch (e) {
@@ -65,7 +61,7 @@ export class AccionController {
       const dataDelete = await services.delete(id);
       return res.status(200).json({
         ok: true,
-        message: 'tipoAcciones eliminado correctamente',
+        message: 'Acciones eliminado correctamente',
       });
     } catch (e) {
       next(e);

@@ -3,35 +3,13 @@ import { calleRamalModel as model } from '../../../models/acciones/calleRamal.mo
 import { accionModel } from '../../../models/acciones/accion.model.js';
 
 export class calleRamalServices {
-  static async getAll(page = 1, limit = 10, search = '') {
-    const offset = (page - 1) * limit;
-    const where = {};
-
-    if (search) {
-      where[Op.or] = [
-        {
-          nombre_calle: {
-            [Op.iLike]: `%${search}%`,
-          },
-        },
-      ];
-    }
-    const { count, rows } = await model.findAndCountAll({
-      where,
-      limit,
-      offset,
-      order: [['id', 'DESC']],
-    });
-    return {
-      total: count,
-      page,
-      limit,
-      totalPages: Math.ceil(count / limit),
-      data: rows,
-    };
+  static async getAll() {
+    const data = await model.findAll();
+    return data;
   }
   static async getId(id) {
     const dataId = await model.findByPk(id, { raw: true });
+
     if (!dataId) {
       const err = new Error('No se encontro la calle');
       err.statuCode = 403;

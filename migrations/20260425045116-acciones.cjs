@@ -10,6 +10,10 @@ module.exports = {
         primaryKey: true,
         allowNull: false,
       },
+      fecha_creacion: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW,
+      },
       calle_ramal_id: {
         type: Sequelize.BIGINT,
         allowNull: false,
@@ -29,10 +33,6 @@ module.exports = {
         },
         onUpdate: 'CASCADE',
         onDelete: 'RESTRICT',
-      },
-      fecha_creacion: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
       },
       codigo_interno_accion: {
         type: Sequelize.INTEGER,
@@ -59,7 +59,7 @@ module.exports = {
         allowNull: false,
       },
       estado_accion: {
-        type: Sequelize.ENUM('ACTIVO', 'INACTIVO', 'ANULADO'),
+        type: Sequelize.ENUM('ACTIVO', 'PASIVO', 'ANULADO'),
         allowNull: false,
         defaultValue: 'ACTIVO',
       },

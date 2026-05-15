@@ -3,16 +3,10 @@ import { calleRamalServices as services } from '../services/calleRamal.services.
 export class AccionController {
   static async getAll(req, res, next) {
     try {
-      const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;
-      const search = req.query.search?.toString() || '';
-
-      const result = await services.getAll(page, limit, search);
-
+      const result = await services.getAll();
       return res.status(200).json({
         ok: true,
-        message: 'Calle obtenidos correctamente',
-        ...result,
+        data: result,
       });
     } catch (e) {
       next(e);

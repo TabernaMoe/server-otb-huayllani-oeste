@@ -75,6 +75,60 @@ export class SocioServices {
       data: rows,
     };
   }
+
+  static async getAllSelect(search = '') {
+    search = search?.trim() || '';
+
+    let where = {
+      estado_socio: 'HABILITADO',
+    };
+
+    if (search) {
+      where = {
+        [Op.and]: [
+          where,
+          {
+            [Op.or]: [
+              Sequelize.where(
+                Sequelize.fn(
+                  'concat',
+                  Sequelize.fn('COALESCE', Sequelize.col('nombres_socio'), ''),
+                  ' ',
+                  Sequelize.fn(
+                    'COALESCE',
+                    Sequelize.col('primer_apellido_socio'),
+                    '',
+                  ),
+                  ' ',
+                  Sequelize.fn(
+                    'COALESCE',
+                    Sequelize.col('segundo_apellido_socio'),
+                    '',
+                  ),
+                ),
+                {
+                  [Op.iLike]: `%${search}%`,
+                },
+              ),
+              Sequelize.where(
+                Sequelize.cast(Sequelize.col('ci_socio'), 'TEXT'),
+                {
+                  [Op.iLike]: `%${search}%`,
+                },
+              ),
+            ],
+          },
+        ],
+      };
+    }
+    const data = await socioModel.findAll({
+      where,
+      limit: 10,
+      raw: true,
+    });
+
+    return data;
+  }
   static async getAllDeleteds(page = 1, limit = 10, search = '') {
     const offset = (page - 1) * limit;
 
