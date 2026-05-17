@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -26,7 +27,9 @@
     "pg-hstore": "^2.3.4",
     "puppeteer": "^24.42.0",
     "sequelize": "^6.37.8",
+    "swagger-ui-express": "^5.0.1",
     "winston": "^3.19.0",
+    "yamljs": "^0.3.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

@@ -12,25 +12,22 @@ export const accionModel = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
-    fecha_creacion: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    calle_ramal_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: calleRamalModel,
-        key: 'id',
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'RESTRICT',
-    },
+
     socio_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
       references: {
         model: socioModel,
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
+    },
+    calle_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: calleRamalModel,
         key: 'id',
       },
       onUpdate: 'CASCADE',
@@ -44,11 +41,11 @@ export const accionModel = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    direccion_acciones: {
+    direccion_accion: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    observaciones_acciones: {
+    observacion_accion: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -58,14 +55,13 @@ export const accionModel = sequelize.define(
     },
     estado_accion: {
       type: DataTypes.ENUM('ACTIVO', 'PASIVO', 'ANULADO'),
-      allowNull: false,
       defaultValue: 'ACTIVO',
     },
   },
   {
     tableName: 'acciones',
     underscored: true,
-    timestamps: false,
+    timestamps: true,
   },
 );
 
@@ -80,10 +76,10 @@ accionModel.belongsTo(socioModel, {
 
 calleRamalModel.hasMany(accionModel, {
   as: 'calle_acciones',
-  foreignKey: 'calle_ramal_id',
+  foreignKey: 'calle_id',
 });
 
 accionModel.belongsTo(calleRamalModel, {
   as: 'accion_calle',
-  foreignKey: 'calle_ramal_id',
+  foreignKey: 'calle_id',
 });

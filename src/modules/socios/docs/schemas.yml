@@ -1,0 +1,76 @@
+Socio:
+  type: object
+
+  properties:
+    id:
+      type: integer
+
+    nombres_socio:
+      type: string
+
+    primer_apellido_socio:
+      type: string
+
+    segundo_apellido_socio:
+      type: string
+
+    ci_socio:
+      type: string
+
+    estado_socio:
+      type: string
+
+  example:
+    id: 1
+    nombres_socio: Juan
+    primer_apellido_socio: Perez
+    segundo_apellido_socio: Gomez
+    ci_socio: '1234567'
+    estado_socio: activo
+
+SociosPaginatedResponse:
+  type: object
+  properties:
+    ok:
+      type: boolean
+      example: true
+
+    message:
+      type: string
+      example: Socios obtenidos correctamente
+
+    total:
+      type: integer
+      example: 25
+
+    page:
+      type: integer
+      example: 1
+
+    limit:
+      type: integer
+      example: 10
+
+    totalPages:
+      type: integer
+      example: 3
+
+    data:
+      type: array
+      items:
+        $ref: '#/Socio'
+
+  example:
+    ok: true
+    message: Socios obtenidos correctamente
+    total: 1
+    page: 1
+    limit: 10
+    totalPages: 1
+    data:
+      - id: 1
+        nombres_socio: Juan
+        primer_apellido_socio: Perez
+        segundo_apellido_socio: Gomez
+        ci_socio: '1234567'
+        estado_socio: activo

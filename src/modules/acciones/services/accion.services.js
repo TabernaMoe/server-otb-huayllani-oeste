@@ -14,14 +14,11 @@ export class accionServices {
     const where = {};
 
     if (search) {
-      where[Op.or] = [
-        { nombre_calle: { [Op.iLike]: `%${search}%` } },
-        // Si quieres buscar por campos de socio:
-        // { '$accion_socio.ci_socio$': { [Op.iLike]: `%${search}%` } }
-      ];
+      where[Op.or] = [{ nombre_calle: { [Op.iLike]: `%${search}%` } }];
     }
 
     const { count, rows } = await accionModel.findAndCountAll({
+      attributes: { exclude: ['updatedAt', 'createdAt'] },
       where,
       limit,
       offset,
@@ -39,13 +36,12 @@ export class accionServices {
         {
           model: calleRamalModel,
           as: 'accion_calle',
-          attributes: ['nombre_calle'], // ✅ Así se seleccionan
           required: false,
         },
         {
           model: tipoAccionModel,
           as: 'accionesTipos',
-          attributes: ['nombre_tipos_acciones'],
+          attributes: ['id', 'nombre_tipos_acciones'],
           through: { attributes: [] },
           required: false,
         },
@@ -75,7 +71,7 @@ export class accionServices {
       attributes: {
         include: [
           [col('accion_socio.id'), 'socio_id'],
-          [col('accion_calle.id'), 'calle_ramal_id'],
+          [col('accion_calle.id'), 'calle_id'],
         ],
       },
       include: [
@@ -102,7 +98,9 @@ export class accionServices {
   }
   static async create(payload) {
     const created = await sequelize.transaction(async (t) => {
-      const { calle_ramal_id, socio_id, acciones, ...parent } = payload;
+      const { calle_id, socio_id, acciones, ...parent } = payload;
+      console.log('************+');
+      console.log(payload);
 
       const socioSearch = await socioModel.findByPk(socio_id, {
         raw: true,
@@ -113,7 +111,7 @@ export class accionServices {
         err.statusCode = 403;
         throw err;
       }
-      const calleSerch = await calleRamalModel.findByPk(calle_ramal_id, {
+      const calleSerch = await calleRamalModel.findByPk(calle_id, {
         raw: true,
         transaction: t,
       });
@@ -144,7 +142,7 @@ export class accionServices {
       const dataCreated = await accionModel.create(
         {
           socio_id: socioSearch.id,
-          calle_ramal_id: calleSerch.id,
+          calle_id: calleSerch.id,
           ...parent,
         },
         {
@@ -152,7 +150,7 @@ export class accionServices {
         },
       );
 
-      await dataCreated.setAcciones(acciones, { transaction: t });
+      await dataCreated.setAccionesTipos(acciones, { transaction: t });
 
       const dataSearch = await accionModel.findByPk(dataCreated.id, {
         include: [
@@ -168,7 +166,7 @@ export class accionServices {
           },
           {
             model: tipoAccionModel,
-            as: 'acciones',
+            as: 'accionesTipos',
             attributes: ['nombre_tipos_acciones', 'costo_tipos_acciones'],
             through: {
               attributes: [],
@@ -178,7 +176,7 @@ export class accionServices {
         transaction: t,
       });
 
-      const montoTotalAcciones = dataSearch.acciones.reduce(
+      const montoTotalAcciones = dataSearch.accionesTipos.reduce(
         (acumulador, tipoAccion) =>
           acumulador + Number(tipoAccion.costo_tipos_acciones),
         0,
@@ -204,7 +202,7 @@ export class accionServices {
   }
   static async update(id, payload) {
     const updated = await sequelize.transaction(async (t) => {
-      const { calle_ramal_id, acciones, ...parent } = payload;
+      const { calle_id, acciones, ...parent } = payload;
 
       const accion = await accionModel.findByPk(id, {
         transaction: t,
@@ -215,8 +213,8 @@ export class accionServices {
         throw err;
       }
       // Solo valida calle si viene en el payload
-      if (calle_ramal_id !== undefined) {
-        const calleSearch = await calleRamalModel.findByPk(calle_ramal_id, {
+      if (calle_id !== undefined) {
+        const calleSearch = await calleRamalModel.findByPk(calle_id, {
           raw: true,
           transaction: t,
         });
@@ -227,7 +225,7 @@ export class accionServices {
           throw err;
         }
 
-        parent.calle_ramal_id = calleSearch.id;
+        parent.calle_id = calleSearch.id;
       }
 
       // Solo actualiza campos normales si vienen
@@ -258,7 +256,7 @@ export class accionServices {
           throw err;
         }
 
-        await accion.setAcciones(acciones, {
+        await accion.setAccionesTipos(acciones, {
           transaction: t,
         });
       }
@@ -277,7 +275,7 @@ export class accionServices {
           },
           {
             model: tipoAccionModel,
-            as: 'acciones',
+            as: 'accionesTipos',
             attributes: ['nombre_tipos_acciones', 'costo_tipos_acciones'],
             through: {
               attributes: [],
@@ -298,7 +296,7 @@ export class accionServices {
       err.statusCode = 403;
       throw err;
     }
-    await accion.update({ estado_accion: 'INACTIVO' });
+    await accion.update({ estado_accion: 'ANULADO' });
     return {
       message: 'Acción desactivada correctamente',
     };

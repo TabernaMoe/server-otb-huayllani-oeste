@@ -19,7 +19,7 @@ export class SocioServices {
       );
     }
 
-    const where = estado ? { estado_socio: estado } : {};
+    let where = estado ? { estado_socio: estado } : {};
 
     if (search) {
       where = {

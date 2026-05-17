@@ -1,0 +1,21 @@
+openapi: 3.0.0
+
+info:
+  title: API Sistema Comercial
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - name: Socios
+    description: Gestión de socios
+
+paths:
+  /api/socios:
+    $ref: '../modules/socios/docs/paths.yml#/socio'
+
+components:
+  schemas:
+    Socio:
+      $ref: '../modules/socios/docs/schemas.yml#/Socio'

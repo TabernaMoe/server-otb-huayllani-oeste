@@ -1,0 +1,36 @@
+socio:
+  get:
+    tags:
+      - Socios
+
+    summary: Obtener socios paginados
+
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+          example: 1
+        description: Página actual
+
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          example: 10
+        description: Cantidad de registros por página
+
+      - in: query
+        name: search
+        schema:
+          type: string
+          example: Juan
+        description: Buscar por nombre o CI
+
+    responses:
+      200:
+        description: Socios obtenidos correctamente
+        content:
+          application/json:
+            schema:
+              $ref: './schemas.yml#/SociosPaginatedResponse'

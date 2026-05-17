@@ -4,6 +4,12 @@ import cors from 'cors';
 import { errorHandler } from './middlewares/errorHandler.middlewares.js';
 import IndexRoutes from './routes/index.routes.js';
 
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+import SwaggerParser from '@apidevtools/swagger-parser';
+
+const swaggerDocument = await SwaggerParser.bundle('./src/docs/swagger.yml');
+
 const app = express();
 // Middleware
 if (process.env.NODE_ENV === 'development') {
@@ -19,6 +25,7 @@ app.get('/', (req, res) => {
   });
 });
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api', IndexRoutes);
 
 app.use(errorHandler);

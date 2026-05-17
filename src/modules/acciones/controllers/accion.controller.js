@@ -24,7 +24,7 @@ export class AccionController {
       const dato = await services.getId(id);
       return res
         .status(200)
-        .json({ ok: true, message: 'Socio obtenido correctamente', dato });
+        .json({ ok: true, message: 'Accion obtenido correctamente', dato });
     } catch (e) {
       next(e);
     }
@@ -35,7 +35,7 @@ export class AccionController {
       const dataCreated = await services.create(payload);
       return res.status(200).json({
         ok: true,
-        message: 'Socio creado correctamente',
+        message: 'Accion creado correctamente',
         ...dataCreated,
       });
     } catch (e) {
@@ -49,7 +49,7 @@ export class AccionController {
       const dataUpdated = await services.update(id, payload);
       return res.status(200).json({
         ok: true,
-        message: 'Socio actuzalizado correctamente',
+        message: 'Accion actuzalizado correctamente',
         dataUpdated,
       });
     } catch (e) {

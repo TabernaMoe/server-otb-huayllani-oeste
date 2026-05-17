@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/database.js';
+import { socioModel } from './socio.model.js';
 
 export const cobroModel = sequelize.define(
   'cobros',
@@ -64,3 +65,13 @@ export const cobroModel = sequelize.define(
     timestamps: false,
   },
 );
+
+socioModel.hasMany(cobroModel, {
+  as: 'cobros',
+  foreignKey: 'id',
+});
+
+cobroModel.belongsTo(socioModel, {
+  as: 'socio_cobro',
+  foreignKey: 'id',
+});
