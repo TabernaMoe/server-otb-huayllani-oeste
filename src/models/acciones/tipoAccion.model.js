@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 
-export const  tipoAccionModel = sequelize.define(
+export const tipoAccionModel = sequelize.define(
   'tipos_acciones',
   {
     id: {
@@ -10,16 +10,16 @@ export const  tipoAccionModel = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
-    nombre_tipos_acciones: {
+    nombre_tipos_accion: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-    costo_tipos_acciones: {
+    costo_tipos_accion: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-  },
+  },  
   {
     tableName: 'tipos_acciones',
     timestamps: false,

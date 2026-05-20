@@ -6,6 +6,9 @@ import bcrypt from 'bcrypt';
 
 export class SocioServices {
   static async getAll(page = 1, limit = 10, search = '', estado = '') {
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+
     const offset = (page - 1) * limit;
 
     estado = estado?.trim()?.toUpperCase() || '';
@@ -14,12 +17,18 @@ export class SocioServices {
     const valoresPermitidos = ['HABILITADO', 'DESHABILITADO'];
 
     if (estado && !valoresPermitidos.includes(estado)) {
-      throw new Error(
+      const error = new Error(
         `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
       );
+      error.status = 400;
+      throw error;
     }
 
-    let where = estado ? { estado_socio: estado } : {};
+    let where = {};
+
+    if (estado) {
+      where.estado_socio = estado;
+    }
 
     if (search) {
       where = {
@@ -61,10 +70,14 @@ export class SocioServices {
     }
 
     const { count, rows } = await socioModel.findAndCountAll({
+      attributes: {
+        exclude: ['user_id', 'createdAt', 'updatedAt', 'deletedAt'],
+      },
       where,
       limit,
       offset,
       order: [['id', 'DESC']],
+      distinct: true,
     });
 
     return {
@@ -75,13 +88,10 @@ export class SocioServices {
       data: rows,
     };
   }
-
   static async getAllSelect(search = '') {
     search = search?.trim() || '';
 
-    let where = {
-      estado_socio: 'HABILITADO',
-    };
+    let where = { estado_socio: 'HABILITADO' };
 
     if (search) {
       where = {
@@ -123,6 +133,13 @@ export class SocioServices {
     }
     const data = await socioModel.findAll({
       where,
+      attributes: [
+        'id',
+        'ci_socio',
+        'nombres_socio',
+        'primer_apellido_socio',
+        'segundo_apellido_socio',
+      ],
       limit: 10,
       raw: true,
     });
@@ -180,6 +197,9 @@ export class SocioServices {
     }
 
     const { count, rows } = await socioModel.findAndCountAll({
+      attributes: {
+        exclude: ['user_id', 'createdAt', 'updatedAt', 'deletedAt'],
+      },
       where,
       limit,
       offset,
@@ -196,7 +216,12 @@ export class SocioServices {
     };
   }
   static async getId(id) {
-    const dataId = await socioModel.findByPk(id, { raw: true });
+    const dataId = await socioModel.findByPk(id, {
+      attributes: {
+        exclude: ['createdAt', 'updatedAt', 'deletedAt', 'user_id'],
+      },
+      raw: true,
+    });
     if (!dataId) {
       const err = new Error('No se encontro al socio');
       err.statuCode = 403;
@@ -351,6 +376,9 @@ export class SocioServices {
   static async toggleStatus(id) {
     return await sequelize.transaction(async (t) => {
       const socioSearch = await socioModel.findByPk(id, {
+        attributes: {
+          exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+        },
         transaction: t,
       });
 
@@ -390,7 +418,7 @@ export class SocioServices {
           nuevoEstado === 'HABILITADO'
             ? 'Socio habilitado correctamente'
             : 'Socio deshabilitado correctamente',
-        estado: nuevoEstado,
+        socioSearch,
       };
     });
   }
@@ -411,6 +439,7 @@ export class SocioServices {
 
       return {
         message: 'Socio restaurado correctamente',
+        data: socioSearch,
       };
     });
   }

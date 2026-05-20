@@ -5,11 +5,18 @@ export class SocioController {
     try {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;
-      const search = String(req.query.search) || '';
 
-      const estado =
-        req.query.estado && req.query.estado !== 'undefined'
-          ? req.query.estado.trim().toUpperCase()
+      let search = req.query.search;
+      let estado = req.query.estado;
+
+      search =
+        search && search !== 'undefined' && search !== 'null'
+          ? search.trim()
+          : '';
+
+      estado =
+        estado && estado !== 'undefined' && estado !== 'null'
+          ? estado.trim().toUpperCase()
           : '';
 
       const result = await services.getAll(page, limit, search, estado);
@@ -25,7 +32,12 @@ export class SocioController {
   }
   static async getAllSelect(req, res, next) {
     try {
-      const search = String(req.query.search) || '';
+      let search = req.query.search;
+
+      search =
+        search && search !== 'undefined' && search !== 'null'
+          ? search.trim()
+          : '';
 
       const result = await services.getAllSelect(search);
 
@@ -42,7 +54,12 @@ export class SocioController {
     try {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;
-      const search = String(req.query.search) || '';
+      let search = req.query.search;
+
+      search =
+        search && search !== 'undefined' && search !== 'null'
+          ? search.trim()
+          : '';
 
       const result = await services.getAllDeleteds(page, limit, search);
 
@@ -109,8 +126,7 @@ export class SocioController {
       const dataToggled = await services.toggleStatus(id);
       return res.status(200).json({
         ok: true,
-        message: 'Estado del socio actualizado correctamente',
-        dataToggled,
+        ...dataToggled,
       });
     } catch (e) {
       next(e);
@@ -122,8 +138,7 @@ export class SocioController {
       const dataRestored = await services.restore(id);
       return res.status(200).json({
         ok: true,
-        message: 'Socio restaurado correctamente',
-        dataRestored,
+        ...dataRestored,
       });
     } catch (e) {
       next(e);

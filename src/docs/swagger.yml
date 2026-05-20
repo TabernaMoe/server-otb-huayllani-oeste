@@ -14,8 +14,13 @@ tags:
 paths:
   /api/socios:
     $ref: '../modules/socios/docs/paths.yml#/socio'
-
-components:
-  schemas:
-    Socio:
-      $ref: '../modules/socios/docs/schemas.yml#/Socio'
+  /api/socios/{id}:
+    $ref: '../modules/socios/docs/paths.yml#/socio-id'
+  /api/socios/select:
+    $ref: '../modules/socios/docs/paths.yml#/socio-select'
+  /api/socios/deleteds:
+    $ref: '../modules/socios/docs/paths.yml#/socio-deleteds'
+  /api/socios/restore/{id}:
+    $ref: '../modules/socios/docs/paths.yml#/socio-restore'
+  /api/socios/toggle-status/{id}:
+    $ref: '../modules/socios/docs/paths.yml#/socio-toggle-status'
