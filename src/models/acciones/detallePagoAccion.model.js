@@ -1,8 +1,8 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 
-export const tipoAccionModel = sequelize.define(
-  'tipos_acciones',
+export const detallePagoAccion = sequelize.define(
+  'detalle_pago_accion',
   {
     id: {
       type: DataTypes.BIGINT,
@@ -10,18 +10,28 @@ export const tipoAccionModel = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
-    nombre_tipos_accion: {
+    nombre_detalle_accion: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-    costo_tipos_accion: {
+    costo_detalles_accion: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-  },  
+    tipo_cobro: {
+      type: DataTypes.ENUM('UNICO', 'MENSUAL'),
+      allowNull: false,
+      defaultValue: 'UNICO',
+    },
+    activo: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+  },
   {
-    tableName: 'tipos_acciones',
+    tableName: 'detalle_pago_accion',
     timestamps: false,
     underscored: true,
   },

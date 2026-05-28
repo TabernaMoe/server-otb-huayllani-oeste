@@ -1,10 +1,10 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 import { accionModel } from './accion.model.js';
-import { tipoAccionModel } from './tipoAccion.model.js';
+import { detallePagoAccion } from './detallePagoAccion.model.js';
 
-export const tipoAccionAccionModel = sequelize.define(
-  'tipo_accion_accion',
+export const detalleAccionAccionModel = sequelize.define(
+  'detalle_pago_accion_accion',
   {
     accion_id: {
       type: DataTypes.BIGINT,
@@ -17,31 +17,35 @@ export const tipoAccionAccionModel = sequelize.define(
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
-    tipo_accion_id: {
+    detalle_accion_id: {
       type: DataTypes.BIGINT,
       primaryKey: true,
       allowNull: false,
       references: {
-        model: tipoAccionModel,
+        model: detallePagoAccion,
         key: 'id',
       },
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
   },
-  { tableName: 'tipo_accion_accion', underscored: true, timestamps: false },
+  {
+    tableName: 'detalle_pago_accion_accion',
+    underscored: true,
+    timestamps: false,
+  },
 );
 
-accionModel.belongsToMany(tipoAccionModel, {
+accionModel.belongsToMany(detallePagoAccion, {
   as: 'accionesTipos',
-  through: tipoAccionAccionModel,
+  through: detalleAccionAccionModel,
   foreignKey: 'accion_id',
-  otherKey: 'tipo_accion_id',
+  otherKey: 'detalle_accion_id',
 });
 
-tipoAccionModel.belongsToMany(accionModel, {
+detallePagoAccion.belongsToMany(accionModel, {
   as: 'tipoAcciones',
-  through: tipoAccionAccionModel,
-  foreignKey: 'tipo_accion_id',
+  through: detalleAccionAccionModel,
+  foreignKey: 'detalle_accion_id',
   otherKey: 'accion_id',
 });

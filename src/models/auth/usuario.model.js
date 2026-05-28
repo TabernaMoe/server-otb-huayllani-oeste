@@ -12,64 +12,49 @@ export const usuarioModel = sequelize.define(
       allowNull: false,
     },
     nombre_usuario: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: false,
+      unique: true,
     },
     contrasenia_usuario: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false,
-    },
-  },
-  {
-    tableName: 'auth_usuarios',
-    underscored: true,
-    timestamps: false,
-  },
-);
-
-export const usuarioRolModel = sequelize.define(
-  'auth_usuario_rol',
-  {
-    usuario_id: {
-      type: DataTypes.BIGINT,
-      primaryKey: true,
-      allowNull: false,
-      references: {
-        model: usuarioModel,
-        key: 'id',
-      },
     },
     rol_id: {
       type: DataTypes.BIGINT,
-      primaryKey: true,
-      allowNull: false,
       references: {
         model: rolModel,
         key: 'id',
       },
+      allowNull: false,
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
+    },
+    estado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   },
   {
-    tableName: 'auth_usuario_rol',
-    underscored: true,
+    tableName: 'auth_usuarios',
     timestamps: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ['nombre_usuario'],
+      },
+      {
+        fields: ['rol_id'],
+      },
+    ],
   },
 );
 
-usuarioModel.belongsToMany(rolModel, {
-  through: usuarioRolModel,
-  as: 'usuario_rol',
-  foreignKey: 'usuario_id',
-  otherKey: 'rol_id',
-  onDelete: 'RESTRICT',
-  onUpdate: 'CASCADE',
-});
-
-rolModel.belongsToMany(usuarioModel, {
-  through: usuarioRolModel,
-  as: 'rol_usuario',
+rolModel.hasMany(usuarioModel, {
+  as: 'usuarios',
   foreignKey: 'rol_id',
-  otherKey: 'usuario_id',
-  onDelete: 'RESTRICT',
-  onUpdate: 'CASCADE',
+});
+usuarioModel.belongsTo(rolModel, {
+  as: 'rol',
+  foreignKey: 'rol_id',
 });

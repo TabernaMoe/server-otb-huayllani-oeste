@@ -7,18 +7,6 @@ WORKDIR /app
 # Copia los archivos de dependencias
 COPY package*.json ./
 
-
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont
-
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
 # ─── Etapa desarrollo ─────────────────────────
 FROM base AS development
 

@@ -1,26 +1,29 @@
-import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
+import { DataTypes } from 'sequelize';
 
-export const permisoModel = sequelize.define(
-  'auth_permisos',
+export const tarifaModel = sequelize.define(
+  'tarifa',
   {
     id: {
       type: DataTypes.BIGINT,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false,
     },
-    nombre_permiso: {
+    nombre_tarifa: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    codigo_permiso: {
+    descripcion: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    estado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   },
   {
-    tableName: 'auth_permisos',
-    timestamps: false,
+    tableName: 'tarifa',
+    timestamps: true,
   },
 );

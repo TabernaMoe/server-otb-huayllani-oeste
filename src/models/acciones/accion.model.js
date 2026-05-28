@@ -83,3 +83,5 @@ accionModel.belongsTo(calleRamalModel, {
   as: 'accion_calle',
   foreignKey: 'calle_id',
 });
+
+//Tabla de muchos a muchos

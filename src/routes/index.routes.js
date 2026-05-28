@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import SociosRoutes from '../modules/socios/socio.routes.js';
-import AccionesRoutes from '../modules/acciones/routes/index.routes.js';
+import authRoutes from '../modules/auth/routes/index.routes.js';
+import calleRoutes from '../modules/calleRamal/calleRamal.routes.js';
 
 const routes = new Router();
 
-routes.use('/socios', SociosRoutes);
-routes.use('/acciones', AccionesRoutes);
+routes.use('/auth', authRoutes);
+routes.use('/calle', calleRoutes);
 
 export default routes;

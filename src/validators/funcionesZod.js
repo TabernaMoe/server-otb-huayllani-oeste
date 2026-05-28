@@ -241,3 +241,97 @@ export const reqArrayInteger = (label = 'opción', required = true) => {
 
   return schema;
 };
+
+export const reqArrayIntegerIds = ({
+  label = 'Elemento',
+  required = true,
+  minItems,
+  maxItems,
+  unique = false,
+} = {}) => {
+  let schema = z.array(
+    z
+      .number({
+        required_error: `${label} es requerido`,
+        invalid_type_error: `${label} debe ser un número`,
+      })
+      .int(`${label} debe ser un número entero`),
+    {
+      required_error: `Debe ingresar ${label.toLowerCase()}`,
+      invalid_type_error: `${label} debe ser un arreglo`,
+    },
+  );
+
+  if (minItems !== undefined) {
+    schema = schema.min(
+      minItems,
+      `Debe ingresar al menos ${minItems} elementos`,
+    );
+  }
+
+  if (maxItems !== undefined) {
+    schema = schema.max(
+      maxItems,
+      `Solo se permiten máximo ${maxItems} elementos`,
+    );
+  }
+
+  if (unique) {
+    schema = schema.refine((arr) => new Set(arr).size === arr.length, {
+      message: `No se permiten elementos repetidos`,
+    });
+  }
+
+  if (!required) {
+    return z.preprocess((value) => {
+      if (value === '' || value === null) {
+        return undefined;
+      }
+
+      return value;
+    }, schema.optional());
+  }
+
+  return schema;
+};
+
+export const reqPassword = ({ label = 'Contraseña', required = true } = {}) =>
+  reqString({
+    label,
+    required,
+    min: 8,
+    max: 50,
+    regex:
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-])[A-Za-z\d@$!%*?&.#_-]+$/,
+    regexMessage:
+      'Debe contener mayúscula, minúscula, número y carácter especial',
+  });
+
+export const reqIntegerId = ({
+  label = 'Campo',
+  required = true,
+  positive = true,
+} = {}) => {
+  let schema = z.coerce
+    .number({
+      required_error: `Debe ingresar ${label.toLowerCase()}`,
+      invalid_type_error: `${label} debe ser un número`,
+    })
+    .int(`${label} debe ser un número entero`);
+
+  if (positive) {
+    schema = schema.positive(`${label} debe ser mayor a 0`);
+  }
+
+  if (!required) {
+    return z.preprocess((value) => {
+      if (value === '' || value === null) {
+        return undefined;
+      }
+
+      return value;
+    }, schema.optional());
+  }
+
+  return schema;
+};

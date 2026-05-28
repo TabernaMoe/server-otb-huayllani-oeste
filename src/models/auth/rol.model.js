@@ -18,7 +18,6 @@ export const rolModel = sequelize.define(
   },
   {
     tableName: 'auth_roles',
-    underscored: true,
     timestamps: false,
   },
 );
@@ -34,6 +33,8 @@ export const permisoRolModel = sequelize.define(
         model: rolModel,
         key: 'id',
       },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
     },
     permiso_id: {
       type: DataTypes.BIGINT,
@@ -43,29 +44,26 @@ export const permisoRolModel = sequelize.define(
         model: permisoModel,
         key: 'id',
       },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
     },
   },
   {
     tableName: 'auth_rol_permisos',
-    underscored: true,
     timestamps: false,
   },
 );
 
 rolModel.belongsToMany(permisoModel, {
   through: permisoRolModel,
-  as: 'rol_permiso',
+  as: 'permisos',
   foreignKey: 'rol_id',
   otherKey: 'permiso_id',
-  onDelete: 'RESTRICT',
-  onUpdate: 'CASCADE',
 });
 
 permisoModel.belongsToMany(rolModel, {
   through: permisoRolModel,
-  as: 'permiso_rol',
+  as: 'roles',
   foreignKey: 'permiso_id',
   otherKey: 'rol_id',
-  onDelete: 'RESTRICT',
-  onUpdate: 'CASCADE',
 });
