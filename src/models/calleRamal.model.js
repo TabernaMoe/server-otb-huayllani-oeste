@@ -15,6 +15,10 @@ export const calleRamalModel = sequelize.define(
       allowNull: false,
       unique: true,
     },
+    estado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
   },
   {
     tableName: 'calles_ramal',

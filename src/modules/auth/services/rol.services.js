@@ -207,7 +207,7 @@ export class RolServices {
       err.statuCode = 404;
       throw err;
     }
-    const usuarios = deleted.getUsuarios();
+    const usuarios = await deleted.getUsuarios();
     if (usuarios.length > 0) {
       const err = new Error('Hay usuario utilizando este rol');
       err.statuCode = 404;

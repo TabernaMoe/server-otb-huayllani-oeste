@@ -1,6 +1,6 @@
 import { sequelize } from '../../config/database.js';
 import { DataTypes } from 'sequelize';
-import { tarifaModel } from './tarifa.js';
+import { tarifaModel } from './tarifa.model.js';
 export const rangoTarifaModel = sequelize.define(
   'tarifa_rango',
   {

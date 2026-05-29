@@ -7,6 +7,7 @@ import { usuarioModel } from '../models/auth/usuario.model.js';
 //
 import { socioModel } from '../models/socio.model.js';
 //
+import { calleRamalModel } from '../models/calleRamal.model.js';
 
 export async function ConnectDB() {
   try {
@@ -15,11 +16,12 @@ export async function ConnectDB() {
     console.log('✅ Conexión OK');
 
     //Primera migracion
-    await permisoModel.sync({ alter: true });
-    await rolModel.sync({ alter: true });
-    await permisoRolModel.sync({ alter: true });
-    await usuarioModel.sync({ alter: true });
+    await permisoModel.sync({ force: true });
+    await rolModel.sync({ force: true });
+    await permisoRolModel.sync({ force: true });
+    await usuarioModel.sync({ force: true });
     //Segunda Migracion
+    await calleRamalModel.sync({ force: true });
 
     console.log('✅ Tablas cargadas correctamente');
   } catch (e) {

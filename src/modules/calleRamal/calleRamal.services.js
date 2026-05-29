@@ -30,7 +30,7 @@ export class CalleRamalServices {
     if (search) {
       where[Op.or] = [
         {
-          nombre_usuario: {
+          nombre_calle: {
             [Op.iLike]: `%${search}%`,
           },
         },
@@ -125,15 +125,16 @@ export class CalleRamalServices {
   }
   static async toggleStatus(id) {
     const dataId = await model.findByPk(id);
+    console.log(dataId);
     if (!dataId) {
-      const err = new Error('No exites la calle');
+      const err = new Error('No exite la calle');
       err.statusCode = 400;
       throw err;
     }
 
-    await model.update({
-      estado: !dataId.estado,
-    });
+    dataId.estado = !dataId.estado;
+
+    await dataId.save();
 
     return dataId;
   }

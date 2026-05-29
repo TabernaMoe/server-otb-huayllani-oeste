@@ -13,10 +13,6 @@ export const tarifaModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    descripcion: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     estado: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
