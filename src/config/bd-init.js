@@ -4,11 +4,14 @@ import { sequelize } from './database.js';
 import { permisoModel } from '../models/auth/permiso.model.js';
 import { permisoRolModel, rolModel } from '../models/auth/rol.model.js';
 import { usuarioModel } from '../models/auth/usuario.model.js';
-//
-import { socioModel } from '../models/socio.model.js';
-//
-import { calleRamalModel } from '../models/calleRamal.model.js';
 
+//Primera
+import { calleRamalModel } from '../models/calleRamal.model.js';
+//
+import { tarifaModel } from '../models/tarifa/tarifa.model.js';
+import { rangoTarifaModel } from '../models/tarifa/rango.model.js';
+//Segunda
+import { socioModel } from '../models/socio.model.js';
 export async function ConnectDB() {
   try {
     console.log('🌐 Conectando a la base de datos PostgreSQL...');
@@ -16,12 +19,17 @@ export async function ConnectDB() {
     console.log('✅ Conexión OK');
 
     //Primera migracion
-    await permisoModel.sync({ force: true });
-    await rolModel.sync({ force: true });
-    await permisoRolModel.sync({ force: true });
-    await usuarioModel.sync({ force: true });
+    await permisoModel.sync({ alter: true });
+    await rolModel.sync({ alter: true });
+    await permisoRolModel.sync({ alter: true });
+    await usuarioModel.sync({ alter: true });
     //Segunda Migracion
-    await calleRamalModel.sync({ force: true });
+    await calleRamalModel.sync({ alter: true });
+    //Tercera migracion
+    await tarifaModel.sync({ alter: true });
+    await rangoTarifaModel.sync({ alter: true });
+    //Cuartea migracion
+    await socioModel.sync({ alter: true });
 
     console.log('✅ Tablas cargadas correctamente');
   } catch (e) {

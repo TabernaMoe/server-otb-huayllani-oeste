@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 import { rangoTarifaModel } from '../../models/tarifa/rango.model.js';
 import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
@@ -39,8 +40,10 @@ export class TarifaServices {
     }
 
     const { count, rows } = await tarifaModel.findAndCountAll({
+      attributes: { exclude: ['createdAt', 'updatedAt'] },
       include: [
         {
+          attributes: { exclude: ['tarifa_id', 'id'] },
           model: rangoTarifaModel,
           as: 'rangosTarifa',
         },
@@ -62,14 +65,16 @@ export class TarifaServices {
   }
   static async getId(id) {
     const dataId = await tarifaModel.findByPk(id, {
+      attributes: { exclude: ['updatedAt', 'createdAt'] },
       include: [
         {
+          attributes: { exclude: ['tarifa_id', 'id'] },
           model: rangoTarifaModel,
           as: 'rangosTarifa',
         },
       ],
     });
-    if (dataId) {
+    if (!dataId) {
       const err = new Error('No se encontro la tarifa');
       err.statusCode = 404;
       throw err;
@@ -103,7 +108,14 @@ export class TarifaServices {
         err.statusCode = 400;
         throw err;
       }
-      await tarifaCreated.addRangosTarifa(rangosTarifa);
+      const rangosCreate = rangosTarifa.map((rango) => ({
+        ...rango,
+        tarifa_id: tarifaCreated.id,
+      }));
+
+      await rangoTarifaModel.bulkCreate(rangosCreate, {
+        transaction: t,
+      });
 
       const tarifaReload = await tarifaModel.findByPk(tarifaCreated.id, {
         include: [
@@ -132,11 +144,24 @@ export class TarifaServices {
       }
 
       if (nombre_tarifa !== undefined) {
-        await tarifa.update({ nombre_tarifa }, { transaction: t });
+        await tarifaSearch.update({ nombre_tarifa }, { transaction: t });
       }
 
       if (Array.isArray(rangosTarifa) && rangosTarifa.length > 0) {
-        await tarifaSearch.setRangosTarifa(rangosTarifa, { transaction: t });
+        await rangoTarifaModel.destroy({
+          where: {
+            tarifa_id: tarifaSearch.id,
+          },
+          transaction: t,
+        });
+
+        await rangoTarifaModel.bulkCreate(
+          rangosTarifa.map((r) => ({
+            ...r,
+            tarifa_id: tarifaSearch.id,
+          })),
+          { transaction: t },
+        );
       }
 
       const tarifaReload = await tarifaModel.findByPk(tarifaSearch.id, {
@@ -153,6 +178,26 @@ export class TarifaServices {
     });
     return update;
   }
-  static async toggleStatus() {}
-  static async delete() {}
+  static async toggleStatus(id) {
+    const dataSearch = await tarifaModel.findByPk(id);
+    if (!dataSearch) {
+      const err = new Error('No exite la tarifa');
+      err.statusCode = 404;
+      throw err;
+    }
+    dataSearch.estado = !dataSearch.estado;
+    await dataSearch.save();
+    return;
+  }
+  static async delete(id) {
+    const dataSearch = await tarifaModel.findByPk(id);
+    if (!dataSearch) {
+      const err = new Error('No exite la tarifa');
+      err.statusCode = 404;
+      throw err;
+    }
+    //validar que no este siendo usado
+    await dataSearch.destroy();
+    return;
+  }
 }

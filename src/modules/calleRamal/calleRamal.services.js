@@ -125,7 +125,6 @@ export class CalleRamalServices {
   }
   static async toggleStatus(id) {
     const dataId = await model.findByPk(id);
-    console.log(dataId);
     if (!dataId) {
       const err = new Error('No exite la calle');
       err.statusCode = 400;
@@ -136,6 +135,6 @@ export class CalleRamalServices {
 
     await dataId.save();
 
-    return dataId;
+    return;
   }
 }

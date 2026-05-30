@@ -5,29 +5,29 @@ import { Op, Sequelize } from 'sequelize';
 import bcrypt from 'bcrypt';
 
 export class SocioServices {
-  static async getAll(page = 1, limit = 10, search = '', estado = '') {
+  static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
     page = Number(page) || 1;
     limit = Number(limit) || 10;
 
     const offset = (page - 1) * limit;
 
-    estado = estado?.trim()?.toUpperCase() || '';
     search = search?.trim() || '';
 
-    const valoresPermitidos = ['HABILITADO', 'DESHABILITADO'];
+    const valoresPermitidos = [true, false];
 
-    if (estado && !valoresPermitidos.includes(estado)) {
+    if (estado !== undefined && !valoresPermitidos.includes(estado)) {
       const error = new Error(
         `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
       );
+
       error.status = 400;
       throw error;
     }
 
     let where = {};
 
-    if (estado) {
-      where.estado_socio = estado;
+    if (estado !== undefined) {
+      where.estado = estado;
     }
 
     if (search) {
@@ -39,17 +39,17 @@ export class SocioServices {
               Sequelize.where(
                 Sequelize.fn(
                   'concat',
-                  Sequelize.fn('COALESCE', Sequelize.col('nombres_socio'), ''),
+                  Sequelize.fn('COALESCE', Sequelize.col('nombres'), ''),
                   ' ',
                   Sequelize.fn(
                     'COALESCE',
-                    Sequelize.col('primer_apellido_socio'),
+                    Sequelize.col('primer_apellido'),
                     '',
                   ),
                   ' ',
                   Sequelize.fn(
                     'COALESCE',
-                    Sequelize.col('segundo_apellido_socio'),
+                    Sequelize.col('segundo_apellido'),
                     '',
                   ),
                 ),
@@ -71,7 +71,7 @@ export class SocioServices {
 
     const { count, rows } = await socioModel.findAndCountAll({
       attributes: {
-        exclude: ['user_id', 'createdAt', 'updatedAt', 'deletedAt'],
+        exclude: ['user_id', 'createdAt', 'updatedAt'],
       },
       where,
       limit,
@@ -91,7 +91,7 @@ export class SocioServices {
   static async getAllSelect(search = '') {
     search = search?.trim() || '';
 
-    let where = { estado_socio: 'HABILITADO' };
+    let where = { estado: true };
 
     if (search) {
       where = {
@@ -102,17 +102,17 @@ export class SocioServices {
               Sequelize.where(
                 Sequelize.fn(
                   'concat',
-                  Sequelize.fn('COALESCE', Sequelize.col('nombres_socio'), ''),
+                  Sequelize.fn('COALESCE', Sequelize.col('nombres'), ''),
                   ' ',
                   Sequelize.fn(
                     'COALESCE',
-                    Sequelize.col('primer_apellido_socio'),
+                    Sequelize.col('primer_apellido'),
                     '',
                   ),
                   ' ',
                   Sequelize.fn(
                     'COALESCE',
-                    Sequelize.col('segundo_apellido_socio'),
+                    Sequelize.col('segundo_apellido'),
                     '',
                   ),
                 ),
@@ -136,84 +136,15 @@ export class SocioServices {
       attributes: [
         'id',
         'ci_socio',
-        'nombres_socio',
-        'primer_apellido_socio',
-        'segundo_apellido_socio',
+        'nombres',
+        'primer_apellido',
+        'segundo_apellido',
       ],
       limit: 10,
       raw: true,
     });
 
     return data;
-  }
-  static async getAllDeleteds(page = 1, limit = 10, search = '') {
-    const offset = (page - 1) * limit;
-
-    search = search?.trim() || '';
-
-    let where = {
-      deleted_at: {
-        [Op.ne]: null,
-      },
-    };
-
-    if (search) {
-      where = {
-        [Op.and]: [
-          where,
-          {
-            [Op.or]: [
-              Sequelize.where(
-                Sequelize.fn(
-                  'concat',
-                  Sequelize.fn('COALESCE', Sequelize.col('nombres_socio'), ''),
-                  ' ',
-                  Sequelize.fn(
-                    'COALESCE',
-                    Sequelize.col('primer_apellido_socio'),
-                    '',
-                  ),
-                  ' ',
-                  Sequelize.fn(
-                    'COALESCE',
-                    Sequelize.col('segundo_apellido_socio'),
-                    '',
-                  ),
-                ),
-                {
-                  [Op.iLike]: `%${search}%`,
-                },
-              ),
-              Sequelize.where(
-                Sequelize.cast(Sequelize.col('ci_socio'), 'TEXT'),
-                {
-                  [Op.iLike]: `%${search}%`,
-                },
-              ),
-            ],
-          },
-        ],
-      };
-    }
-
-    const { count, rows } = await socioModel.findAndCountAll({
-      attributes: {
-        exclude: ['user_id', 'createdAt', 'updatedAt', 'deletedAt'],
-      },
-      where,
-      limit,
-      offset,
-      order: [['id', 'DESC']],
-      paranoid: false,
-    });
-
-    return {
-      total: count,
-      page,
-      limit,
-      totalPages: Math.ceil(count / limit),
-      data: rows,
-    };
   }
   static async getId(id) {
     const dataId = await socioModel.findByPk(id, {
@@ -253,6 +184,7 @@ export class SocioServices {
         {
           nombre_usuario: ci_socio,
           contrasenia_usuario: passwordHash,
+          rol_id: 2,
         },
         {
           transaction: t,
@@ -268,7 +200,7 @@ export class SocioServices {
         include: [
           {
             model: usuarioModel,
-            as: 'socio_usuario',
+            as: 'usuarioSocio',
             attributes: ['id', 'nombre_usuario'],
           },
         ],
@@ -282,12 +214,6 @@ export class SocioServices {
   static async update(id, payload) {
     const dataUpdate = await sequelize.transaction(async (t) => {
       const socioSearch = await socioModel.findByPk(id, {
-        include: [
-          {
-            model: usuarioModel,
-            as: 'socio_usuario',
-          },
-        ],
         transaction: t,
       });
       if (!socioSearch) {
@@ -331,7 +257,7 @@ export class SocioServices {
         include: [
           {
             model: usuarioModel,
-            as: 'socio_usuario',
+            as: 'usuarioSocio',
             attributes: ['id', 'nombre_usuario'],
           },
         ],
@@ -341,44 +267,9 @@ export class SocioServices {
     });
     return dataUpdate;
   }
-  static async delete(id) {
-    const dataDelete = await sequelize.transaction(async (t) => {
-      const socioSearch = await socioModel.findByPk(id, {
-        transaction: t,
-      });
-      if (!socioSearch) {
-        const err = new Error('El socio no existe');
-        err.statusCode = 404;
-        throw err;
-      }
-      const usuarioSearch = await usuarioModel.findByPk(socioSearch.user_id, {
-        transaction: t,
-      });
-      if (!usuarioSearch) {
-        const err = new Error('El usuario del socio no existe');
-        err.statusCode = 404;
-        throw err;
-      }
-      await usuarioSearch.update(
-        { estado_usuario: 'DESHABILITADO' },
-        { transaction: t },
-      );
-
-      await socioSearch.destroy({ transaction: t });
-
-      return {
-        message: 'Socio eliminado correctamente',
-      };
-    });
-
-    return dataDelete;
-  }
   static async toggleStatus(id) {
     return await sequelize.transaction(async (t) => {
       const socioSearch = await socioModel.findByPk(id, {
-        attributes: {
-          exclude: ['createdAt', 'updatedAt', 'deletedAt'],
-        },
         transaction: t,
       });
 
@@ -398,48 +289,18 @@ export class SocioServices {
         throw err;
       }
 
-      const nuevoEstado =
-        socioSearch.estado_socio === 'HABILITADO'
-          ? 'DESHABILITADO'
-          : 'HABILITADO';
+      const nuevoEstado = !socioSearch.estado;
 
-      await socioSearch.update(
-        { estado_socio: nuevoEstado },
-        { transaction: t },
-      );
+      await socioSearch.update({ estado: nuevoEstado }, { transaction: t });
 
-      await usuarioSearch.update(
-        { estado_usuario: nuevoEstado },
-        { transaction: t },
-      );
+      await usuarioSearch.update({ estado: nuevoEstado }, { transaction: t });
 
       return {
         message:
-          nuevoEstado === 'HABILITADO'
+          nuevoEstado === true
             ? 'Socio habilitado correctamente'
             : 'Socio deshabilitado correctamente',
         socioSearch,
-      };
-    });
-  }
-  static async restore(id) {
-    return await sequelize.transaction(async (t) => {
-      const socioSearch = await socioModel.findByPk(id, {
-        paranoid: false,
-        transaction: t,
-      });
-
-      if (!socioSearch) {
-        const err = new Error('Socio no encontrado');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      await socioSearch.restore({ transaction: t });
-
-      return {
-        message: 'Socio restaurado correctamente',
-        data: socioSearch,
       };
     });
   }

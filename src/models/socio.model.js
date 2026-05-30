@@ -24,56 +24,53 @@ export const socioModel = sequelize.define(
       allowNull: false,
       unique: true,
     },
-    ci_expedido_socio: {
+    ci_expedido: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    nombres_socio: {
+    nombres: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    primer_apellido_socio: {
+    primer_apellido: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    segundo_apellido_socio: {
+    segundo_apellido: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    numero_celular_socio: {
+    numero_celular: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    numero_telefono_socio: {
+    numero_telefono: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
-    genero_socio: {
+    genero: {
       type: DataTypes.ENUM('MASCULINO', 'FEMENINO'),
       allowNull: false,
     },
-    estado_socio: {
-      type: DataTypes.ENUM('HABILITADO', 'DESABILITADO'),
-      allowNull: false,
-    },
-    direccion_socio: {
+    direccion: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    estado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   },
   {
     tableName: 'socios',
-    paranoid: true,
-    underscored: true,
     timestamps: true,
   },
 );
 
 usuarioModel.hasOne(socioModel, {
-  as: 'usuario_socio',
+  as: 'socio',
   foreignKey: 'user_id',
 });
 socioModel.belongsTo(usuarioModel, {
-  as: 'socio_usuario',
+  as: 'usuarioSocio',
   foreignKey: 'user_id',
 });

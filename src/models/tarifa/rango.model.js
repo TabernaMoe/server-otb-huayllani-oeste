@@ -10,7 +10,7 @@ export const rangoTarifaModel = sequelize.define(
       autoIncrement: true,
     },
     tarifa_id: {
-      type: DataTypes.STRING,
+      type: DataTypes.BIGINT,
       allowNull: false,
       references: {
         model: tarifaModel,
@@ -34,7 +34,7 @@ export const rangoTarifaModel = sequelize.define(
   },
   {
     tableName: 'tarifa_rango',
-    timestamps: true,
+    timestamps: false,
   },
 );
 

@@ -7,36 +7,35 @@ import {
   reqString,
   reqGenero,
   reqEstadoSocio,
-} from '../helpers/funcionesZod.js';
+} from '../../validators/funcionesZod.js';
 export const socioSchema = z.object({
   ci_socio: reqCi(),
-  ci_expedido_socio: reqExpedidoCi(),
-  nombres_socio: reqString({
+  ci_expedido: reqExpedidoCi(),
+  nombres: reqString({
     label: 'Nombre del socio',
     min: 2,
     max: 100,
     regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/,
     regexMessage: 'El nombre solo debe contener letras',
   }),
-  primer_apellido_socio: reqString({
+  primer_apellido: reqString({
     label: 'Primer apellido',
     min: 2,
     max: 100,
     regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/,
     regexMessage: 'El apellido solo debe contener letras',
   }),
-  segundo_apellido_socio: reqString({
+  segundo_apellido: reqString({
     label: 'Segundo apellido',
     min: 2,
     max: 100,
     regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/,
     regexMessage: 'El apellido solo debe contener letras',
   }),
-  numero_celular_socio: reqCelular(),
-  numero_telefono_socio: reqCelular('Telefono', false),
-  genero_socio: reqGenero(),
-  estado_socio: reqEstadoSocio(),
-  direccion_socio: reqString({
+  numero_celular: reqCelular(),
+  numero_telefono: reqCelular('Telefono', false),
+  genero: reqGenero(),
+  direccion: reqString({
     label: 'Dirección',
     min: 5,
     max: 255,
