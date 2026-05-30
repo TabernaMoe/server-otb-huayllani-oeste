@@ -6,8 +6,6 @@ import { socioModel } from '../../../models/socio.model.js';
 import { tipoAccionAccionModel } from '../../../models/acciones/tipoAccionAccion.model.js';
 import { tipoAccionModel } from '../../../models/acciones/tipoAccion.model.js';
 
-import { cobroModel } from '../../../models/cobro.model.js';
-
 export class accionServices {
   static async getAll(page = 1, limit = 10, search = '') {
     const offset = (page - 1) * limit;

@@ -3,8 +3,8 @@ import { sequelize } from '../../config/database.js';
 import { accionModel } from './accion.model.js';
 import { detallePagoAccion } from './detallePagoAccion.model.js';
 
-export const detalleAccionAccionModel = sequelize.define(
-  'detalle_pago_accion_accion',
+export const accionDetalleModel = sequelize.define(
+  'accion_detalle',
   {
     accion_id: {
       type: DataTypes.BIGINT,
@@ -17,7 +17,7 @@ export const detalleAccionAccionModel = sequelize.define(
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
-    detalle_accion_id: {
+    detalle_pago_accion_id: {
       type: DataTypes.BIGINT,
       primaryKey: true,
       allowNull: false,
@@ -30,7 +30,7 @@ export const detalleAccionAccionModel = sequelize.define(
     },
   },
   {
-    tableName: 'detalle_pago_accion_accion',
+    tableName: 'accion_detalle',
     underscored: true,
     timestamps: false,
   },
@@ -38,14 +38,14 @@ export const detalleAccionAccionModel = sequelize.define(
 
 accionModel.belongsToMany(detallePagoAccion, {
   as: 'accionesTipos',
-  through: detalleAccionAccionModel,
+  through: accionDetalleModel,
   foreignKey: 'accion_id',
-  otherKey: 'detalle_accion_id',
+  otherKey: 'detalle_pago_accion_id',
 });
 
 detallePagoAccion.belongsToMany(accionModel, {
   as: 'tipoAcciones',
-  through: detalleAccionAccionModel,
-  foreignKey: 'detalle_accion_id',
+  through: accionDetalleModel,
+  foreignKey: 'detalle_pago_accion_id',
   otherKey: 'accion_id',
 });

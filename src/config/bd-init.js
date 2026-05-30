@@ -10,8 +10,10 @@ import { calleRamalModel } from '../models/calleRamal.model.js';
 //
 import { tarifaModel } from '../models/tarifa/tarifa.model.js';
 import { rangoTarifaModel } from '../models/tarifa/rango.model.js';
-//Segunda
+//
 import { socioModel } from '../models/socio.model.js';
+//
+import { detallePagoAccion } from '../models/accion/detallePagoAccion.model.js';
 export async function ConnectDB() {
   try {
     console.log('🌐 Conectando a la base de datos PostgreSQL...');
@@ -30,6 +32,8 @@ export async function ConnectDB() {
     await rangoTarifaModel.sync({ alter: true });
     //Cuartea migracion
     await socioModel.sync({ alter: true });
+    //Quinta Migracion
+    await detallePagoAccion.sync({ alter: true });
 
     console.log('✅ Tablas cargadas correctamente');
   } catch (e) {

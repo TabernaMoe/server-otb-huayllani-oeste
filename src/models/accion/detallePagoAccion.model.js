@@ -10,29 +10,26 @@ export const detallePagoAccion = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
-    nombre_detalle_accion: {
+    nombre_accion: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-    costo_detalles_accion: {
+    precio_accion: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
     tipo_cobro: {
       type: DataTypes.ENUM('UNICO', 'MENSUAL'),
       allowNull: false,
-      defaultValue: 'UNICO',
     },
-    activo: {
+    estado: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
       defaultValue: true,
     },
   },
   {
     tableName: 'detalle_pago_accion',
-    timestamps: false,
-    underscored: true,
+    timestamps: true,
   },
 );
