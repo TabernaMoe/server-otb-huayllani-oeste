@@ -33,8 +33,8 @@ export const pagosModel = sequelize.define('pagos', {
   observaciones_pago: {
     type: DataTypes.STRING,
   },
-  etado_pago: {
-    type: DataTypes.ENUM('VALIDAD', 'ANULADO'),
+  estado_pago: {
+    type: DataTypes.ENUM('VALIDADO', 'ANULADO'),
     defaultValue: 'VALIDO',
   },
 });

@@ -1,7 +1,10 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
-import { calleRamalModel } from './calleRamal.model.js';
+import { calleRamalModel } from '../calleRamal.model.js';
 import { socioModel } from '../socio.model.js';
+import { tarifaModel } from '../tarifa/tarifa.model.js';
+import { detallePagoAccion } from './detallePagoAccion.model.js';
+import { accionDetalleModel } from './accion_detalle.model.js';
 
 export const accionModel = sequelize.define(
   'acciones',
@@ -12,7 +15,6 @@ export const accionModel = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
-
     socio_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -33,19 +35,27 @@ export const accionModel = sequelize.define(
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
-    codigo_interno_accion: {
+    tarifa_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: { model: tarifaModel, key: 'id' },
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
+    },
+    codigo_interno: {
+      type: DataTypes.INTEGER,
+      unique: true,
+      allowNull: false,
+    },
+    nro_medidor: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    nro_medidor_accion: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    direccion_accion: {
+    direccion: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    observacion_accion: {
+    observacion: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -83,5 +93,17 @@ accionModel.belongsTo(calleRamalModel, {
   as: 'accion_calle',
   foreignKey: 'calle_id',
 });
+//
+accionModel.belongsToMany(detallePagoAccion, {
+  as: 'tiposAcciones',
+  through: accionDetalleModel,
+  foreignKey: 'accion_id',
+  otherKey: 'detalle_pago_accion_id',
+});
 
-//Tabla de muchos a muchos
+detallePagoAccion.belongsToMany(accionModel, {
+  as: 'acciones',
+  through: accionDetalleModel,
+  foreignKey: 'detalle_pago_accion_id',
+  otherKey: 'accion_id',
+});

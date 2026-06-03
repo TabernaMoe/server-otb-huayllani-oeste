@@ -6,6 +6,7 @@ import { validateSchema } from '../../middlewares/validateSchema.middlewares.js'
 const routes = new Router();
 routes
   .get('/', controller.getAll)
+  .get('/select', controller.getAllSelect)
   .get('/:id', controller.getId)
   .post('/', validateSchema(TarifaSchema), controller.create)
   .patch('/:id', validateSchema(TarifaUpdateSchema), controller.update)

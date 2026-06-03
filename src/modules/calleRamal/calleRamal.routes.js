@@ -6,6 +6,7 @@ const routes = new Router();
 
 routes
   .get('/', controller.getAll)
+  .get('/select', controller.getAllSelect)
   .get('/:id', controller.getId)
   .post('/', validateSchema(calleRamalSchema), controller.create)
   .patch('/:id', validateSchema(calleRamalSchema), controller.update)

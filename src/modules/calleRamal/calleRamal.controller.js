@@ -33,6 +33,26 @@ export class CalleRamalController {
       next(e);
     }
   }
+  static async getAllSelect(req, res, next) {
+    try {
+      let search = req.query.search;
+
+      search =
+        search && search !== 'undefined' && search !== 'null'
+          ? search.trim()
+          : '';
+
+      const result = await services.getAllSelect(search);
+
+      return res.status(200).json({
+        ok: true,
+        message: 'Calles obtenidas correctamente para el select',
+        data: result,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
   static async getId(req, res, next) {
     try {
       const { id } = req.params;

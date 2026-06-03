@@ -63,6 +63,37 @@ export class TarifaServices {
       data: rows,
     };
   }
+  static async getAllSelect(search = '') {
+    search = search?.trim() || '';
+
+    let where = { estado: true };
+    if (search) {
+      where = {
+        [Op.and]: [
+          where,
+          {
+            nombre_tarifa: {
+              [Op.iLike]: `%${search}%`,
+            },
+          },
+        ],
+      };
+    }
+
+    const data = await tarifaModel.findAll({
+      where,
+      attributes: ['id', 'nombre_tarifa'],
+      limit: 10,
+      raw: true,
+    });
+
+    const datosNormalizado = data.map((row) => ({
+      value: row.id,
+      label: row.nombre_tarifa,
+    }));
+
+    return datosNormalizado;
+  }
   static async getId(id) {
     const dataId = await tarifaModel.findByPk(id, {
       attributes: { exclude: ['updatedAt', 'createdAt'] },

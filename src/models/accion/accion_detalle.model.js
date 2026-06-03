@@ -1,7 +1,5 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
-import { accionModel } from './accion.model.js';
-import { detallePagoAccion } from './detallePagoAccion.model.js';
 
 export const accionDetalleModel = sequelize.define(
   'accion_detalle',
@@ -11,7 +9,7 @@ export const accionDetalleModel = sequelize.define(
       primaryKey: true,
       allowNull: false,
       references: {
-        model: accionModel,
+        model: 'acciones',
         key: 'id',
       },
       onUpdate: 'CASCADE',
@@ -22,7 +20,7 @@ export const accionDetalleModel = sequelize.define(
       primaryKey: true,
       allowNull: false,
       references: {
-        model: detallePagoAccion,
+        model: 'detalle_pago_accion',
         key: 'id',
       },
       onUpdate: 'CASCADE',
@@ -35,17 +33,3 @@ export const accionDetalleModel = sequelize.define(
     timestamps: false,
   },
 );
-
-accionModel.belongsToMany(detallePagoAccion, {
-  as: 'accionesTipos',
-  through: accionDetalleModel,
-  foreignKey: 'accion_id',
-  otherKey: 'detalle_pago_accion_id',
-});
-
-detallePagoAccion.belongsToMany(accionModel, {
-  as: 'tipoAcciones',
-  through: accionDetalleModel,
-  foreignKey: 'detalle_pago_accion_id',
-  otherKey: 'accion_id',
-});

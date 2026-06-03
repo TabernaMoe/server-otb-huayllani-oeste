@@ -14,6 +14,13 @@ import { rangoTarifaModel } from '../models/tarifa/rango.model.js';
 import { socioModel } from '../models/socio.model.js';
 //
 import { detallePagoAccion } from '../models/accion/detallePagoAccion.model.js';
+//
+import { accionModel } from '../models/accion/accion.model.js';
+import { accionDetalleModel } from '../models/accion/accion_detalle.model.js';
+//
+import { gestionModel } from '../models/gestiones/gestion.model.js';
+import { periodoModel } from '../models/gestiones/periodo.model.js';
+//
 export async function ConnectDB() {
   try {
     console.log('🌐 Conectando a la base de datos PostgreSQL...');
@@ -34,6 +41,12 @@ export async function ConnectDB() {
     await socioModel.sync({ alter: true });
     //Quinta Migracion
     await detallePagoAccion.sync({ alter: true });
+    //
+    await accionModel.sync({ alter: true });
+    await accionDetalleModel.sync({ alter: true });
+    // Gestiones
+    await gestionModel.sync({ alter: true });
+    await periodoModel.sync({ alter: true });
 
     console.log('✅ Tablas cargadas correctamente');
   } catch (e) {

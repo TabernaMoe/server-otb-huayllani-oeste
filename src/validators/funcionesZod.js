@@ -342,3 +342,25 @@ export const reqIntegerId = ({
 
   return schema;
 };
+
+export const reqYear = (
+  label = 'Año',
+  required = true,
+  minYear = 2026,
+  maxYear = 2100,
+) => {
+  let schema = z.coerce
+    .number({
+      required_error: `Debe ingresar ${label.toLowerCase()}`,
+      invalid_type_error: `${label} debe ser un número`,
+    })
+    .int(`${label} debe ser un año válido`)
+    .min(minYear, `${label} debe ser mayor o igual a ${minYear}`)
+    .max(maxYear, `${label} debe ser menor o igual a ${maxYear}`);
+
+  if (!required) {
+    schema = schema.optional();
+  }
+
+  return schema;
+};

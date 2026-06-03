@@ -53,6 +53,39 @@ export class CalleRamalServices {
       data: rows,
     };
   }
+  static async getAllSelect(search = '') {
+    search = search?.trim() || '';
+
+    let where = { estado: true };
+    if (search) {
+      where = {
+        [Op.and]: [
+          where,
+          {
+            nombre_calle: {
+              [Op.iLike]: `%${search}%`,
+            },
+          },
+        ],
+      };
+    }
+
+    const data = await model.findAll({
+      where,
+      attributes: ['id', 'nombre_calle'],
+      limit: 10,
+      raw: true,
+    });
+
+    const datosNormalizado = data.map((row) => ({
+      value: row.id,
+      label: row.nombre_calle,
+    }));
+
+    return datosNormalizado;
+
+    return data;
+  }
   static async getId(id) {
     const datoId = await model.findByPk(id, { raw: true });
     if (!datoId) {
