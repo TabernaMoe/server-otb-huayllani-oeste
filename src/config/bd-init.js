@@ -16,7 +16,7 @@ import { socioModel } from '../models/socio.model.js';
 import { detallePagoAccion } from '../models/accion/detallePagoAccion.model.js';
 //
 import { accionModel } from '../models/accion/accion.model.js';
-import { accionDetalleModel } from '../models/accion/accion_detalle.model.js';
+import { accionDetalleModel } from '../models/accion/accionDetalle.model.js';
 //
 import { gestionModel } from '../models/gestiones/gestion.model.js';
 import { periodoModel } from '../models/gestiones/periodo.model.js';

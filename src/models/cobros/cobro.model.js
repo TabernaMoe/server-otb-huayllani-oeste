@@ -35,6 +35,10 @@ export const cobroModel = sequelize.define(
     tipo_cobro: {
       type: DataTypes.ENUM('ACCION', 'CAMBIO_NOMBRE_ACCION', 'OTRO'),
     },
+    concepto: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     descripcion: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -45,7 +49,7 @@ export const cobroModel = sequelize.define(
     },
     monto_pagado: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      allowNull: 0,
     },
     saldo: {
       type: DataTypes.DECIMAL(10, 2),
@@ -53,6 +57,7 @@ export const cobroModel = sequelize.define(
     },
     estado: {
       type: DataTypes.ENUM('PENDIENTE', 'PAGADO', 'PARCIAL', 'ANULADO'),
+      defaultValue: 'PENDIENTE',
     },
     fecha_emision: {
       type: DataTypes.DATE,
@@ -66,12 +71,12 @@ export const cobroModel = sequelize.define(
 );
 
 socioModel.hasMany(cobroModel, {
-  as: 'cobros',
+  as: 'cobrosSocio',
   foreignKey: 'socio_id',
 });
 
 cobroModel.belongsTo(socioModel, {
-  as: 'socio',
+  as: 'socioCobro',
   foreignKey: 'socio_id',
 });
 

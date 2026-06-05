@@ -4,7 +4,7 @@ import { calleRamalModel } from '../calleRamal.model.js';
 import { socioModel } from '../socio.model.js';
 import { tarifaModel } from '../tarifa/tarifa.model.js';
 import { detallePagoAccion } from './detallePagoAccion.model.js';
-import { accionDetalleModel } from './accion_detalle.model.js';
+import { accionDetalleModel } from './accionDetalle.model.js';
 
 export const accionModel = sequelize.define(
   'acciones',
@@ -50,6 +50,7 @@ export const accionModel = sequelize.define(
     nro_medidor: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      unique: true,
     },
     direccion: {
       type: DataTypes.STRING,
@@ -59,11 +60,7 @@ export const accionModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    nro_accion: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    estado_accion: {
+    estado: {
       type: DataTypes.ENUM('ACTIVO', 'PASIVO', 'ANULADO'),
       defaultValue: 'ACTIVO',
     },
@@ -76,34 +73,43 @@ export const accionModel = sequelize.define(
 );
 
 socioModel.hasMany(accionModel, {
-  as: 'socio_accion',
+  as: 'acciones',
   foreignKey: 'socio_id',
 });
 accionModel.belongsTo(socioModel, {
-  as: 'accion_socio',
+  as: 'socioAccion',
   foreignKey: 'socio_id',
 });
 
 calleRamalModel.hasMany(accionModel, {
-  as: 'calle_acciones',
+  as: 'callesAccion',
   foreignKey: 'calle_id',
 });
 
 accionModel.belongsTo(calleRamalModel, {
-  as: 'accion_calle',
+  as: 'calleAccion',
   foreignKey: 'calle_id',
 });
 //
 accionModel.belongsToMany(detallePagoAccion, {
-  as: 'tiposAcciones',
+  as: 'detallesAccion',
   through: accionDetalleModel,
   foreignKey: 'accion_id',
   otherKey: 'detalle_pago_accion_id',
 });
 
 detallePagoAccion.belongsToMany(accionModel, {
-  as: 'acciones',
+  as: 'AccionesDetalles',
   through: accionDetalleModel,
   foreignKey: 'detalle_pago_accion_id',
   otherKey: 'accion_id',
+});
+
+tarifaModel.hasMany(accionModel, {
+  as: 'tarifasAccion',
+  foreignKey: 'tarifa_id',
+});
+accionModel.belongsTo(tarifaModel, {
+  as: 'tarifaAccion',
+  foreignKey: 'tarifa_id',
 });

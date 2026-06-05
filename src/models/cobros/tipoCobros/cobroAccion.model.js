@@ -1,7 +1,8 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../../config/database.js';
-import { cobroModel } from './cobro.model.js';
-import { accionDetalleModel } from '../accion/accion_detalle.model.js';
+import { sequelize } from '../../../config/database.js';
+import { accionModel } from '../../accion/accion.model.js';
+import { cobroModel } from '../cobro.model.js';
+import { accionDetalleModel } from '../../accion/accion_detalle.model.js';
 
 export const cobroAccionModel = sequelize.define(
   'cobro_accion',
@@ -11,6 +12,16 @@ export const cobroAccionModel = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
       allowNull: false,
+    },
+    accion_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'acciones',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
     },
     cobro_id: {
       type: DataTypes.BIGINT,
@@ -32,7 +43,7 @@ export const cobroAccionModel = sequelize.define(
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
-    monto: {
+    precio: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },

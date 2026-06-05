@@ -4,9 +4,13 @@ import { sequelize } from '../../config/database.js';
 export const accionDetalleModel = sequelize.define(
   'accion_detalle',
   {
-    accion_id: {
+    id: {
       type: DataTypes.BIGINT,
       primaryKey: true,
+      autoIncrement: true,
+    },
+    accion_id: {
+      type: DataTypes.BIGINT,
       allowNull: false,
       references: {
         model: 'acciones',
@@ -17,7 +21,6 @@ export const accionDetalleModel = sequelize.define(
     },
     detalle_pago_accion_id: {
       type: DataTypes.BIGINT,
-      primaryKey: true,
       allowNull: false,
       references: {
         model: 'detalle_pago_accion',
