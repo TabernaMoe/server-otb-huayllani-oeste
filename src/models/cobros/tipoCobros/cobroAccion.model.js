@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../../../config/database.js';
 import { accionModel } from '../../accion/accion.model.js';
 import { cobroModel } from '../cobro.model.js';
-import { accionDetalleModel } from '../../accion/accion_detalle.model.js';
+import { accionDetalleModel } from '../../accion/accionDetalle.model.js';
 
 export const cobroAccionModel = sequelize.define(
   'cobro_accion',
@@ -54,22 +54,29 @@ export const cobroAccionModel = sequelize.define(
   },
 );
 
+accionModel.hasMany(cobroAccionModel, {
+  as: 'accionesCobroAccion',
+  foreignKey: 'accion_id',
+});
+
+cobroAccionModel.belongsTo(accionModel, {
+  foreignKey: 'accion_id',
+});
+
 cobroModel.hasOne(cobroAccionModel, {
-  as: 'cobroAccion',
+  as: 'CobroAccion',
   foreignKey: 'cobro_id',
 });
 cobroAccionModel.belongsTo(cobroModel, {
   as: 'accionCobro',
   foreignKey: 'cobro_id',
 });
-//
 
-accionDetalleModel.hasOne(cobroModel, {
-  as: 'accionCobro',
+accionDetalleModel.hasMany(cobroAccionModel, {
+  as: 'cobrosAccion',
   foreignKey: 'accion_detalle_id',
 });
-
-cobroModel.belongsTo(accionDetalleModel, {
-  as: 'CobroAccion',
+cobroAccionModel.belongsTo(accionDetalleModel, {
+  as: 'detalleAccion',
   foreignKey: 'accion_detalle_id',
 });

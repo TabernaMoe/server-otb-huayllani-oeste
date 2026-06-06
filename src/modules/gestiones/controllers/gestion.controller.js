@@ -1,4 +1,4 @@
-import { GestionService as services } from './gestion.services.js';
+import { GestionService as services } from '../services/gestion.services.js';
 
 export class GestionController {
   static async getAll(req, res, next) {
@@ -48,7 +48,6 @@ export class GestionController {
       next(e);
     }
   }
-
   static async delete(req, res, next) {
     try {
       const { id } = req.params;

@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { calleRamalModel } from '../models/calleRamal.model.js';
 import { socioModel } from '../models/socio.model.js';
 import { tarifaModel } from '../models/tarifa/tarifa.model.js';
@@ -62,7 +63,7 @@ export class ValidacionesSequelize {
     return tarifaSearch;
   }
 
-  static async ValidarPagoAcciones(array, options) {
+  static async ValidarPagoAcciones(array, options = {}) {
     const detallePagoAccionIds = [...new Set(array)];
 
     const detallePagoAccionSearch = await detallePagoAccion.findAll({
@@ -71,10 +72,11 @@ export class ValidacionesSequelize {
           [Op.in]: detallePagoAccionIds,
         },
       },
-      options,
+      ...options,
     });
+
     if (detallePagoAccionSearch.length !== detallePagoAccionIds.length) {
-      const err = new Error('Uno o varios permisos no existen');
+      const err = new Error('Uno o varios detalles de pago no existen');
       err.statusCode = 404;
       throw err;
     }

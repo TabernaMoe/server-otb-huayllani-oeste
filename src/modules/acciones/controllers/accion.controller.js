@@ -11,7 +11,7 @@ export class AccionController {
 
       return res.status(200).json({
         ok: true,
-        message: 'Socios obtenidos correctamente',
+        message: 'Acciones obtenidas correctamente',
         ...result,
       });
     } catch (e) {
@@ -24,7 +24,7 @@ export class AccionController {
       const dato = await services.getId(id);
       return res
         .status(200)
-        .json({ ok: true, message: 'Accion obtenido correctamente', dato });
+        .json({ ok: true, message: 'Accion obtenida correctamente', dato });
     } catch (e) {
       next(e);
     }
@@ -35,7 +35,7 @@ export class AccionController {
       const dataCreated = await services.create(payload);
       return res.status(200).json({
         ok: true,
-        message: 'Accion creado correctamente',
+        message: 'Accion creada correctamente',
         ...dataCreated,
       });
     } catch (e) {
@@ -49,7 +49,7 @@ export class AccionController {
       const dataUpdated = await services.update(id, payload);
       return res.status(200).json({
         ok: true,
-        message: 'Accion actuzalizado correctamente',
+        message: 'Accion actuzalizada correctamente',
         dataUpdated,
       });
     } catch (e) {
@@ -57,13 +57,13 @@ export class AccionController {
     }
   }
 
-  static async disable(req, res, next) {
+  static async toggleStatus(req, res, next) {
     try {
       const { id } = req.params;
-      const dataDisabled = await services.disable(id);
+      const dataDisabled = await services.toggleStatus(id);
       return res.status(200).json({
         ok: true,
-        ...dataDisabled,
+        message: 'Se cambio su estado correctamente',
       });
     } catch (e) {
       next(e);

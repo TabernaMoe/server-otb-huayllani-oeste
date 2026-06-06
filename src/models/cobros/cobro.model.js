@@ -49,7 +49,7 @@ export const cobroModel = sequelize.define(
     },
     monto_pagado: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: 0,
+      defaultValue: 0,
     },
     saldo: {
       type: DataTypes.DECIMAL(10, 2),

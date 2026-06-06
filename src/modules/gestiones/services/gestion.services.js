@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
-import { gestionModel } from '../../models/gestiones/gestion.model.js';
-import { periodoModel } from '../../models/gestiones/periodo.model.js';
-import { sequelize } from '../../config/database.js';
+import { gestionModel } from '../../../models/gestiones/gestion.model.js';
+import { periodoModel } from '../../../models/gestiones/periodo.model.js';
+import { sequelize } from '../../../config/database.js';
 
 export class GestionService {
   static async getAll(page = 1, limit = 10, search = '') {
@@ -113,6 +113,15 @@ export class GestionService {
       await periodoModel.bulkCreate(periodosData, {
         transaction: t,
       });
+
+      const activarPeriodo = await periodoModel.findOne({
+        where: {
+          numero_mes: 1,
+        },
+        transaction: t,
+      });
+
+      await activarPeriodo.update({ estado: 'ACTIVO' }, { transaction: t });
 
       return gestionModel.findByPk(gestionCreated.id, {
         include: [{ model: periodoModel, as: 'periodos' }],

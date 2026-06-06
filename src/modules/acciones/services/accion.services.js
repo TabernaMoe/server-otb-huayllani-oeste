@@ -80,7 +80,7 @@ export class accionServices {
           [col('socioAccion.nombres'), 'nombres'],
           [col('socioAccion.primer_apellido'), 'primer_apellido'],
           [col('socioAccion.segundo_apellido'), 'segundo_apellido'],
-          [col('calleAccion.nombre_calle', 'nombre_calle')],
+          [col('calleAccion.nombre_calle'), 'nombre_calle'],
           [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
         ],
       },
@@ -105,6 +105,7 @@ export class accionServices {
       limit,
       offset,
       order: [['id', 'DESC']],
+      subQuery: false,
       distinct: true,
     });
 
@@ -119,13 +120,6 @@ export class accionServices {
   static async getId(id) {
     const dataId = await accionModel.findByPk(id, {
       include: [
-        { model: socioModel, as: 'socioAccion', attributes: ['id'] },
-        { model: calleRamalModel, as: 'calleAccion', attributes: ['id'] },
-        {
-          model: tarifaModel,
-          as: 'tarifaAccion',
-          attributes: ['id'],
-        },
         {
           model: detallePagoAccion,
           as: 'detallesAccion',
@@ -151,6 +145,7 @@ export class accionServices {
         tarifa_id,
         detallesAccion,
         nro_medidor,
+        estado,
         ...parent
       } = payload;
       const socioSarch = await Validaciones.validarSocio(socio_id, {
@@ -183,21 +178,31 @@ export class accionServices {
         throw err;
       }
 
+      const estadosPermitidos = ['ACTIVO', 'PASIVO'];
+      const esValido = estadosPermitidos.includes(estado);
+
+      if (!esValido) {
+        const err = new Error('No existe ese estado');
+        err.statusCode = 400;
+        throw err;
+      }
+
       const accionCreated = await accionModel.create(
         {
           ...parent,
           socio_id,
           calle_id,
           tarifa_id,
-          codigo_interno: nroAcciones,
+          codigo_interno: nroAcciones + 1,
           nro_medidor,
+          estado,
         },
         {
           transaction: t,
         },
       );
 
-      const payloadAcciones = detallesAccion.map((row) => ({
+      const payloadAcciones = detallePagoAccionSearch.map((row) => ({
         accion_id: accionCreated.id,
         detalle_pago_accion_id: row.id,
       }));
@@ -218,7 +223,7 @@ export class accionServices {
         periodo_id: peridoActivo.id,
         tipo_cobro: 'ACCION',
         concepto: row.nombre_accion,
-        descripcion: `Cobro de accion del codigo ${nroAcciones}`,
+        descripcion: `Cobro de accion del codigo ${nroAcciones + 1}`,
         monto_total: row.precio_accion,
         saldo: row.precio_accion,
       }));
@@ -273,6 +278,198 @@ export class accionServices {
     });
     return create;
   }
-  static async update(id, payload) {}
-  static async toggleStatus() {}
+  static async update(id, payload) {
+    const update = sequelize.transaction(async (t) => {
+      const {
+        calle_id,
+        tarifa_id,
+        nro_medidor,
+        detallesAccion,
+        direccion,
+        observacion,
+        estado,
+      } = payload;
+
+      const accionSearch = await accionModel.findByPk(id, { transaction: t });
+      if (!accionSearch) {
+        const err = new Error('No se encontro la accion');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      let dataUpdate = {};
+      if (calle_id) {
+        const calleSearch = await Validaciones.validarCalle(calle_id, {
+          transaction: t,
+        });
+        dataUpdate.calle_id = calleSearch.id;
+      }
+      if (tarifa_id) {
+        const tarifaSearch = await Validaciones.validarTarifa(tarifa_id, {
+          transaction: t,
+        });
+        dataUpdate.tarifa_id = tarifaSearch.id;
+      }
+      if (nro_medidor) {
+        const nroMedidorSearch = await accionModel.findOne({
+          where: {
+            nro_medidor,
+          },
+          transaction: t,
+        });
+
+        if (nroMedidorSearch) {
+          const err = new Error('Ya hay una accion con ese nro de medidor');
+          err.statusCode = 400;
+          throw err;
+        }
+        dataUpdate.nro_medidor = nro_medidor;
+      }
+      if (direccion) {
+        dataUpdate.direccion = direccion;
+      }
+      if (observacion) {
+        dataUpdate.observacion = observacion;
+      }
+      if (estado) {
+        const estadosPermitidos = ['ACTIVO', 'PASIVO'];
+        const esValido = estadosPermitidos.includes(estado);
+
+        if (!esValido) {
+          const err = new Error('No existe ese estado');
+          err.statusCode = 400;
+          throw err;
+        }
+        dataUpdate.estado = estado;
+      }
+
+      if (Array.isArray(detallesAccion)) {
+        const detallePagoAccionSearch = await Validaciones.ValidarPagoAcciones(
+          detallesAccion,
+          { transaction: t },
+        );
+        const detallesPagoAccionActual = await accionSearch.getDetallesAccion();
+
+        function encontrarFaltantesOptimizado(
+          completos,
+          parciales,
+          propiedad = 'id',
+        ) {
+          const setParcial = new Set(parciales.map((item) => item[propiedad]));
+          return completos.filter((item) => !setParcial.has(item[propiedad]));
+        }
+        const faltantes = encontrarFaltantesOptimizado(
+          detallesPagoAccionActual,
+          detallePagoAccionSearch,
+        );
+
+        const faltantesId = faltantes.map((row) => row.id);
+
+        const tablaIntermedia = await accionDetalleModel.findAll({
+          attributes: ['id'],
+          where: {
+            accion_id: accionSearch.id,
+            detalle_pago_accion_id: {
+              [Op.in]: faltantesId,
+            },
+          },
+          transaction: t,
+        });
+
+        const tablaIntermediaIds = tablaIntermedia.map((row) => row.id);
+
+        const cobroAcciones = await cobroAccionModel.findAll({
+          where: {
+            accion_id: accionSearch.id,
+            accion_detalle_id: {
+              [Op.in]: tablaIntermediaIds,
+            },
+          },
+          transaction: t,
+        });
+
+        const cobroAccionesIds = cobroAcciones.map((row) => row.id);
+
+        const cobrosSearch = await cobroModel.findAll({
+          where: {
+            id: {
+              [Op.in]: cobroAccionesIds,
+            },
+          },
+          transaction: t,
+        });
+
+        const CobrosEstado = cobrosSearch.filter(
+          (row) => row.estado === 'PENDIENTE',
+        );
+
+        if (CobrosEstado.length === 0) {
+          const err = new Error(
+            'No se puede eliminar algunos detalles pago accion porque ya fueron pagados o estan en proceso de pago',
+          );
+          throw err;
+        }
+        const cobrosIds = cobrosSearch.map((row) => row.id);
+
+        await cobroAccionModel.destroy({
+          where: {
+            cobro_id: {
+              [Op.in]: cobrosIds,
+            },
+          },
+        });
+        await cobroModel.destroy({
+          where: {
+            id: {
+              [Op.in]: cobrosIds,
+            },
+          },
+        });
+
+        await accionDetalleModel.destroy({
+          where: {
+            accion_id: accionSearch.id,
+            detalle_pago_accion_id: {
+              [Op.in]: faltantesId,
+            },
+          },
+        });
+      }
+      await accionSearch.update(dataUpdate, { transaction: t });
+
+      const dataId = await accionModel.findByPk(id, {
+        include: [
+          { model: socioModel, as: 'socioAccion', attributes: ['id'] },
+          { model: calleRamalModel, as: 'calleAccion', attributes: ['id'] },
+          {
+            model: tarifaModel,
+            as: 'tarifaAccion',
+            attributes: ['id'],
+          },
+          {
+            model: detallePagoAccion,
+            as: 'detallesAccion',
+            attributes: ['id'],
+            through: {
+              attributes: [],
+            },
+          },
+        ],
+      });
+      return dataId;
+    });
+    return update;
+  }
+  static async toggleStatus(id) {
+    const dataSearch = await accionModel.findByPk(id);
+    if (!dataSearch) {
+      const err = new Error('La accion no existe');
+      err.statusCode = 404;
+      throw err;
+    }
+    dataSearch.estado = 'ANULADO';
+
+    await dataSearch.save();
+    return;
+  }
 }

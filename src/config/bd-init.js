@@ -21,6 +21,11 @@ import { accionDetalleModel } from '../models/accion/accionDetalle.model.js';
 import { gestionModel } from '../models/gestiones/gestion.model.js';
 import { periodoModel } from '../models/gestiones/periodo.model.js';
 //
+import { cobroModel } from '../models/cobros/cobro.model.js';
+import { cobroAccionModel } from '../models/cobros/tipoCobros/cobroAccion.model.js';
+import { pagoDetalleModel, pagoModel } from '../models/cobros/pago.model.js';
+import { reciboModel } from '../models/cobros/recibo.model.js';
+
 export async function ConnectDB() {
   try {
     console.log('🌐 Conectando a la base de datos PostgreSQL...');
@@ -47,6 +52,12 @@ export async function ConnectDB() {
     // Gestiones
     await gestionModel.sync({ alter: true });
     await periodoModel.sync({ alter: true });
+    //
+    await cobroModel.sync({ alter: true });
+    await cobroAccionModel.sync({ alter: true });
+    await pagoModel.sync({ alter: true });
+    await pagoDetalleModel.sync({ alter: true });
+    await reciboModel.sync({ alter: true });
 
     console.log('✅ Tablas cargadas correctamente');
   } catch (e) {

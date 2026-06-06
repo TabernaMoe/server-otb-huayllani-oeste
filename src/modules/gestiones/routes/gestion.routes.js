@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { GestionController as controller } from './gestion.controller.js';
-import { validateSchema } from '../../middlewares/validateSchema.middlewares.js';
-import { gestionSchema } from './gestion.schema.js';
+import { GestionController as controller } from '../controllers/gestion.controller.js';
+import { validateSchema } from '../../../middlewares/validateSchema.middlewares.js';
+import { gestionSchema } from '../schemas/gestion.schema.js';
 const routes = new Router();
 
 routes
