@@ -90,7 +90,7 @@ accionModel.belongsTo(calleRamalModel, {
   as: 'calleAccion',
   foreignKey: 'calle_id',
 });
-//asd
+//detalles
 accionModel.belongsToMany(detallePagoAccion, {
   as: 'detallesAccion',
   through: accionDetalleModel,

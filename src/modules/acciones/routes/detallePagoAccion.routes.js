@@ -5,19 +5,30 @@ import {
   detallePagoAccionSchema,
   detallePagoAccionUpdateSchema,
 } from '../schema/detallePagoAccion.schema.js';
+import { checkPermiss } from '../../../middlewares/auth.middlewares.js';
 const routes = new Router();
 
 routes
-  .get('/', controller.getAll)
-  .get('/select', controller.getAllSelect)
-  .get('/:id', controller.getId)
-  .post('/', validateSchema(detallePagoAccionSchema), controller.create)
+  .get('/', checkPermiss('acciones.detalle.ver'), controller.getAll)
+  .get('/select', checkPermiss('acciones.detalle.ver'), controller.getAllSelect)
+  .get('/:id', checkPermiss('acciones.detalle.ver'), controller.getId)
+  .post(
+    '/',
+    checkPermiss('acciones.detalle.crear'),
+    validateSchema(detallePagoAccionSchema),
+    controller.create,
+  )
   .patch(
     '/:id',
+    checkPermiss('acciones.detalle.editar'),
     validateSchema(detallePagoAccionUpdateSchema),
     controller.update,
   )
-  .patch('/toggle-status/:id', controller.toggleStatus)
-  .delete('/:id', controller.delete);
+  .patch(
+    '/toggle-status/:id',
+    checkPermiss('acciones.detalle.estado'),
+    controller.toggleStatus,
+  )
+  .delete('/:id', checkPermiss('acciones.detalle.eliminar'), controller.delete);
 
 export default routes;

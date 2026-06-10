@@ -7,86 +7,84 @@ module.exports = {
       //SOCIOS PERMISOS
       {
         nombre_permiso: 'Ver socio',
-        codigo_permiso: 'socios.socio.ver',
+        codigo_permiso: 'socio.ver',
       },
       {
         nombre_permiso: 'Crear Socio',
-        codigo_permiso: 'socios.socio.crear',
+        codigo_permiso: 'socio.crear',
       },
       {
         nombre_permiso: 'Editar Socio',
-        codigo_permiso: 'socios.socio.editar',
+        codigo_permiso: 'socio.editar',
       },
-      {
-        nombre_permiso: 'Eliminar Socio',
-        codigo_permiso: 'socios.socio.eliminar',
-      },
+
       {
         nombre_permiso: 'Estado Socio',
-        codigo_permiso: 'socios.socio.gestionar_estado',
+        codigo_permiso: 'socio.estado',
+      },
+
+      //TARIFA
+      {
+        nombre_permiso: 'Ver tarifa',
+        codigo_permiso: 'tarifa.ver',
       },
       {
-        nombre_permiso: 'Ver socios eliminados',
-        codigo_permiso: 'socios.eliminados.ver',
+        nombre_permiso: 'Crear tarifa',
+        codigo_permiso: 'tarifa.crear',
       },
       {
-        nombre_permiso: 'Restaurar Socios eliminados ',
-        codigo_permiso: 'socios.eliminados.restaurar',
-      },
-      //ACCIONES PERMISOS DETALLES DE PAGO
-      {
-        nombre_permiso: 'Ver detalles de pago acciones',
-        codigo_permiso: 'acciones.detalles.ver',
+        nombre_permiso: 'Editar tarifa',
+        codigo_permiso: 'tarifa.editar',
       },
       {
-        nombre_permiso: 'Crear detalles de pago acciones',
-        codigo_permiso: 'acciones.detalles.crear',
+        nombre_permiso: 'Estado tarifa',
+        codigo_permiso: 'tarifa.estado',
       },
       {
-        nombre_permiso: 'Editar detalles de pago acciones',
-        codigo_permiso: 'acciones.detalles.editar',
-      },
-      {
-        nombre_permiso: 'Eliminar detalles de pago acciones',
-        codigo_permiso: 'acciones.detalles.eliminar',
+        nombre_permiso: 'Eliminar tarifa',
+        codigo_permiso: 'tarifa.eliminar',
       },
       //ACCIONES PERMISOS GESTION DE CALLES
       {
         nombre_permiso: 'Ver calles',
-        codigo_permiso: 'acciones.calles.ver',
+        codigo_permiso: 'calle.ver',
       },
       {
         nombre_permiso: 'Crear calles',
-        codigo_permiso: 'acciones.calles.crear',
+        codigo_permiso: 'calle.crear',
       },
       {
         nombre_permiso: 'Editar calles',
-        codigo_permiso: 'acciones.calles.editar',
+        codigo_permiso: 'calle.editar',
+      },
+      {
+        nombre_permiso: 'Estado calles',
+        codigo_permiso: 'calle.estado',
       },
       {
         nombre_permiso: 'Eliminar calles',
-        codigo_permiso: 'acciones.calles.eliminar',
+        codigo_permiso: 'calle.eliminar',
       },
-      //ACCIONES ACCIONES
+      //aciones detallle
       {
-        nombre_permiso: 'Ver acciones',
-        codigo_permiso: 'acciones.accion.ver',
-      },
-      {
-        nombre_permiso: 'Crear acciones',
-        codigo_permiso: 'acciones.accion.crear',
+        nombre_permiso: 'Ver detalle acciones',
+        codigo_permiso: 'acciones.detalle.ver',
       },
       {
-        nombre_permiso: 'Editar acciones',
-        codigo_permiso: 'acciones.accion.editar',
+        nombre_permiso: 'Crear detalle acciones',
+        codigo_permiso: 'acciones.detalle.crear',
       },
       {
-        nombre_permiso: 'Eliminar acciones',
-        codigo_permiso: 'acciones.accion.eliminar',
+        nombre_permiso: 'Editar detalle acciones',
+        codigo_permiso: 'acciones.detalle.editar',
       },
       {
-        nombre_permiso: 'Cambiar nombre accion',
-        codigo_permiso: 'acciones.accion.cambiar_nombre',
+        nombre_permiso: 'Estado detalle acciones',
+        codigo_permiso: 'acciones.detalle.estado',
+      },
+      {
+        nombre_permiso: 'Eliminar detalle acciones',
+        codigo_permiso: 'acciones.detalle.eliminar',
       },
     ]);
   },
