@@ -211,7 +211,6 @@ export class accionServices {
         payloadAcciones,
         { transaction: t },
       );
-
       //
 
       const peridoActivo = await Validaciones.ObtenerPeriodoActivo({

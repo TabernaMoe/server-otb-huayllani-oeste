@@ -15,7 +15,7 @@ routes
   .post(
     '/',
     checkPermiss('acciones.detalle.crear'),
-    validateSchema(detallePagoAccionSchema),
+    validateSchema(detallePagoAccionSchema),  
     controller.create,
   )
   .patch(

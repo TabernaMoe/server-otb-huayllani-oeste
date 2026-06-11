@@ -4,30 +4,32 @@ import {
   reqInteger,
   reqEstadoAccion,
   reqArrayInteger,
-} from '../../../validators/funcionesZod';
+  reqIntegerSelect,
+} from '../../../validators/funcionesZod.js';
 
 export const accionSchema = z.object({
   socio_id: reqIntegerSelect('Socio'),
   calle_id: reqIntegerSelect('Calle'),
-  acciones: reqArrayInteger(),
-  codigo_interno_accion: reqInteger('Codigo interno', true, 1),
-  nro_medidor_accion: reqInteger('Numero medidor', true, 1),
-  nro_accion: reqInteger('Numero accion', true, 1),
-  direccion_accion: reqString({
+  tarifa_id: reqIntegerSelect('Tarifa'),
+  nro_medidor: reqString({ label: 'Nro medidor', min: 3 }),
+  //
+  direccion: reqString({
     label: 'Dirección',
     min: 5,
     max: 255,
     regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s#\-.,/]+$/,
     regexMessage: 'La dirección contiene caracteres inválidos',
   }),
-  observacion_accion: reqString({
+  observacion: reqString({
     label: 'Dirección',
     min: 5,
     max: 255,
     regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s#\-.,/]+$/,
     regexMessage: 'La dirección contiene caracteres inválidos',
   }),
-  estado_accion: reqEstadoAccion(),
+  estado: reqEstadoAccion(),
+
+  detallesAccion: reqArrayInteger(),
 });
 
 export const accionUpdateSchema = accionSchema.partial();
