@@ -24,6 +24,16 @@ export class peridoController {
       next(e);
     }
   }
+  static async getAllSelect(req, res, next) {
+    try {
+      const data = await services.getAllSelect();
+      return res
+        .status(200)
+        .json({ ok: true, message: 'Periodos obtenidos correctamente', data });
+    } catch (e) {
+      next(e);
+    }
+  }
   static async closePeriodo(req, res, next) {
     try {
       const { id } = req.params;

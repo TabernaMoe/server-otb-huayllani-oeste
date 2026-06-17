@@ -7,7 +7,9 @@ export class AccionController {
       const limit = Number(req.query.limit) || 10;
       const search = Number(req.query.search) || '';
 
-      const result = await services.getAll(page, limit, search);
+      const estado = String(req.query.estado) || undefined;
+
+      const result = await services.getAll(page, limit, search, estado);
 
       return res.status(200).json({
         ok: true,
@@ -51,19 +53,6 @@ export class AccionController {
         ok: true,
         message: 'Accion actuzalizada correctamente',
         dataUpdated,
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-
-  static async toggleStatus(req, res, next) {
-    try {
-      const { id } = req.params;
-      const dataDisabled = await services.toggleStatus(id);
-      return res.status(200).json({
-        ok: true,
-        message: 'Se cambio su estado correctamente',
       });
     } catch (e) {
       next(e);

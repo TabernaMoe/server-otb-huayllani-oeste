@@ -7,4 +7,6 @@ import { CobroController as controller } from './cobro.controller.js';
 const routes = new Router();
 
 routes.get('/', controller.getAll);
+routes.get('/:id', controller.getId);
+
 export default routes;

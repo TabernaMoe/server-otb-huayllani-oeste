@@ -57,6 +57,10 @@ export const pagoDetalleModel = sequelize.define(
       onDelete: 'RESTRICT',
       onUpdate: 'CASCADE',
     },
+    monto: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
   },
   {
     tableName: 'pago_detalle',

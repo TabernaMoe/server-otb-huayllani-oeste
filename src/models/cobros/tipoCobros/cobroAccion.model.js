@@ -61,6 +61,7 @@ accionModel.hasMany(cobroAccionModel, {
 
 cobroAccionModel.belongsTo(accionModel, {
   foreignKey: 'accion_id',
+  as: 'cobroAccion',
 });
 
 cobroModel.hasOne(cobroAccionModel, {

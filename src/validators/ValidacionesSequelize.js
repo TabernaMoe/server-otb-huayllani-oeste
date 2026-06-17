@@ -76,7 +76,7 @@ export class ValidacionesSequelize {
     });
 
     if (detallePagoAccionSearch.length !== detallePagoAccionIds.length) {
-      const err = new Error('Uno o varios detalles de pago no existen');
+      const err = new Error('Uno o varios detalles de accion no existen');
       err.statusCode = 404;
       throw err;
     }

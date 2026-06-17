@@ -27,6 +27,7 @@ export const checkAuth = async (req, res, next) => {
         {
           model: socioModel,
           as: 'socio',
+          attributes: ['id'],
         },
         {
           model: rolModel,
@@ -86,6 +87,8 @@ export const checkAuth = async (req, res, next) => {
         ],
       });
       const usuario = {
+        tipo_usuario: 'NORMAL',
+        id: usuarioSearch?.socio?.id,
         rol: usuarioSearch.rol.nombre_rol,
         ci_socio: usuarioSearch.socio.ci_socio,
         ci_expedido: usuarioSearch.socio.ci_expedido,
@@ -102,6 +105,8 @@ export const checkAuth = async (req, res, next) => {
 
     if (usuarioSearch.rol.nombre_rol === 'super_admin') {
       req.usuario = {
+        id: usuarioSearch.id,
+        tipo_usuario: 'ESPECIAL',
         nombre_usuario: usuarioSearch.nombre_usuario,
         rol: usuarioSearch.rol.nombre_rol,
         token,
@@ -112,6 +117,8 @@ export const checkAuth = async (req, res, next) => {
       (row) => row.codigo_permiso,
     );
     req.usuario = {
+      tipo_usuario: 'ESPECIAL',
+      id: usuarioSearch.id,
       nombre_usuario: usuarioSearch.nombre_usuario,
       rol: usuarioSearch.rol.nombre_rol,
       permisos: codigoPermisos,

@@ -1,4 +1,4 @@
-import { col, Op } from 'sequelize';
+import { col, fn, literal, Op } from 'sequelize';
 import { sequelize } from '../../../config/database.js';
 import { accionModel } from '../../../models/accion/accion.model.js';
 import { accionDetalleModel } from '../../../models/accion/accionDetalle.model.js';
@@ -76,10 +76,24 @@ export class accionServices {
 
     const { count, rows } = await accionModel.findAndCountAll({
       attributes: {
+        exclude: [
+          'socio_id',
+          'calle_id',
+          'tarifa_id',
+          'createdAt',
+          'updatedAt',
+        ],
         include: [
-          [col('socioAccion.nombres'), 'nombres'],
-          [col('socioAccion.primer_apellido'), 'primer_apellido'],
-          [col('socioAccion.segundo_apellido'), 'segundo_apellido'],
+          [
+            fn(
+              'CONCAT_WS',
+              ' ',
+              col(`socioAccion.nombres`),
+              col(`socioAccion.primer_apellido`),
+              col(`socioAccion.segundo_apellido`),
+            ),
+            'nombre_completo',
+          ],
           [col('calleAccion.nombre_calle'), 'nombre_calle'],
           [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
         ],
@@ -119,6 +133,7 @@ export class accionServices {
   }
   static async getId(id) {
     const dataId = await accionModel.findByPk(id, {
+      attributes: { exclude: ['createdAt', 'updatedAt'] },
       include: [
         {
           model: detallePagoAccion,
@@ -130,12 +145,18 @@ export class accionServices {
         },
       ],
     });
-    if (!dataId) {
-      const err = new Error('No se encotro la accion');
-      err.statusCode = 404;
-      throw err;
-    }
-    return dataId;
+
+    const dataPlano = dataId.toJSON();
+
+    const detalleAccioneIds =
+      dataPlano.detallesAccion?.map((row) => Number(row.id)) || [];
+
+    const dataNormalizado = {
+      ...dataPlano,
+      detallesAccion: detalleAccioneIds,
+    };
+
+    return dataNormalizado;
   }
   static async create(payload) {
     const create = await sequelize.transaction(async (t) => {
@@ -458,17 +479,5 @@ export class accionServices {
       return dataId;
     });
     return update;
-  }
-  static async toggleStatus(id) {
-    const dataSearch = await accionModel.findByPk(id);
-    if (!dataSearch) {
-      const err = new Error('La accion no existe');
-      err.statusCode = 404;
-      throw err;
-    }
-    dataSearch.estado = 'ANULADO';
-
-    await dataSearch.save();
-    return;
   }
 }

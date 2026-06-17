@@ -2,6 +2,7 @@ import { Op, Sequelize } from 'sequelize';
 import { gestionModel } from '../../../models/gestiones/gestion.model.js';
 import { periodoModel } from '../../../models/gestiones/periodo.model.js';
 import { sequelize } from '../../../config/database.js';
+import { fechaFormateada } from '../../../helpers/helpers.js';
 
 export class periodoServices {
   static async getAll(page = 1, limit = 10, search = '') {
@@ -29,6 +30,7 @@ export class periodoServices {
       where.mes = { [Op.iLike]: `%${search}%` };
     }
     const { count, rows } = await periodoModel.findAndCountAll({
+      attributes: { exclude: ['createdAt', 'updatedAt', 'gestion_id'] },
       where,
       limit,
       offset,
@@ -36,13 +38,32 @@ export class periodoServices {
       distinct: true,
     });
 
+    const rowNor = rows.map((row) => ({
+      ...row.toJSON(),
+      fecha_inicio: fechaFormateada(row.fecha_inicio),
+      fecha_fin: fechaFormateada(row.fecha_fin),
+      fecha_cierre: fechaFormateada(row.fecha_cierre),
+    }));
+
     return {
       total: count,
       page,
       limit,
       totalPages: Math.ceil(count / limit),
-      data: rows,
+      data: rowNor,
     };
+  }
+  static async getAllSelect() {
+    const data = await periodoModel.findAll({
+      attributes: ['id', 'mes'],
+      order: [['numero_mes', 'ASC']],
+    });
+
+    const dataNorm = data.map((row) => ({
+      value: row.id,
+      label: row.mes,
+    }));
+    return dataNorm;
   }
   static async closePeriodo(id) {
     const closeData = await sequelize.transaction(async (t) => {

@@ -86,6 +86,19 @@ module.exports = {
         nombre_permiso: 'Eliminar detalle acciones',
         codigo_permiso: 'acciones.detalle.eliminar',
       },
+      //Accion 16-06-2026
+      {
+        nombre_permiso: 'Ver accion',
+        codigo_permiso: 'acciones.accion.ver',
+      },
+      {
+        nombre_permiso: 'Crear accion',
+        codigo_permiso: 'acciones.accion.crear',
+      },
+      {
+        nombre_permiso: 'Editar accion',
+        codigo_permiso: 'acciones.accion.editar',
+      },
     ]);
   },
 

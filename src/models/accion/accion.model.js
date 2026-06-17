@@ -48,7 +48,7 @@ export const accionModel = sequelize.define(
       allowNull: false,
     },
     nro_medidor: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },

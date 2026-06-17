@@ -122,4 +122,59 @@ export class LoginServices {
       token,
     };
   }
+  static async updateMe(id, payload, tipo_usuario) {
+    if (tipo_usuario === 'ESPECIAL') {
+      const { contrasenia_antigua, contrasenia_nueva } = payload;
+
+      const userSearch = await usuarioModel.findByPk(id);
+      if (!userSearch) {
+        const err = new Error('No se encotro el usuario');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      const isValido = await bcrypt.compare(
+        contrasenia_antigua,
+        userSearch.contrasenia_usuario,
+      );
+
+      if (!isValido) {
+        const err = new Error('Contraseña actual incorrecta');
+        throw err;
+      }
+
+      await userSearch.update({ contrasenia_usuario: contrasenia_nueva });
+      return;
+    } else {
+      const { contrasenia_antigua, contrasenia_nueva } = payload;
+
+      const socioSearch = await socioModel.findByPk(id);
+
+      if (!socioSearch) {
+        const err = new Error('Socio no encontrado');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      const userSearch = await usuarioModel.findByPk(socioSearch.user_id);
+      if (!userSearch) {
+        const err = new Error('No se encotro el usuario');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      const isValido = await bcrypt.compare(
+        contrasenia_antigua,
+        userSearch.contrasenia_usuario,
+      );
+
+      if (!isValido) {
+        const err = new Error('Contraseña actual incorrecta');
+        throw err;
+      }
+
+      await userSearch.update({ contrasenia_usuario: contrasenia_nueva });
+      return;
+    }
+  }
 }
