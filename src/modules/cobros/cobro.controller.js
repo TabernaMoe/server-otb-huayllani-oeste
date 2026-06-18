@@ -43,4 +43,17 @@ export class CobroController {
       next(e);
     }
   }
+  static async pagarAdmin(req, res, next) {
+    try {
+      const payload = req.body;
+
+      const data = await services.pagarAdmin(payload);
+
+      return res
+        .status(200)
+        .json({ ok: true, message: 'Pago registrado correctamente', ...data });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

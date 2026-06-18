@@ -364,3 +364,16 @@ export const reqYear = (
 
   return schema;
 };
+
+export const reqMetodoPago = (label = 'Estado', required = true) => {
+  let schema = z.enum(['QR', 'EFECTIVO'], {
+    required_error: `Debe seleccionar ${label.toLowerCase()}`,
+    invalid_type_error: `Debe seleccionar ${label.toLowerCase()}`,
+  });
+
+  if (!required) {
+    schema = schema.optional();
+  }
+
+  return schema;
+};
