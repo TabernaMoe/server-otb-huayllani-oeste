@@ -65,7 +65,7 @@ export class RolServices {
         {
           model: permisoModel,
           as: 'permisos',
-          attributes: ['codigo_permiso'],
+          attributes: ['id'],
           through: {
             attributes: [],
           },
@@ -77,7 +77,11 @@ export class RolServices {
       err.statuCode = 404;
       throw err;
     }
-    return data;
+
+    const permisos = data?.permisos;
+
+    const permisosNorM = permisos?.map((row) => Number(row.id));
+    return { ...data.toJSON(), permisos: permisosNorM };
   }
   static async create(payload) {
     const created = await sequelize.transaction(async (t) => {

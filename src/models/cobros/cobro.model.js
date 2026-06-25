@@ -33,7 +33,14 @@ export const cobroModel = sequelize.define(
       onDelete: 'RESTRICT',
     },
     tipo_cobro: {
-      type: DataTypes.ENUM('ACCION', 'CAMBIO_NOMBRE_ACCION', 'OTRO'),
+      type: DataTypes.ENUM(
+        'ACCION',
+        'CAMBIO_NOMBRE_ACCION',
+        'LECTURA_AGUA',
+        'MANTENIMIETNO',
+        'REUNION',
+        'OTRO',
+      ),
     },
     concepto: {
       type: DataTypes.STRING,

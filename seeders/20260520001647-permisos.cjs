@@ -99,6 +99,15 @@ module.exports = {
         nombre_permiso: 'Editar accion',
         codigo_permiso: 'acciones.accion.editar',
       },
+      //cobros 17-06-2026
+      {
+        nombre_permiso: 'Ver cobro',
+        codigo_permiso: 'cobro.ver',
+      },
+      {
+        nombre_permiso: 'pagar cobro',
+        codigo_permiso: 'cobro.pagar',
+      },
     ]);
   },
 

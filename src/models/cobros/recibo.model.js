@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
+import { pagoModel } from './pago.model.js';
 
 export const reciboModel = sequelize.define(
   'recibos',
@@ -19,17 +20,17 @@ export const reciboModel = sequelize.define(
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
-    monto_pagado: {
-      type: DataTypes.DECIMAL(10, 2),
+    numero_recibo: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
-    metodo_pago: {
-      type: DataTypes.ENUM('QR', 'EFECTIVO'),
-      allowNull: false,
-    },
-    fecha_pago: {
+    fecha_emision: {
       type: DataTypes.DATE,
       allowNull: DataTypes.NOW,
+    },
+    estado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   },
   {
@@ -37,3 +38,12 @@ export const reciboModel = sequelize.define(
     timestamps: true,
   },
 );
+
+pagoModel.hasOne(reciboModel, {
+  as: 'recibo',
+  foreignKey: 'pago_id',
+});
+reciboModel.belongsTo(pagoModel, {
+  as: 'pago',
+  foreignKey: 'pago_id',
+});

@@ -291,12 +291,18 @@ export class CobroServices {
         detalles.push(detalle);
       }
 
+      const [result] = await sequelize.query(
+        "SELECT nextval('recibo_seq') as numero",
+        { transaction: t },
+      );
+
+      const numeroRecibo = result[0].numero;
+
       const reciboCreated = await reciboModel.create(
         {
           pago_id: pagoCreated.id,
-          monto_pagado: montoPago,
-          fecha_pago: new Date(),
-          metodo_pago: 'EFECTIVO',
+          numero_recibo: numeroRecibo,
+          fecha_emision: new Date(),
         },
         { transaction: t },
       );
