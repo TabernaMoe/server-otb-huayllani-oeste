@@ -140,6 +140,9 @@ export class LecturaServices {
       data: rows,
     };
   }
+
+  static async getAllDetalles(id_accion, page = 1, limit = 10, search = '') {}
+
   static async getId(accion_id) {
     const data = await accionModel.findByPk(accion_id, {
       attributes: {
@@ -514,6 +517,7 @@ export class LecturaServices {
 
       const lecturaReload = await lecturaAguaModel.findByPk(createdLectura.id, {
         include: [{ model: cambioMedidor, as: 'cambioMedidor' }],
+        transaction: t,
       });
 
       return lecturaReload;
