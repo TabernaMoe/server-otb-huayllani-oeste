@@ -7,6 +7,8 @@ import socioRoutes from '../modules/socios/socio.routes.js';
 import accionRoutes from '../modules/acciones/routes/index.routes.js';
 import gestionRoutes from '../modules/gestiones/routes/index.routes.js';
 import cobroRoutes from '../modules/cobros/cobro.routes.js';
+//
+import lecturaRoutes from '../modules/lecturas/lectura.routes.js';
 
 const routes = new Router();
 
@@ -17,6 +19,7 @@ routes
   .use('/socio', socioRoutes)
   .use('/accion', accionRoutes)
   .use('/gestion', gestionRoutes)
-  .use('/cobro', cobroRoutes);
+  .use('/cobro', cobroRoutes)
+  .use('/lectura', lecturaRoutes);
 
 export default routes;

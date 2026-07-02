@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { generarReciboPDF } from './prueba.controller.js';
+import { generarReciboPDF } from '../../helpers/GenerarReciboPDF.js';
 
 const routes = new Router();
 

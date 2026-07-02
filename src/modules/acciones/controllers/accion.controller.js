@@ -7,7 +7,11 @@ export class AccionController {
       const limit = Number(req.query.limit) || 10;
       const search = Number(req.query.search) || '';
 
-      const estado = String(req.query.estado) || undefined;
+      let estado = String(req.query.estado) || undefined;
+
+      if (estado == 'undefined') {
+        estado = undefined;
+      }
 
       const result = await services.getAll(page, limit, search, estado);
 

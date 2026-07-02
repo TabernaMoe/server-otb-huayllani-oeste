@@ -108,6 +108,24 @@ module.exports = {
         nombre_permiso: 'pagar cobro',
         codigo_permiso: 'cobro.pagar',
       },
+      //lecutrar
+
+      {
+        nombre_permiso: 'Ver lectura',
+        codigo_permiso: 'lectura.ver',
+      },
+      {
+        nombre_permiso: 'Crear lectura',
+        codigo_permiso: 'lectura.crear',
+      },
+      {
+        nombre_permiso: 'Editar lectura',
+        codigo_permiso: 'lectura.editar',
+      },
+      {
+        nombre_permiso: 'Cambio lectura',
+        codigo_permiso: 'lectura.cambio',
+      },
     ]);
   },
 

@@ -6,7 +6,7 @@ import { periodoModel } from '../gestiones/periodo.model.js';
 export const lecturaAguaModel = sequelize.define(
   'lecturas',
   {
-    id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     accion_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -39,13 +39,13 @@ export const lecturaAguaModel = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    estado: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-    },
     observacion: {
       type: DataTypes.STRING,
       defaultValue: 'Sin observaciones',
+    },
+    estado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   },
   {
