@@ -141,8 +141,6 @@ export class LecturaServices {
     };
   }
 
-  static async getAllDetalles(id_accion, page = 1, limit = 10, search = '') {}
-
   static async getId(accion_id) {
     const data = await accionModel.findByPk(accion_id, {
       attributes: {
@@ -198,6 +196,7 @@ export class LecturaServices {
     }
     return data;
   }
+
   static async create(accion_id, payload) {
     return await sequelize.transaction(async (t) => {
       const { lectura_actual, observacion } = payload;
