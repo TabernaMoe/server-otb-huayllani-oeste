@@ -60,7 +60,7 @@ export const cobroAguaModel = sequelize.define(
       allowNull: false,
     },
     estado: {
-      type: DataTypes.ENUM('PENDIENTE', 'PAGADO', 'ANULADO'),
+      type: DataTypes.ENUM('PENDIENTE', 'PARCIAL', 'PAGADO', 'ANULADO'),
       defaultValue: 'PENDIENTE',
     },
     fecha_emision: {

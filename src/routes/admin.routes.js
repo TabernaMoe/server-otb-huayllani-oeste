@@ -9,6 +9,7 @@ import gestionRoutes from '../modules/gestiones/routes/index.routes.js';
 import cobroRoutes from '../modules/cobros/cobro.routes.js';
 //
 import lecturaRoutes from '../modules/lecturas/lectura.routes.js';
+import cobroAguaRoutes from '../modules/cobrosAgua/cobrosAgua.routes.js';
 
 const routes = new Router();
 
@@ -20,6 +21,7 @@ routes
   .use('/accion', accionRoutes)
   .use('/gestion', gestionRoutes)
   .use('/cobro', cobroRoutes)
-  .use('/lectura', lecturaRoutes);
+  .use('/lectura', lecturaRoutes)
+  .use('/pago-agua', cobroAguaRoutes);
 
 export default routes;
