@@ -1,11 +1,16 @@
-import { col, fn, Op, Sequelize } from 'sequelize';
-import { accionModel } from '../../models/accion/accion.model.js';
-import { cobroModel } from '../../models/cobros/cobro.model.js';
-import { pagoDetalleModel, pagoModel } from '../../models/cobros/pago.model.js';
-import { reciboModel } from '../../models/cobros/recibo.model.js';
-import { socioModel } from '../../models/socio.model.js';
-import { periodoModel } from '../../models/gestiones/periodo.model.js';
 import { sequelize } from '../../config/database.js';
+import { col, fn, Op, Sequelize } from 'sequelize';
+//
+import { cobroAguaModel } from '../../models/cobroAgua/cobroAgua.model.js';
+import { pagoAguaModel } from '../../models/cobroAgua/pagoAgua.model.js';
+import { reciboAguaModel } from '../../models/cobroAgua/recibo.mode.js';
+//
+import { periodoModel } from '../../models/gestiones/periodo.model.js';
+//
+import { socioModel } from '../../models/socio.model.js';
+import { accionModel } from '../../models/accion/accion.model.js';
+import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
+import { calleRamalModel } from '../../models/calleRamal.model.js';
 
 export class CobroServices {
   static async getAll(page = 1, limit = 10, search = '', estado = true) {
@@ -121,7 +126,7 @@ export class CobroServices {
       data: rowNor,
     };
   }
-  static async getId(id) {
+  static async getId(socio_id) {
     const dataId = await socioModel.findByPk(id, {
       attributes: [
         'ci_socio',
@@ -143,8 +148,8 @@ export class CobroServices {
 
       include: [
         {
-          model: cobroModel,
-          as: 'cobrosSocio',
+          model: cobroAguaModel,
+          as: 'cobrosAgua',
           attributes: [
             'id',
             'tipo_cobro',
@@ -164,32 +169,19 @@ export class CobroServices {
         },
       ],
     });
-
     if (dataId) {
       throw new Error('No se encontro la accion');
     }
-
-    return dataId;
   }
-  static async pagarAdmin(payload) {
+  static async pagarAdmin(socio_id, payload) {
     return await sequelize.transaction(async (t) => {
-      const {
-        socio_id,
-        monto,
-        cobros = [],
-        metodo_pago = 'EFECTIVO',
-      } = payload;
+      const { monto, cobro_agua_id, metodo_pago = 'QR' } = payload;
 
       const montoPago = Number(monto);
 
       if (!socio_id) {
         throw new Error('Debe enviar el socio');
       }
-
-      if (!Array.isArray(cobros) || cobros.length === 0) {
-        throw new Error('Debe seleccionar al menos un cobro');
-      }
-
       if (!montoPago || montoPago <= 0) {
         throw new Error('El monto debe ser mayor a 0');
       }
@@ -203,119 +195,22 @@ export class CobroServices {
         throw err;
       }
 
-      const cobroIds = cobros.map((item) =>
-        typeof item === 'object' ? item.cobro_id : item,
-      );
-
-      const cobrosDB = await cobroModel.findAll({
-        where: {
-          id: { [Op.in]: cobroIds },
-          socio_id,
-          estado: { [Op.in]: ['PENDIENTE', 'PARCIAL'] },
-        },
+      const cobroSearch = await cobroAguaModel.findByPk(cobro_agua_id, {
         transaction: t,
-        lock: t.LOCK.UPDATE,
       });
+      if (cobroSearch) {
+        const err = new Error('No se encontro cobro');
+        err.statuscode = 404;
+        throw err;
+      }
 
-      if (cobrosDB.length !== cobroIds.length) {
+      const montoPagoValidado = cobroSearch?.monto_total - montoPago;
+      if (montoPagoValidado <= 100) {
         throw new Error(
-          'Algunos cobros no existen, no pertenecen al socio o ya están pagados',
+          'Los pagos menores a 100 solo tienen la opcion de pago unico',
         );
       }
-
-      const totalPendiente = cobrosDB.reduce((total, cobro) => {
-        return total + Number(cobro.saldo || 0);
-      }, 0);
-
-      if (cobrosDB.length === 1) {
-        if (montoPago > totalPendiente) {
-          throw new Error(
-            `El monto no puede ser mayor al saldo del cobro. Saldo actual: ${totalPendiente}`,
-          );
-        } else {
-          if (montoPago !== totalPendiente && montoPago < 100) {
-            throw new Error(
-              `El monto minimo para pagar a plazos es 100bs. Saldo acual: ${totalPendiente}`,
-            );
-          }
-        }
-      } else {
-        if (montoPago !== totalPendiente) {
-          throw new Error(
-            `Para pagar varios cobros debe pagar el total exacto: ${totalPendiente}`,
-          );
-        }
-      }
-
-      const pagoCreated = await pagoModel.create(
-        {
-          monto_pagado: montoPago,
-          metodo_pago,
-          fecha_pago: new Date(),
-        },
-        { transaction: t },
-      );
-
-      const detalles = [];
-
-      for (const cobro of cobrosDB) {
-        const saldoActual = Number(cobro.saldo || 0);
-
-        let montoAplicado = saldoActual;
-
-        if (cobrosDB.length === 1) {
-          montoAplicado = montoPago;
-        }
-
-        const nuevoMontoPagado =
-          Number(cobro.monto_pagado || 0) + montoAplicado;
-
-        const nuevoSaldo = saldoActual - montoAplicado;
-
-        const nuevoEstado = nuevoSaldo === 0 ? 'PAGADO' : 'PARCIAL';
-
-        await cobro.update(
-          {
-            monto_pagado: nuevoMontoPagado,
-            saldo: nuevoSaldo,
-            estado: nuevoEstado,
-          },
-          { transaction: t },
-        );
-
-        const detalle = await pagoDetalleModel.create(
-          {
-            cobro_id: cobro.id,
-            pago_id: pagoCreated.id,
-            monto: montoAplicado,
-          },
-          { transaction: t },
-        );
-
-        detalles.push(detalle);
-      }
-
-      const [result] = await sequelize.query(
-        "SELECT nextval('recibo_seq') as numero",
-        { transaction: t },
-      );
-
-      const numeroRecibo = result[0].numero;
-
-      const reciboCreated = await reciboModel.create(
-        {
-          pago_id: pagoCreated.id,
-          numero_recibo: numeroRecibo,
-          fecha_emision: new Date(),
-        },
-        { transaction: t },
-      );
-
-      return {
-        pago: pagoCreated,
-        recibo: reciboCreated,
-        detalle: detalles,
-      };
+      
     });
   }
 }

@@ -1,16 +1,23 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
-import { socioModel } from '../socio.model.js';
+import { accionModel } from '../accion/accion.model.js';
 import { periodoModel } from '../gestiones/periodo.model.js';
+import { socioModel } from '../socio.model.js';
+import { lecturaAguaModel } from '../lecturasAgua/lecturasAgua.model.js';
 
-export const cobroModel = sequelize.define(
-  'cobros',
+export const cobroAguaModel = sequelize.define(
+  'cobro_agua',
   {
-    id: {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    lectura_id: {
       type: DataTypes.BIGINT,
-      primaryKey: true,
-      autoIncrement: true,
       allowNull: false,
+      references: {
+        model: 'lecturas_agua',
+        key: 'id',
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'CASCADE',
     },
     socio_id: {
       type: DataTypes.BIGINT,
@@ -31,15 +38,6 @@ export const cobroModel = sequelize.define(
       },
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
-    },
-    tipo_cobro: {
-      type: DataTypes.ENUM(
-        'ACCION',
-        'CAMBIO_NOMBRE_ACCION',
-        'MANTENIMIENTO',
-        'ASAMBLEA',
-        'OTRO',
-      ),
     },
     concepto: {
       type: DataTypes.STRING,
@@ -62,7 +60,7 @@ export const cobroModel = sequelize.define(
       allowNull: false,
     },
     estado: {
-      type: DataTypes.ENUM('PENDIENTE', 'PAGADO', 'PARCIAL', 'ANULADO'),
+      type: DataTypes.ENUM('PENDIENTE', 'PAGADO', 'ANULADO'),
       defaultValue: 'PENDIENTE',
     },
     fecha_emision: {
@@ -71,28 +69,32 @@ export const cobroModel = sequelize.define(
     },
   },
   {
-    tableName: 'cobros',
+    tableName: 'cobro_agua',
     timestamps: true,
   },
 );
 
-socioModel.hasMany(cobroModel, {
-  as: 'cobrosSocio',
+socioModel.hasMany(cobroAguaModel, {
+  as: 'cobrosAgua',
   foreignKey: 'socio_id',
 });
-
-cobroModel.belongsTo(socioModel, {
-  as: 'socioCobro',
+cobroAguaModel.belongsTo(socioModel, {
+  as: 'socioAgua',
   foreignKey: 'socio_id',
 });
-
-//
-
-periodoModel.hasMany(cobroModel, {
-  as: 'cobros',
+periodoModel.hasMany(cobroAguaModel, {
+  as: 'cobrosAguaPeriodo',
   foreignKey: 'periodo_id',
 });
-cobroModel.belongsTo(periodoModel, {
-  as: 'periodo',
+cobroAguaModel.belongsTo(periodoModel, {
+  as: 'cobroPeriodoAgua',
   foreignKey: 'periodo_id',
+});
+lecturaAguaModel.hasOne(cobroAguaModel, {
+  as: 'cobroAgua',
+  foreignKey: 'lectura_id',
+});
+cobroAguaModel.belongsTo(lecturaAguaModel, {
+  as: 'aguaCobro',
+  foreignKey: 'id',
 });

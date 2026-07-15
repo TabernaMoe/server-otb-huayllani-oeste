@@ -6,9 +6,11 @@ import { id } from 'zod/locales';
 import { sequelize } from '../../config/database.js';
 import { ValidacionesSequelize as validaciones } from '../../validators/ValidacionesSequelize.js';
 //
-import { cobroAguaModel } from '../../models/cobros/tipoCobros/cobroAgua.model.js';
 //
-import { cobroModel } from '../../models/cobros/cobro.model.js';
+import { cobroAguaModel } from '../../models/cobroAgua/cobroAgua.model.js';
+import { pagoAguaModel } from '../../models/cobroAgua/pagoAgua.model.js';
+import { reciboAguaModel } from '../../models/cobroAgua/recibo.mode.js';
+
 //
 import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
 import { rangoTarifaModel } from '../../models/tarifa/rango.model.js';
@@ -17,7 +19,7 @@ import { detallePagoAccion } from '../../models/accion/detallePagoAccion.model.j
 import { calleRamalModel } from '../../models/calleRamal.model.js';
 
 export class LecturaServices {
-  static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
+  static async getAll(page = 1, limit = 10, search = '', estado = 'ACTIVO') {
     page = Number(page) || 1;
     limit = Number(limit) || 10;
 
@@ -120,6 +122,13 @@ export class LecturaServices {
         {
           model: lecturaAguaModel,
           as: 'lecturas',
+          attributes: [
+            'lectura_anterior',
+            'lectura_actual',
+            'consumo_m3',
+            'precio',
+            'periodo',
+          ],
           separate: true,
           limit: 1,
           order: [['id', 'DESC']],
@@ -140,7 +149,6 @@ export class LecturaServices {
       data: rows,
     };
   }
-
   static async getId(accion_id) {
     const data = await accionModel.findByPk(accion_id, {
       attributes: {
@@ -183,6 +191,14 @@ export class LecturaServices {
         {
           model: lecturaAguaModel,
           as: 'lecturas',
+          attributes: [
+            'lectura_anterior',
+            'lectura_actual',
+            'consumo_m3',
+            'precio',
+            'periodo',
+            'observacion',
+          ],
           separate: true,
           limit: 1,
           order: [['id', 'DESC']],
@@ -196,7 +212,69 @@ export class LecturaServices {
     }
     return data;
   }
-
+  static async hitoryId(accion_id) {
+    const data = await accionModel.findByPk(accion_id, {
+      attributes: {
+        exclude: [
+          'socio_id',
+          'calle_id',
+          'tarifa_id',
+          'createdAt',
+          'updatedAt',
+        ],
+        include: [
+          [
+            fn(
+              'CONCAT_WS',
+              ' ',
+              col('socioAccion.nombres'),
+              col('socioAccion.primer_apellido'),
+              col('socioAccion.segundo_apellido'),
+            ),
+            'nombre_completo',
+          ],
+          [col('calleAccion.nombre_calle'), 'nombre_calle'],
+          [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
+        ],
+      },
+      include: [
+        { model: socioModel, as: 'socioAccion', attributes: [] },
+        { model: calleRamalModel, as: 'calleAccion', attributes: [] },
+        {
+          model: tarifaModel,
+          as: 'tarifaAccion',
+          attributes: [],
+        },
+        {
+          model: detallePagoAccion,
+          as: 'detallesAccion',
+          attributes: [],
+          through: { attributes: [] },
+        },
+        {
+          model: lecturaAguaModel,
+          as: 'lecturas',
+          attributes: [
+            'lectura_anterior',
+            'lectura_actual',
+            'consumo_m3',
+            'precio',
+            'periodo',
+            'observacion',
+          ],
+          // separate: true,
+          // limit: 1,
+          // order: [['id', 'DESC']],
+        },
+      ],
+    });
+    if (!data) {
+      const err = new Error('No se encontro la accion');
+      err.statusCode = 404;
+      throw err;
+    }
+    return data;
+  }
   static async create(accion_id, payload) {
     return await sequelize.transaction(async (t) => {
       const { lectura_actual, observacion } = payload;
@@ -219,6 +297,18 @@ export class LecturaServices {
 
       const periodoActivo = await validaciones.ObtenerPeriodoActivo(t);
 
+      const lecturaPeriodo = await lecturaAguaModel.findOne({
+        where: {
+          periodo_id: periodoActivo.id,
+          accion_id: accionSearch.id,
+        },
+        order: [['id', 'DESC']],
+        transaction: t,
+      });
+
+      if (Number(lecturaPeriodo?.lectura_actual) > 0 && lecturaPeriodo) {
+        throw new Error('Ya existe una lectura para el periodo actual');
+      }
       const lecturaAnterior = ultimaLectura
         ? Number(ultimaLectura.lectura_actual)
         : 0;
@@ -246,18 +336,6 @@ export class LecturaServices {
         err.statusCode = 400;
         throw err;
       }
-
-      const createdLectura = await lecturaAguaModel.create(
-        {
-          accion_id: accionSearch.id,
-          periodo_id: periodoActivo.id,
-          lectura_anterior: lecturaAnterior,
-          lectura_actual: Number(lectura_actual),
-          consumo_m3: consumoM3,
-          observacion,
-        },
-        { transaction: t },
-      );
 
       const tarifaSearch = await tarifaModel.findByPk(accionSearch.tarifa_id, {
         include: [
@@ -294,8 +372,23 @@ export class LecturaServices {
         consumoRestante -= consumoCobrado;
       }
 
-      const cobroCreated = await cobroModel.create(
+      const createdLectura = await lecturaAguaModel.create(
         {
+          accion_id: accionSearch.id,
+          periodo_id: periodoActivo.id,
+          lectura_anterior: lecturaAnterior,
+          lectura_actual: Number(lectura_actual),
+          consumo_m3: consumoM3,
+          precio: total_pagar,
+          periodo: periodoActivo.mes,
+          observacion,
+        },
+        { transaction: t },
+      );
+
+      const cobroCreated = await cobroAguaModel.create(
+        {
+          lectura_id: createdLectura.id,
           socio_id: accionSearch.socio_id,
           periodo_id: periodoActivo.id,
           tipo_cobro: 'LECTURA_AGUA',
@@ -303,16 +396,6 @@ export class LecturaServices {
           descripcion: `LECTURA DEL MES ${periodoActivo.mes}`,
           monto_total: total_pagar,
           saldo: total_pagar,
-        },
-        { transaction: t },
-      );
-
-      await cobroAguaModel.create(
-        {
-          lectura_agua_id: createdLectura.id,
-          cobro_id: cobroCreated.id,
-          consumo_m3: consumoM3,
-          total_pagar,
         },
         { transaction: t },
       );
@@ -377,16 +460,6 @@ export class LecturaServices {
         throw err;
       }
 
-      await lectura.update(
-        {
-          lectura_anterior: lecturaAnterior,
-          lectura_actual: Number(lectura_actual),
-          consumo_m3: consumoM3,
-          observacion,
-        },
-        { transaction: t },
-      );
-
       const tarifaSearch = await tarifaModel.findByPk(accionSearch.tarifa_id, {
         include: [
           {
@@ -416,8 +489,19 @@ export class LecturaServices {
         consumoRestante -= consumoCobrado;
       }
 
+      await lectura.update(
+        {
+          lectura_anterior: lecturaAnterior,
+          lectura_actual: Number(lectura_actual),
+          consumo_m3: consumoM3,
+          precio: total_pagar,
+          observacion,
+        },
+        { transaction: t },
+      );
+
       const cobroAgua = await cobroAguaModel.findOne({
-        where: { lectura_agua_id: lectura.id },
+        where: { lectura_id: lectura.id },
         transaction: t,
       });
 
@@ -428,24 +512,6 @@ export class LecturaServices {
       }
 
       await cobroAgua.update(
-        {
-          consumo_m3: consumoM3,
-          total_pagar,
-        },
-        { transaction: t },
-      );
-
-      const cobro = await cobroModel.findByPk(cobroAgua.cobro_id, {
-        transaction: t,
-      });
-
-      if (!cobro) {
-        const err = new Error('No se encontró el cobro');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      await cobro.update(
         {
           monto_total: total_pagar,
           saldo: total_pagar,
@@ -499,6 +565,8 @@ export class LecturaServices {
           lectura_anterior: lecturaAnterior,
           lectura_actual: 0,
           consumo_m3: consumoM3,
+          periodo: periodoActivo.mes,
+          precio: 0,
           observacion: observacion || 'Cambio de medidor',
         },
         { transaction: t },

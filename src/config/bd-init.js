@@ -25,10 +25,13 @@ import { cobroModel } from '../models/cobros/cobro.model.js';
 import { cobroAccionModel } from '../models/cobros/tipoCobros/cobroAccion.model.js';
 import { pagoDetalleModel, pagoModel } from '../models/cobros/pago.model.js';
 import { reciboModel } from '../models/cobros/recibo.model.js';
+//cobro agua
+import { cobroAguaModel } from '../models/cobroAgua/cobroAgua.model.js';
+import { pagoAguaModel } from '../models/cobroAgua/pagoAgua.model.js';
+import { reciboAguaModel } from '../models/cobroAgua/recibo.mode.js';
 //lectura
 import { lecturaAguaModel } from '../models/lecturasAgua/lecturasAgua.model.js';
 import { cambioMedidor } from '../models/lecturasAgua/cambioMedidor.model.js';
-import { cobroAguaModel } from '../models/cobros/tipoCobros/cobroAgua.model.js';
 
 export async function ConnectDB() {
   try {
@@ -62,10 +65,15 @@ export async function ConnectDB() {
     await pagoModel.sync({ alter: true });
     await pagoDetalleModel.sync({ alter: true });
     await reciboModel.sync({ alter: true });
+    //primera ejecucion force y lugeo alter
+
     //
     await lecturaAguaModel.sync({ alter: true });
     await cambioMedidor.sync({ alter: true });
+    //
     await cobroAguaModel.sync({ alter: true });
+    await pagoAguaModel.sync({ alter: true });
+    await reciboAguaModel.sync({ alter: true });
 
     console.log('✅ Tablas cargadas correctamente');
   } catch (e) {

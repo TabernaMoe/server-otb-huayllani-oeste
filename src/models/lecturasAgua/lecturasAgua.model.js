@@ -39,6 +39,14 @@ export const lecturaAguaModel = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    precio: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
+    periodo: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     observacion: {
       type: DataTypes.STRING,
       defaultValue: 'Sin observaciones',
@@ -65,7 +73,7 @@ lecturaAguaModel.belongsTo(accionModel, {
 });
 //
 
-periodoModel.hasOne(lecturaAguaModel, {
+periodoModel.hasMany(lecturaAguaModel, {
   as: 'peridoLecutra',
   foreignKey: 'periodo_id',
 });
