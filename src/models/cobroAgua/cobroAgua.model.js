@@ -19,6 +19,16 @@ export const cobroAguaModel = sequelize.define(
       onDelete: 'RESTRICT',
       onUpdate: 'CASCADE',
     },
+    accion_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'acciones',
+        key: 'id',
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'CASCADE',
+    },
     socio_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -73,7 +83,7 @@ export const cobroAguaModel = sequelize.define(
     timestamps: true,
   },
 );
-
+//
 socioModel.hasMany(cobroAguaModel, {
   as: 'cobrosAgua',
   foreignKey: 'socio_id',
@@ -82,6 +92,7 @@ cobroAguaModel.belongsTo(socioModel, {
   as: 'socioAgua',
   foreignKey: 'socio_id',
 });
+//
 periodoModel.hasMany(cobroAguaModel, {
   as: 'cobrosAguaPeriodo',
   foreignKey: 'periodo_id',
@@ -90,6 +101,7 @@ cobroAguaModel.belongsTo(periodoModel, {
   as: 'cobroPeriodoAgua',
   foreignKey: 'periodo_id',
 });
+//
 lecturaAguaModel.hasOne(cobroAguaModel, {
   as: 'cobroAgua',
   foreignKey: 'lectura_id',
@@ -97,4 +109,13 @@ lecturaAguaModel.hasOne(cobroAguaModel, {
 cobroAguaModel.belongsTo(lecturaAguaModel, {
   as: 'aguaCobro',
   foreignKey: 'id',
+});
+//
+accionModel.hasMany(cobroAguaModel, {
+  as: 'cobrosAccionAgua',
+  foreignKey: 'accion_id',
+});
+cobroAguaModel.belongsTo(accionModel, {
+  as: 'accionCobroAgua',
+  foreignKey: 'accion_id',
 });

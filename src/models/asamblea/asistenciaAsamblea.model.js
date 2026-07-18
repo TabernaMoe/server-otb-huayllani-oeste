@@ -40,12 +40,12 @@ export const asistenciaAsambleaModel = sequelize.define(
     timestamps: true,
   },
 );
+
 // asamblea.model.js
 asambleaModel.hasMany(asistenciaAsambleaModel, {
   foreignKey: 'asamblea_id',
   as: 'asistencias',
 });
-
 asistenciaAsambleaModel.belongsTo(asambleaModel, {
   foreignKey: 'asamblea_id',
   as: 'asamblea',

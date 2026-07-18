@@ -37,11 +37,11 @@ export const cobroAsamblea = sequelize.define(
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
-    fecha_asamblea: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
+
+    concepto: {
+      type: DataTypes.STRING,
     },
-    precio: {
+    monto: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },

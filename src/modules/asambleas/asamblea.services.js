@@ -1,13 +1,14 @@
 import { Op, col, fn } from 'sequelize';
-import { accionModel } from '../../../models/accion/accion.model.js';
-import { asistenciaAsambleaModel } from '../../../models/asamblea/asistenciaAsamblea.model.js';
-import { asambleaModel } from '../../../models/asamblea/asamblea.model.js';
-import { multaModel } from '../../../models/asamblea/multa.model.js';
-import { socioModel } from '../../../models/socio.model.js';
-import { cobroModel } from '../../../models/cobros/cobro.model.js';
-import { cobroAsamblea } from '../../../models/cobros/tipoCobros/cobroAsamblea.model.js';
-import { ValidacionesSequelize as valids } from '../../../validators/ValidacionesSequelize.js';
-import { sequelize } from '../../../config/database.js';
+import { accionModel } from '../../models/accion/accion.model.js';
+import { asistenciaAsambleaModel } from '../../models/asamblea/asistenciaAsamblea.model.js';
+import { asambleaModel } from '../../models/asamblea/asamblea.model.js';
+import { asambleaModel } from '../../models/asamblea/asamblea.model.js';
+import { multaModel } from '../../models/asamblea/multa.model.js';
+import { socioModel } from '../../models/socio.model.js';
+import { cobroModel } from '../../models/cobros/cobro.model.js';
+import { cobroAsamblea } from '../../models/cobros/tipoCobros/cobroAsamblea.model.js';
+import { ValidacionesSequelize as valids } from '../../validators/ValidacionesSequelize.js';
+import { sequelize } from '../../config/database.js';
 
 export class AsambleaClass {
   static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
@@ -118,10 +119,8 @@ export class AsambleaClass {
   }
   static async create(payload) {
     return await sequelize.transaction(async (t) => {
-      const [multaSearch] = await multaModel.findAll();
-
       const createdAsamblea = await asambleaModel.create(
-        { ...payload, multa_id: multaSearch.id },
+        { payload },
         { transaction: t },
       );
 
@@ -146,7 +145,6 @@ export class AsambleaClass {
       return createdAsamblea;
     });
   }
-
   static async update(id, payload) {
     const data = asambleaModel.findByPk(id);
     if (!data) {
@@ -158,7 +156,7 @@ export class AsambleaClass {
   }
   static async updateAccion(id_asamblea, { payload }) {
     return await sequelize.transaction(async (t) => {
-      const { id_accion, asistio } = payload;
+      const { id_accion, asistio, observacion } = payload;
       const asambleaId = await asambleaModel.findByPk(id_asamblea, {
         transaction: t,
         raw: true,
@@ -187,13 +185,24 @@ export class AsambleaClass {
           `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
         );
       }
+
+      const asambleaSearch = await asambleaModel.findByPk(id_asamblea, {
+        transaction: t,
+      });
+
+      if (!asambleaSearch) {
+        const err = new Error('No se encontro asamblea');
+        err.statusCode = 404;
+        throw err;
+      }
       const asistenciaSearch = await asistenciaAsambleaModel.findOne({
         where: {
-          asamblea_id: id_asamblea,
+          asamblea_id: asambleaSearch.id,
           accion_id: id_accion,
         },
         transaction: t,
       });
+
       if (!asistenciaSearch) {
         const err = new Error('No se encontro la asistencia');
         err.statusCode = 404;
@@ -201,22 +210,57 @@ export class AsambleaClass {
       }
 
       if (asistio == 'ASISTIO' || asistio == 'SIN EFECTO') {
-        await asistenciaSearch.update(payload, { transaction: t });
+        const cobro;
+        await asistenciaSearch.update(
+          { asistio, observacion },
+          { transaction: t },
+        );
+        const cobroAsambleaSearch = await cobroAsamblea.findOne({
+          where: {
+            asistencia_asamblea_id: asistenciaSearch.id,
+          },
+          transaction: t,
+        });
+
+        if (!cobroAsambleaSearch) {
+          const err = new Error('No se encontro asistencia asmablea');
+          err.statusCode = 404;
+          throw err;
+        }
+        const cobroAsistenciaSearch = await cobroModel.findOne({
+          where: {
+            cobro_id: cobroAsambleaSearch.cobro_id,
+          },
+          transaction: t,
+        });
+
+        if (!cobroAsistenciaSearch) {
+          const err = new Error('No se encontro el cobro asmablea');
+          err.statusCode = 404;
+          throw err;
+        }
+
+        await cobroAsambleaSearch.destroy({ transaction: t });
+        await cobroAsistenciaSearch.destroy({ transaction: t });
+
         return asistenciaSearch;
       } else {
         if ((asistio = 'FALTA')) {
           const periodoAcutal = await valids.ObtenerPeriodoActivo();
-          await asistenciaSearch.update(payload, { transaction: t });
-          const [multaSearch] = await multaModel.findAll();
+          await asistenciaSearch.update(
+            { asistio, observacion },
+            { transaction: t },
+          );
           const cobroAsistencia = await cobroModel.create(
             {
               socio_id: socioId.id,
+              accion_id: accionId.id,
               periodo_id: periodoAcutal.id,
               tipo_cobro: 'ASAMBLEA',
-              concepto: 'Falta a la asamblea',
-              descripcion: 'Falta a la asamblea',
-              monto_total: multaSearch.monto_multa,
-              saldo: multaSearch.monto_multa,
+              concepto: `FALTA A LA ASAMBLEA DEL ${periodoAcutal.mes}`,
+              descripcion: `${asambleaSearch.titulo} fecha: ${asambleaSearch.fecha}`,
+              monto_total: asambleaId.monto_multa,
+              saldo: asambleaId.monto_multa,
               estado: 'PENDIENTE',
             },
             {
@@ -228,8 +272,8 @@ export class AsambleaClass {
               asistencia_asamblea_id: asistenciaSearch.id,
               accion_id: accionId.id,
               cobro_id: cobroAsistencia.id,
-              fecha_asamblea: asambleaId.fecha,
-              precio: multaSearch.monto_multa,
+              monto: asambleaId.monto_multa,
+              concepto: `${cobroAsistencia.descripcion} multa:${cobroAsistencia.monto_total}`,
             },
             {
               transaction: t,

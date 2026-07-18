@@ -2,6 +2,7 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 import { socioModel } from '../socio.model.js';
 import { periodoModel } from '../gestiones/periodo.model.js';
+import { accionModel } from '../../models/accion/accion.model.js';
 
 export const cobroModel = sequelize.define(
   'cobros',
@@ -17,6 +18,16 @@ export const cobroModel = sequelize.define(
       allowNull: false,
       references: {
         model: 'socios',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
+    },
+    accion_id: {
+      type: DataTypes.BIGINT,
+      //allowNull:false,
+      references: {
+        model: 'acciones',
         key: 'id',
       },
       onUpdate: 'CASCADE',
@@ -85,9 +96,7 @@ cobroModel.belongsTo(socioModel, {
   as: 'socioCobro',
   foreignKey: 'socio_id',
 });
-
 //
-
 periodoModel.hasMany(cobroModel, {
   as: 'cobros',
   foreignKey: 'periodo_id',
@@ -95,4 +104,13 @@ periodoModel.hasMany(cobroModel, {
 cobroModel.belongsTo(periodoModel, {
   as: 'periodo',
   foreignKey: 'periodo_id',
+});
+//
+accionModel.hasMany(cobroModel, {
+  as: 'cobrosAccion',
+  foreignKey: 'accion_id',
+});
+cobroModel.belongsTo(accionModel, {
+  as: 'accionCobro',
+  foreignKey: 'accion_id',
 });

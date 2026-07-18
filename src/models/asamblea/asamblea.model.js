@@ -1,16 +1,15 @@
 import { sequelize } from '../../config/database.js';
 import { DataTypes } from 'sequelize';
-import { multaModel } from './multa.model.js';
+import { periodoModel } from '../../models/gestiones/periodo.model.js';
 
 export const asambleaModel = sequelize.define(
-  'Asambleas',
+  'Asamblea',
   {
     id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
-    multa_id: {
+    periodo_id: {
       type: DataTypes.BIGINT,
-      allowNull: false,
       references: {
-        model: 'multas',
+        model: 'periodos',
         key: 'id',
       },
       onDelete: 'RESTRICT',
@@ -40,6 +39,10 @@ export const asambleaModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    monto_multa: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
     estado: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
@@ -51,11 +54,12 @@ export const asambleaModel = sequelize.define(
   },
 );
 
-multaModel.hasMany(asambleaModel, {
-  as: 'asambleas',
-  foreignKey: 'multa_id',
+//periodo
+periodoModel.hasMany(asambleaModel, {
+  as: 'asambleasPeriodo',
+  foreignKey: 'periodo_id',
 });
-asambleaModel.belongsTo(multaModel, {
-  as: 'multa',
-  foreignKey: 'multa_id',
+asambleaModel.belongsTo(periodoModel, {
+  as: 'periodoAsamblea',
+  foreignKey: 'periodo_id',
 });

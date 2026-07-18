@@ -104,7 +104,7 @@ detallePagoAccion.belongsToMany(accionModel, {
   foreignKey: 'detalle_pago_accion_id',
   otherKey: 'accion_id',
 });
-
+//
 tarifaModel.hasMany(accionModel, {
   as: 'tarifasAccion',
   foreignKey: 'tarifa_id',

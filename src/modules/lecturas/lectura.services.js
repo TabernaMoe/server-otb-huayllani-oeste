@@ -391,6 +391,7 @@ export class LecturaServices {
           lectura_id: createdLectura.id,
           socio_id: accionSearch.socio_id,
           periodo_id: periodoActivo.id,
+          accion_id: accionSearch.id,
           tipo_cobro: 'LECTURA_AGUA',
           concepto: `LECTURA DEL MES ${periodoActivo.mes}`,
           descripcion: `LECTURA DEL MES ${periodoActivo.mes}`,

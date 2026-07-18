@@ -65,16 +65,16 @@ cobroAccionModel.belongsTo(accionModel, {
 });
 
 cobroModel.hasOne(cobroAccionModel, {
-  as: 'CobroAccion',
+  as: 'CobroAccionDetalle',
   foreignKey: 'cobro_id',
 });
 cobroAccionModel.belongsTo(cobroModel, {
-  as: 'accionCobro',
+  as: 'accionCobroDetalle',
   foreignKey: 'cobro_id',
 });
 
 accionDetalleModel.hasMany(cobroAccionModel, {
-  as: 'cobrosAccion',
+  as: 'cobrosAccionDetalle',
   foreignKey: 'accion_detalle_id',
 });
 cobroAccionModel.belongsTo(accionDetalleModel, {

@@ -126,6 +126,15 @@ module.exports = {
         nombre_permiso: 'Cambio lectura',
         codigo_permiso: 'lectura.cambio',
       },
+      //cobros agua
+      {
+        nombre_permiso: 'Ver cobros agua',
+        codigo_permiso: 'cobros.ver',
+      },
+      {
+        nombre_permiso: 'Pagar cobros agua',
+        codigo_permiso: 'cobros.pagar',
+      },
     ]);
   },
 

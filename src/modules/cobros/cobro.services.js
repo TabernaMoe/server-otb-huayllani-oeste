@@ -122,6 +122,10 @@ export class CobroServices {
     };
   }
   static async getId(id) {
+    console.log('**************');
+    console.log(id);
+    console.log('**************');
+
     const dataId = await socioModel.findByPk(id, {
       attributes: [
         'ci_socio',
@@ -165,8 +169,8 @@ export class CobroServices {
       ],
     });
 
-    if (dataId) {
-      throw new Error('No se encontro la accion');
+    if (!dataId) {
+      throw new Error('No se encontro el socio');
     }
 
     return dataId;

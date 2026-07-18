@@ -17,7 +17,7 @@ import { ValidacionesSequelize as validaciones } from '../../validators/Validaci
 import { lecturaAguaModel } from '../../models/lecturasAgua/lecturasAgua.model.js';
 
 export class CobroAguaServices {
-  static async getAll(page = 1, limit = 10, search = '', estado = true) {
+  static async getAll(page = 1, limit = 10, search = '', estado = 'ACTIVO') {
     page = Number(page) || 1;
     limit = Number(limit) || 10;
 
@@ -25,7 +25,7 @@ export class CobroAguaServices {
 
     search = search?.trim() || '';
 
-    const valoresPermitidos = [true, false];
+    const valoresPermitidos = ['ACTIVO', 'PASIVO', 'ANULADO'];
 
     if (estado !== undefined && !valoresPermitidos.includes(estado)) {
       const error = new Error(
@@ -36,121 +36,84 @@ export class CobroAguaServices {
       throw error;
     }
 
-    let where = {};
+    const where = {};
 
     if (estado !== undefined) {
       where.estado = estado;
     }
 
     if (search) {
-      where = {
-        [Op.and]: [
-          where,
+      where[Op.or] = [
+        sequelize.where(
+          sequelize.cast(sequelize.col('acciones.codigo_interno'), 'TEXT'),
           {
-            [Op.or]: [
-              Sequelize.where(
-                Sequelize.fn(
-                  'concat',
-                  Sequelize.fn('COALESCE', Sequelize.col('nombres'), ''),
-                  ' ',
-                  Sequelize.fn(
-                    'COALESCE',
-                    Sequelize.col('primer_apellido'),
-                    '',
-                  ),
-                  ' ',
-                  Sequelize.fn(
-                    'COALESCE',
-                    Sequelize.col('segundo_apellido'),
-                    '',
-                  ),
-                ),
-                {
-                  [Op.iLike]: `%${search}%`,
-                },
-              ),
-              Sequelize.where(
-                Sequelize.cast(Sequelize.col('ci_socio'), 'TEXT'),
-                {
-                  [Op.iLike]: `%${search}%`,
-                },
-              ),
-            ],
+            [Op.iLike]: `%${search}%`,
           },
-        ],
-      };
+        ),
+        {
+          '$calleAccion.nombre_calle$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          '$socioAccion.nombres$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          '$socioAccion.primer_apellido$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          '$socioAccion.segundo_apellido$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          '$tarifaAccion.nombre_tarifa$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+      ];
     }
 
-    const { count, rows } = await socioModel.findAndCountAll({
+    const { count, rows } = await accionModel.findAndCountAll({
       attributes: {
         exclude: [
-          'user_id',
+          'socio_id',
+          'calle_id',
+          'tarifa_id',
           'createdAt',
           'updatedAt',
-          'estado',
-          'genero',
-          'numero_telefono',
+        ],
+        include: [
+          [
+            fn(
+              'CONCAT_WS',
+              ' ',
+              col('socioAccion.nombres'),
+              col('socioAccion.primer_apellido'),
+              col('socioAccion.segundo_apellido'),
+            ),
+            'nombre_completo',
+          ],
+          [col('calleAccion.nombre_calle'), 'nombre_calle'],
+          [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
         ],
       },
-      include: [
-        {
-          model: accionModel,
-          as: 'acciones',
-          attributes: ['codigo_interno', 'nro_medidor', 'estado'],
-        },
-      ],
       where,
-      limit,
-      offset,
-      order: [['id', 'DESC']],
-      distinct: true,
-    });
-
-    const rowNor = rows.map((row) => {
-      const newRow = row.toJSON ? row.toJSON() : { ...row };
-
-      newRow.nombre_completo =
-        `${newRow.nombres} ${newRow.primer_apellido} ${newRow.segundo_apellido}`.trim();
-      newRow.ci = `${newRow.ci_socio} ${newRow.ci_expedido}`.trim();
-
-      delete newRow.nombres;
-      delete newRow.primer_apellido;
-      delete newRow.segundo_apellido;
-      delete newRow.ci_socio;
-      delete newRow.ci_expedido;
-
-      return newRow;
-    });
-
-    return {
-      total: count,
-      page,
-      limit,
-      totalPages: Math.ceil(count / limit),
-      data: rowNor,
-    };
-  }
-  static async getId(id) {
-    const dataId = await socioModel.findByPk(id, {
-      attributes: [
-        'ci_socio',
-        'numero_celular',
-        [
-          Sequelize.fn(
-            'CONCAT_WS',
-            ' ',
-            Sequelize.col('nombres'),
-            Sequelize.col('primer_apellido'),
-            Sequelize.col('segundo_apellido'),
-          ),
-          'nombre_completo',
-        ],
-      ],
-
       include: [
+        { model: socioModel, as: 'socioAccion', attributes: [] },
+        { model: calleRamalModel, as: 'calleAccion', attributes: [] },
+        {
+          model: tarifaModel,
+          as: 'tarifaAccion',
+          attributes: [],
+        },
         {
           model: cobroAguaModel,
-          as: 'cobrosAgua',
+          as: 'cobrosAccionAgua',
           attributes: [
             'id',
             'concepto',
@@ -160,13 +123,82 @@ export class CobroAguaServices {
             'saldo',
             'estado',
           ],
-
           where: {
             estado: {
               [Op.ne]: 'PAGADO',
             },
           },
           required: false,
+          order: [['createdAt', 'DESC']],
+        },
+      ],
+      limit,
+      offset,
+      order: [['codigo_interno', 'DESC']],
+      subQuery: false,
+      distinct: true,
+    });
+
+    return {
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+      data: rows,
+    };
+  }
+  static async getId(id) {
+    const dataId = accionModel.findByPk(id, {
+      attributes: {
+        exclude: [
+          'socio_id',
+          'calle_id',
+          'tarifa_id',
+          'createdAt',
+          'updatedAt',
+        ],
+        include: [
+          [
+            fn(
+              'CONCAT_WS',
+              ' ',
+              col('socioAccion.nombres'),
+              col('socioAccion.primer_apellido'),
+              col('socioAccion.segundo_apellido'),
+            ),
+            'nombre_completo',
+          ],
+          [col('calleAccion.nombre_calle'), 'nombre_calle'],
+          [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
+        ],
+      },
+      include: [
+        { model: socioModel, as: 'socioAccion', attributes: [] },
+        { model: calleRamalModel, as: 'calleAccion', attributes: [] },
+        {
+          model: tarifaModel,
+          as: 'tarifaAccion',
+          attributes: [],
+        },
+        {
+          model: cobroAguaModel,
+          as: 'cobrosAccionAgua',
+          attributes: [
+            'id',
+            'concepto',
+            'descripcion',
+            'monto_total',
+            'monto_pagado',
+            'saldo',
+            'estado',
+          ],
+          where: {
+            estado: {
+              [Op.ne]: 'PAGADO',
+            },
+          },
+          required: false,
+          order: [['createdAt', 'DESC']],
         },
       ],
     });
@@ -177,26 +209,41 @@ export class CobroAguaServices {
     return dataId;
   }
   static async historial(id) {
-    const dataId = await socioModel.findByPk(id, {
-      attributes: [
-        'ci_socio',
-        'numero_celular',
-        [
-          Sequelize.fn(
-            'CONCAT_WS',
-            ' ',
-            Sequelize.col('nombres'),
-            Sequelize.col('primer_apellido'),
-            Sequelize.col('segundo_apellido'),
-          ),
-          'nombre_completo',
+    const dataId = accionModel.findByPk(id, {
+      attributes: {
+        exclude: [
+          'socio_id',
+          'calle_id',
+          'tarifa_id',
+          'createdAt',
+          'updatedAt',
         ],
-      ],
-
+        include: [
+          [
+            fn(
+              'CONCAT_WS',
+              ' ',
+              col('socioAccion.nombres'),
+              col('socioAccion.primer_apellido'),
+              col('socioAccion.segundo_apellido'),
+            ),
+            'nombre_completo',
+          ],
+          [col('calleAccion.nombre_calle'), 'nombre_calle'],
+          [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
+        ],
+      },
       include: [
+        { model: socioModel, as: 'socioAccion', attributes: [] },
+        { model: calleRamalModel, as: 'calleAccion', attributes: [] },
+        {
+          model: tarifaModel,
+          as: 'tarifaAccion',
+          attributes: [],
+        },
         {
           model: cobroAguaModel,
-          as: 'cobrosAgua',
+          as: 'cobrosAccionAgua',
           attributes: [
             'id',
             'concepto',
@@ -206,6 +253,7 @@ export class CobroAguaServices {
             'saldo',
             'estado',
           ],
+          order: [['createdAt', 'DESC']],
         },
       ],
     });
@@ -215,20 +263,26 @@ export class CobroAguaServices {
     }
     return dataId;
   }
-  static async pagarAdmin(socio_id, payload) {
+  static async pagarAdmin(accion_id, payload) {
     return await sequelize.transaction(async (t) => {
       const { monto, cobro_agua_id, metodo_pago = 'QR', observacion } = payload;
 
       const montoPago = Number(monto);
 
-      if (!socio_id) {
-        throw new Error('Debe enviar el socio');
-      }
       if (!montoPago || montoPago <= 0) {
         throw new Error('El monto debe ser mayor a 0');
       }
 
-      const socioSearch = await socioModel.findByPk(socio_id, {
+      const accionSearch = await accionModel.findByPk(accion_id, {
+        transaction: t,
+      });
+
+      if (!accionSearch) {
+        const err = new Error('No se encotro la accion');
+        err.statusCode = 404;
+        throw err;
+      }
+      const socioSearch = await socioModel.findByPk(accionSearch.socio_id, {
         transaction: t,
       });
       if (!socioSearch) {
@@ -337,14 +391,14 @@ export class CobroAguaServices {
         numeroRecibo: reciboCreated.numero_recibo,
         fechaPago: reciboCreated.fecha_emision,
         nombreSocio: `${socioSearch.nombres} ${socioSearch.primer_apellido} ${socioSearch.segundo_apellido}`,
-        numeroAccion: '00125',
+        numeroAccion: accionSearch.codigo_interno,
         direccion: socioSearch.direccion,
         periodo: obtenerPeriodo.mes,
-        numeroMedidor: socioSearch.direccion,
+        numeroMedidor: accionSearch.nro_medidor,
         lecturaAnterior: lecturaPagar.lectura_anterior,
         lecturaActual: lecturaPagar.lectura_actual,
         consumo: lecturaPagar.consumo_m3,
-        montoAgua: lecturaPagar.precio,
+        montoAgua: montoPago,
         formaPago: metodo_pago,
         cajero: 'Administrador',
       });
