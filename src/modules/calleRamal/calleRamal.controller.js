@@ -33,7 +33,7 @@ export class CalleRamalController {
       next(e);
     }
   }
-  static async getAllSelect(req, res, next) {
+  static async getSelect(req, res, next) {
     try {
       let search = req.query.search;
 
@@ -42,7 +42,7 @@ export class CalleRamalController {
           ? search.trim()
           : '';
 
-      const result = await services.getAllSelect(search);
+      const result = await services.getSelect(search);
 
       return res.status(200).json({
         ok: true,
@@ -56,10 +56,10 @@ export class CalleRamalController {
   static async getId(req, res, next) {
     try {
       const { id } = req.params;
-      const dato = await services.getId(id);
+      const data = await services.getId(id);
       return res
         .status(200)
-        .json({ ok: true, message: 'Calle obtenida correctamente', dato });
+        .json({ ok: true, message: 'Calle obtenida correctamente', data });
     } catch (e) {
       next(e);
     }
@@ -67,11 +67,11 @@ export class CalleRamalController {
   static async create(req, res, next) {
     try {
       const payload = req.body;
-      const dataCreated = await services.create(payload);
+      const data = await services.create(payload);
       return res.status(200).json({
         ok: true,
         message: 'Calle creada correctamente',
-        dataCreated,
+        data,
       });
     } catch (e) {
       next(e);
@@ -81,32 +81,20 @@ export class CalleRamalController {
     try {
       const { id } = req.params;
       const payload = req.body;
-      const dataUpdated = await services.update(id, payload);
+      const data = await services.update(id, payload);
       return res.status(200).json({
         ok: true,
         message: 'Calle actuzalizada correctamente',
-        dataUpdated,
+        data,
       });
     } catch (e) {
       next(e);
     }
   }
-  static async delete(req, res, next) {
+  static async cambiarEstado(req, res, next) {
     try {
       const { id } = req.params;
-      await services.delete(id);
-      return res.status(200).json({
-        ok: true,
-        message: 'Calle eliminada correctamente',
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-  static async toggleStatus(req, res, next) {
-    try {
-      const { id } = req.params;
-      await services.toggleStatus(id);
+      await services.cambiarEstado(id);
       return res.status(200).json({
         ok: true,
         message: 'Se cambio su estado correctamente',

@@ -1,6 +1,6 @@
 import { detallePagoAccionServices as services } from '../services/detallePagoAccion.services.js';
 
-export class CalleRamalController {
+export class DetallePagoAccionController {
   static async getAll(req, res, next) {
     try {
       const page = Number(req.query.page) || 1;
@@ -33,9 +33,16 @@ export class CalleRamalController {
       next(e);
     }
   }
-  static async getAllSelect(req, res, next) {
+  static async getSelect(req, res, next) {
     try {
-      const data = await services.getAllSelect();
+      const { id } = req.params;
+      let numberId = Number(id);
+      if (isNaN(numberId) && !Number.isInteger(numberId)) {
+        const err = new Error('El id debe ser un numero');
+        err.statusCode = 404;
+        throw err;
+      }
+      const data = await services.getSelect(numberId);
       return res
         .status(200)
         .json({ ok: true, message: 'Detalles obtenidos correctamente', data });
@@ -81,22 +88,10 @@ export class CalleRamalController {
       next(e);
     }
   }
-  static async delete(req, res, next) {
+  static async cambiarEstado(req, res, next) {
     try {
       const { id } = req.params;
-      await services.delete(id);
-      return res.status(200).json({
-        ok: true,
-        message: 'Detalle accion eliminada correctamente',
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-  static async toggleStatus(req, res, next) {
-    try {
-      const { id } = req.params;
-      await services.toggleStatus(id);
+      await services.cambiarEstado(id);
       return res.status(200).json({
         ok: true,
         message: 'Se cambio su estado correctamente',

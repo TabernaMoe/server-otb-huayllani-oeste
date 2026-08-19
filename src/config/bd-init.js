@@ -4,6 +4,7 @@ import { sequelize } from './database.js';
 import { permisoModel } from '../models/auth/permiso.model.js';
 import { permisoRolModel, rolModel } from '../models/auth/rol.model.js';
 import { usuarioModel } from '../models/auth/usuario.model.js';
+import { auditoriaModel } from '../models/auth/auditoria.model.js';
 
 //Primera
 import { calleRamalModel } from '../models/calleRamal.model.js';
@@ -32,6 +33,11 @@ import { reciboAguaModel } from '../models/cobroAgua/recibo.mode.js';
 //lectura
 import { lecturaAguaModel } from '../models/lecturasAgua/lecturasAgua.model.js';
 import { cambioMedidor } from '../models/lecturasAgua/cambioMedidor.model.js';
+import { tipoAccionModel } from '../models/accion/tipoAccion.model.js';
+//inventario
+import { inventarioModel } from '../models/inventario.model.js';
+import { asambleaModel } from '../models/asamblea/asamblea.model.js';
+import { asistenciaAsambleaModel } from '../models/asamblea/asistenciaAsamblea.model.js';
 
 export async function ConnectDB() {
   try {
@@ -44,6 +50,7 @@ export async function ConnectDB() {
     await rolModel.sync({ alter: true });
     await permisoRolModel.sync({ alter: true });
     await usuarioModel.sync({ alter: true });
+    await auditoriaModel.sync({ alter: true });
     //Segunda Migracion
     await calleRamalModel.sync({ alter: true });
     //Tercera migracion
@@ -52,6 +59,7 @@ export async function ConnectDB() {
     //Cuartea migracion
     await socioModel.sync({ alter: true });
     //Quinta Migracion
+    await tipoAccionModel.sync({ alter: true });
     await detallePagoAccion.sync({ alter: true });
     //
     await accionModel.sync({ alter: true });
@@ -65,7 +73,7 @@ export async function ConnectDB() {
     await pagoModel.sync({ alter: true });
     await pagoDetalleModel.sync({ alter: true });
     await reciboModel.sync({ alter: true });
-    //primera ejecucion force y lugeo alter
+    //primera ejecucion alter y lugeo alter
 
     //
     await lecturaAguaModel.sync({ alter: true });
@@ -74,6 +82,11 @@ export async function ConnectDB() {
     await cobroAguaModel.sync({ alter: true });
     await pagoAguaModel.sync({ alter: true });
     await reciboAguaModel.sync({ alter: true });
+
+    await inventarioModel.sync({ alter: true });
+
+    await asambleaModel.sync({ alter: true });
+    await asistenciaAsambleaModel.sync({ alter: true });
 
     console.log('✅ Tablas cargadas correctamente');
   } catch (e) {

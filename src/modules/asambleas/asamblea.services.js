@@ -2,15 +2,13 @@ import { Op, col, fn } from 'sequelize';
 import { accionModel } from '../../models/accion/accion.model.js';
 import { asistenciaAsambleaModel } from '../../models/asamblea/asistenciaAsamblea.model.js';
 import { asambleaModel } from '../../models/asamblea/asamblea.model.js';
-import { asambleaModel } from '../../models/asamblea/asamblea.model.js';
-import { multaModel } from '../../models/asamblea/multa.model.js';
 import { socioModel } from '../../models/socio.model.js';
 import { cobroModel } from '../../models/cobros/cobro.model.js';
 import { cobroAsamblea } from '../../models/cobros/tipoCobros/cobroAsamblea.model.js';
 import { ValidacionesSequelize as valids } from '../../validators/ValidacionesSequelize.js';
 import { sequelize } from '../../config/database.js';
 
-export class AsambleaClass {
+export class AsambleaServices {
   static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
     page = Number(page) || 1;
     limit = Number(limit) || 10;
@@ -154,133 +152,197 @@ export class AsambleaClass {
     }
     return await data.update(id, payload);
   }
-  static async updateAccion(id_asamblea, { payload }) {
+  static async updateAccion(id_asamblea, payload) {
     return await sequelize.transaction(async (t) => {
       const { id_accion, asistio, observacion } = payload;
-      const asambleaId = await asambleaModel.findByPk(id_asamblea, {
-        transaction: t,
-        raw: true,
-      });
-      if (!asambleaId) {
-        const err = new Error('No se encontro la asamblea');
-        err.statusCode = 404;
-        throw err;
-      }
-      const accionId = await accionModel.findByPk(id, {
-        transaction: t,
-        raw: true,
-      });
-      if (!accionId) {
-        const err = new Error('No se encontro la accion');
-        err.statusCode = 404;
-        throw err;
-      }
-      const socioId = await socioModel.findByPk(accionId.socio_id, {
-        transaction: t,
-        raw: true,
-      });
+
+      // =====================================================
+      // VALIDAR ESTADO
+      // =====================================================
+
       const valoresPermitidos = ['ASISTIO', 'FALTA', 'SIN EFECTO'];
+
       if (!valoresPermitidos.includes(asistio)) {
-        throw new Error(
+        const err = new Error(
           `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
         );
+        err.statusCode = 400;
+        throw err;
       }
 
-      const asambleaSearch = await asambleaModel.findByPk(id_asamblea, {
+      // =====================================================
+      // BUSCAR ASAMBLEA
+      // =====================================================
+
+      const asamblea = await asambleaModel.findByPk(id_asamblea, {
         transaction: t,
       });
 
-      if (!asambleaSearch) {
-        const err = new Error('No se encontro asamblea');
+      if (!asamblea) {
+        const err = new Error('No se encontró la asamblea');
         err.statusCode = 404;
         throw err;
       }
-      const asistenciaSearch = await asistenciaAsambleaModel.findOne({
+
+      // =====================================================
+      // BUSCAR ACCIÓN
+      // =====================================================
+
+      const accion = await accionModel.findByPk(id_accion, {
+        transaction: t,
+      });
+
+      if (!accion) {
+        const err = new Error('No se encontró la acción');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      // =====================================================
+      // BUSCAR SOCIO
+      // =====================================================
+
+      const socio = await socioModel.findByPk(accion.socio_id, {
+        transaction: t,
+      });
+
+      if (!socio) {
+        const err = new Error('No se encontró el socio');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      // =====================================================
+      // BUSCAR ASISTENCIA
+      // =====================================================
+
+      const asistencia = await asistenciaAsambleaModel.findOne({
         where: {
-          asamblea_id: asambleaSearch.id,
+          asamblea_id: id_asamblea,
           accion_id: id_accion,
         },
         transaction: t,
       });
 
-      if (!asistenciaSearch) {
-        const err = new Error('No se encontro la asistencia');
+      if (!asistencia) {
+        const err = new Error('No se encontró la asistencia');
         err.statusCode = 404;
         throw err;
       }
 
-      if (asistio == 'ASISTIO' || asistio == 'SIN EFECTO') {
-        const cobro;
-        await asistenciaSearch.update(
-          { asistio, observacion },
-          { transaction: t },
-        );
+      // Guardamos el estado anterior
+      const estadoAnterior = asistencia.asistio;
+
+      // =====================================================
+      // ACTUALIZAR ASISTENCIA
+      // =====================================================
+
+      await asistencia.update(
+        {
+          asistio,
+          observacion,
+        },
+        {
+          transaction: t,
+        },
+      );
+
+      // =====================================================
+      // ASISTIÓ O SIN EFECTO
+      // =====================================================
+
+      if (asistio === 'ASISTIO' || asistio === 'SIN EFECTO') {
+        // Buscar si tenía una multa anteriormente
         const cobroAsambleaSearch = await cobroAsamblea.findOne({
           where: {
-            asistencia_asamblea_id: asistenciaSearch.id,
+            asistencia_asamblea_id: asistencia.id,
           },
           transaction: t,
         });
 
-        if (!cobroAsambleaSearch) {
-          const err = new Error('No se encontro asistencia asmablea');
-          err.statusCode = 404;
-          throw err;
+        // Si existe multa, eliminarla
+        if (cobroAsambleaSearch) {
+          const cobroAsistenciaSearch = await cobroModel.findByPk(
+            cobroAsambleaSearch.cobro_id,
+            {
+              transaction: t,
+            },
+          );
+
+          // Primero eliminamos relación
+          await cobroAsambleaSearch.destroy({
+            transaction: t,
+          });
+
+          // Después eliminamos cobro
+          if (cobroAsistenciaSearch) {
+            await cobroAsistenciaSearch.destroy({
+              transaction: t,
+            });
+          }
         }
-        const cobroAsistenciaSearch = await cobroModel.findOne({
+
+        return asistencia;
+      }
+
+      // =====================================================
+      // FALTA
+      // =====================================================
+
+      if (asistio === 'FALTA') {
+        // Verificar si ya existe una multa
+        const cobroExistente = await cobroAsamblea.findOne({
           where: {
-            cobro_id: cobroAsambleaSearch.cobro_id,
+            asistencia_asamblea_id: asistencia.id,
           },
           transaction: t,
         });
 
-        if (!cobroAsistenciaSearch) {
-          const err = new Error('No se encontro el cobro asmablea');
-          err.statusCode = 404;
-          throw err;
+        // Si ya existe, NO crear otra multa
+        if (cobroExistente) {
+          return asistencia;
         }
 
-        await cobroAsambleaSearch.destroy({ transaction: t });
-        await cobroAsistenciaSearch.destroy({ transaction: t });
+        const periodoActual = await valids.ObtenerPeriodoActivo();
 
-        return asistenciaSearch;
-      } else {
-        if ((asistio = 'FALTA')) {
-          const periodoAcutal = await valids.ObtenerPeriodoActivo();
-          await asistenciaSearch.update(
-            { asistio, observacion },
-            { transaction: t },
-          );
-          const cobroAsistencia = await cobroModel.create(
-            {
-              socio_id: socioId.id,
-              accion_id: accionId.id,
-              periodo_id: periodoAcutal.id,
-              tipo_cobro: 'ASAMBLEA',
-              concepto: `FALTA A LA ASAMBLEA DEL ${periodoAcutal.mes}`,
-              descripcion: `${asambleaSearch.titulo} fecha: ${asambleaSearch.fecha}`,
-              monto_total: asambleaId.monto_multa,
-              saldo: asambleaId.monto_multa,
-              estado: 'PENDIENTE',
-            },
-            {
-              transaction: t,
-            },
-          );
-          await cobroAsamblea.create(
-            {
-              asistencia_asamblea_id: asistenciaSearch.id,
-              accion_id: accionId.id,
-              cobro_id: cobroAsistencia.id,
-              monto: asambleaId.monto_multa,
-              concepto: `${cobroAsistencia.descripcion} multa:${cobroAsistencia.monto_total}`,
-            },
-            {
-              transaction: t,
-            },
-          );
-          return asistenciaSearch;
-        }
+        const cobroAsistencia = await cobroModel.create(
+          {
+            socio_id: socio.id,
+            accion_id: accion.id,
+            periodo_id: periodoActual.id,
+
+            tipo_cobro: 'ASAMBLEA',
+
+            concepto: `FALTA A LA ASAMBLEA DEL ${periodoActual.mes}`,
+
+            descripcion: `${asamblea.titulo} fecha: ${asamblea.fecha}`,
+
+            monto_total: asamblea.monto_multa,
+            saldo: asamblea.monto_multa,
+
+            estado: 'PENDIENTE',
+          },
+          {
+            transaction: t,
+          },
+        );
+
+        await cobroAsamblea.create(
+          {
+            asistencia_asamblea_id: asistencia.id,
+            accion_id: accion.id,
+            cobro_id: cobroAsistencia.id,
+
+            monto: asamblea.monto_multa,
+
+            concepto: `${cobroAsistencia.descripcion} multa: ${cobroAsistencia.monto_total}`,
+          },
+          {
+            transaction: t,
+          },
+        );
+
+        return asistencia;
       }
     });
   }

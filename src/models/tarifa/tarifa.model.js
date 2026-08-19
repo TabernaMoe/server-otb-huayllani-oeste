@@ -2,10 +2,10 @@ import { sequelize } from '../../config/database.js';
 import { DataTypes } from 'sequelize';
 
 export const tarifaModel = sequelize.define(
-  'tarifa',
+  'Tarifa',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
@@ -19,7 +19,7 @@ export const tarifaModel = sequelize.define(
     },
   },
   {
-    tableName: 'tarifa',
+    tableName: 'tarifas',
     timestamps: true,
   },
 );

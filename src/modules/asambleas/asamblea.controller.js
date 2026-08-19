@@ -1,6 +1,6 @@
-import { accionServices as services } from '../services/accion.services.js';
+import { AsambleaServices as services } from './asamblea.services.js';
 
-export class AccionController {
+export class AsambleaController {
   static async getAll(req, res, next) {
     try {
       const page = Number(req.query.page) || 1;
@@ -17,7 +17,7 @@ export class AccionController {
 
       return res.status(200).json({
         ok: true,
-        message: 'Acciones obtenidas correctamente',
+        message: 'Asamblea obtenidas correctamente',
         ...result,
       });
     } catch (e) {
@@ -30,7 +30,7 @@ export class AccionController {
       const dato = await services.getId(id);
       return res
         .status(200)
-        .json({ ok: true, message: 'Accion obtenida correctamente', dato });
+        .json({ ok: true, message: 'Asamblea obtenida correctamente', dato });
     } catch (e) {
       next(e);
     }
@@ -41,7 +41,7 @@ export class AccionController {
       const dataCreated = await services.create(payload);
       return res.status(200).json({
         ok: true,
-        message: 'Accion creada correctamente',
+        message: 'Asamblea creada correctamente',
         ...dataCreated,
       });
     } catch (e) {
@@ -55,7 +55,21 @@ export class AccionController {
       const dataUpdated = await services.update(id, payload);
       return res.status(200).json({
         ok: true,
-        message: 'Accion actuzalizada correctamente',
+        message: 'Asamblea actuzalizada correctamente',
+        dataUpdated,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async updateAccion(req, res, next) {
+    try {
+      const { id } = req.params;
+      const payload = req.body;
+      const dataUpdated = await services.updateAccion(id, payload);
+      return res.status(200).json({
+        ok: true,
+        message: 'Asamblea actuzalizada correctamente',
         dataUpdated,
       });
     } catch (e) {

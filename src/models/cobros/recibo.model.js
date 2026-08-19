@@ -6,12 +6,12 @@ export const reciboModel = sequelize.define(
   'recibos',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     pago_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'pagos',

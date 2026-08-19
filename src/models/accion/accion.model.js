@@ -10,13 +10,13 @@ export const accionModel = sequelize.define(
   'acciones',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false,
     },
     socio_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: socioModel,
@@ -26,7 +26,7 @@ export const accionModel = sequelize.define(
       onDelete: 'RESTRICT',
     },
     calle_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: calleRamalModel,
@@ -36,7 +36,7 @@ export const accionModel = sequelize.define(
       onDelete: 'RESTRICT',
     },
     tarifa_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: { model: tarifaModel, key: 'id' },
       onUpdate: 'CASCADE',

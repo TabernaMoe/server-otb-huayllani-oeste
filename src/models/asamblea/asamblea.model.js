@@ -5,9 +5,9 @@ import { periodoModel } from '../../models/gestiones/periodo.model.js';
 export const asambleaModel = sequelize.define(
   'Asamblea',
   {
-    id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     periodo_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       references: {
         model: 'periodos',
         key: 'id',
@@ -21,10 +21,6 @@ export const asambleaModel = sequelize.define(
     },
     fecha: {
       type: DataTypes.DATEONLY,
-      allowNull: false,
-    },
-    fecha_string: {
-      type: DataTypes.STRING,
       allowNull: false,
     },
     hora_inicio: {

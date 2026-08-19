@@ -8,13 +8,13 @@ export const cobroModel = sequelize.define(
   'cobros',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false,
     },
     socio_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'socios',
@@ -24,8 +24,8 @@ export const cobroModel = sequelize.define(
       onDelete: 'RESTRICT',
     },
     accion_id: {
-      type: DataTypes.BIGINT,
-      //allowNull:false,
+      type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
         model: 'acciones',
         key: 'id',
@@ -34,7 +34,7 @@ export const cobroModel = sequelize.define(
       onDelete: 'RESTRICT',
     },
     periodo_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'periodos',
@@ -51,6 +51,7 @@ export const cobroModel = sequelize.define(
         'ASAMBLEA',
         'OTRO',
       ),
+      allowNull: false,
     },
     concepto: {
       type: DataTypes.STRING,

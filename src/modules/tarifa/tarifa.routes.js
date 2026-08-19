@@ -7,7 +7,7 @@ import { checkPermiss } from '../../middlewares/auth.middlewares.js';
 const routes = new Router();
 routes
   .get('/', checkPermiss('tarifa.ver'), controller.getAll)
-  .get('/select', checkPermiss('tarifa.ver'), controller.getAllSelect)
+  .get('/select', checkPermiss('tarifa.ver'), controller.getSelect)
   .get('/:id', checkPermiss('tarifa.ver'), controller.getId)
   .post(
     '/',

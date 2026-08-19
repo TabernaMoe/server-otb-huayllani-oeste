@@ -1,5 +1,7 @@
-import { Op, Sequelize } from 'sequelize';
+import { col, Op, Sequelize } from 'sequelize';
 import { detallePagoAccion } from '../../../models/accion/detallePagoAccion.model.js';
+import { tipoAccionModel } from '../../../models/accion/tipoAccion.model.js';
+import { accionDetalleModel } from '../../../models/accion/accionDetalle.model.js';
 
 export class detallePagoAccionServices {
   static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
@@ -39,8 +41,16 @@ export class detallePagoAccionServices {
 
     const { count, rows } = await detallePagoAccion.findAndCountAll({
       attributes: {
+        include: [[col('tipoAccion.nombre_tipo_accion'), 'nombre_tipo_accion']],
         exclude: ['createdAt', 'updatedAt'],
       },
+      include: [
+        {
+          model: tipoAccionModel,
+          as: 'tipoAccion',
+          attributes: [],
+        },
+      ],
       where,
       limit,
       offset,
@@ -56,9 +66,18 @@ export class detallePagoAccionServices {
       data: rows,
     };
   }
-  static async getAllSelect() {
+  static async getSelect(id) {
+    const tipoAccionSearch = await tipoAccionModel.findByPk(id, { raw: true });
+    if (!tipoAccionSearch) {
+      const err = new Error('No se encontro tipo accion');
+      err.statusCode = 404;
+      throw err;
+    }
     const datos = await detallePagoAccion.findAll({
       attributes: ['id', 'nombre_accion'],
+      where: {
+        tipo_accion_id: id,
+      },
     });
     const datosNormalizado = datos.map((row) => ({
       value: row.id,
@@ -68,7 +87,10 @@ export class detallePagoAccionServices {
     return datosNormalizado;
   }
   static async getId(id) {
-    const datoId = await detallePagoAccion.findByPk(id, { raw: true });
+    const datoId = await detallePagoAccion.findByPk(id, {
+      attributes: { exclude: ['createdAt', 'updatedAt'] },
+      raw: true,
+    });
     if (!datoId) {
       const err = new Error('No se encontro el detalle pago accion');
       err.statusCode = 404;
@@ -77,10 +99,17 @@ export class detallePagoAccionServices {
     return datoId;
   }
   static async create(payload) {
-    const { nombre_accion, ...parent } = payload;
+    const { tipo_accion_id, nombre_accion, ...parent } = payload;
+    const tipoAccionExit = await tipoAccionModel.findByPk(tipo_accion_id);
+    if (!tipoAccionExit) {
+      const err = new Error('No se encontro tipo accion');
+      err.statusCode = 404;
+      throw err;
+    }
     const detalleSearch = await detallePagoAccion.findOne({
       where: {
         nombre_accion,
+        tipo_accion_id,
       },
     });
     if (detalleSearch) {
@@ -92,23 +121,45 @@ export class detallePagoAccionServices {
     const dataCreated = await detallePagoAccion.create({
       ...parent,
       nombre_accion,
+      tipo_accion_id,
     });
     return dataCreated;
   }
   static async update(id, payload) {
+    const { nombre_accion, tipo_accion_id } = payload;
     const dataSearch = await detallePagoAccion.findByPk(id);
-    const { nombre_accion } = payload;
     if (!dataSearch) {
       const err = new Error('No exite el detalle accion');
       err.statusCode = 404;
       throw err;
     }
+    if (tipo_accion_id) {
+      const tipoAccionExit = await tipoAccionModel.findByPk(tipo_accion_id);
+      if (!tipoAccionExit) {
+        const err = new Error('No se encontro tipo accion');
+        err.statusCode = 404;
+        throw err;
+      }
+    }
+
     if (nombre_accion) {
-      const Duplicate = await detallePagoAccion.findOne({
-        where: {
-          nombre_accion,
-        },
-      });
+      let Duplicate;
+      if (tipo_accion_id) {
+        Duplicate = await detallePagoAccion.findOne({
+          where: {
+            nombre_accion,
+            tipo_accion_id,
+          },
+        });
+      } else {
+        Duplicate = await detallePagoAccion.findOne({
+          where: {
+            nombre_accion,
+            tipo_accion_id: dataSearch.tipo_accion_id,
+          },
+        });
+      }
+
       if (Duplicate && Duplicate.id !== dataSearch.id) {
         const err = new Error('Ya existe un nombre con esa accion');
         err.statusCode = 403;
@@ -119,27 +170,29 @@ export class detallePagoAccionServices {
     const dataReload = detallePagoAccion.findByPk(dataSearch.id, { raw: true });
     return dataReload;
   }
-  static async toggleStatus(id) {
+  static async cambiarEstado(id) {
     const dataSearch = await detallePagoAccion.findByPk(id);
     if (!dataSearch) {
       const err = new Error('El detalle accion no existe');
       err.statusCode = 404;
       throw err;
+    }
+    if (dataSearch.estado === true) {
+      const accionAsociada = await accionDetalleModel.findOne({
+        where: { detalle_pago_accion_id: id },
+      });
+
+      if (accionAsociada) {
+        const err = new Error(
+          'No se puede desactivar la calle, tiene acciones asociadas',
+        );
+        err.statusCode = 409;
+        throw err;
+      }
     }
     dataSearch.estado = !dataSearch.estado;
 
     await dataSearch.save();
-    return;
-  }
-  static async delete(id) {
-    const dataSearch = await detallePagoAccion.findByPk(id);
-    if (!dataSearch) {
-      const err = new Error('El detalle accion no existe');
-      err.statusCode = 404;
-      throw err;
-    }
-    //validar si esta en uso
-    await dataSearch.destroy();
     return;
   }
 }

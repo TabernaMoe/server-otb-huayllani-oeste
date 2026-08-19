@@ -1,4 +1,5 @@
-import { calleRamalModel as model } from '../../models/calleRamal.model.js';
+import { calleRamalModel } from '../../models/calleRamal.model.js';
+import { accionModel } from '../../models/accion/accion.model.js';
 import { Op } from 'sequelize';
 
 export class CalleRamalServices {
@@ -37,7 +38,7 @@ export class CalleRamalServices {
       ];
     }
 
-    const { count, rows } = await model.findAndCountAll({
+    const { count, rows } = await calleRamalModel.findAndCountAll({
       where,
       limit,
       offset,
@@ -53,7 +54,7 @@ export class CalleRamalServices {
       data: rows,
     };
   }
-  static async getAllSelect(search = '') {
+  static async getSelect(search = '') {
     search = search?.trim() || '';
 
     let where = { estado: true };
@@ -70,24 +71,20 @@ export class CalleRamalServices {
       };
     }
 
-    const data = await model.findAll({
+    const data = await calleRamalModel.findAll({
       where,
-      attributes: ['id', 'nombre_calle'],
+      attributes: [
+        ['id', 'value'],
+        ['nombre_calle', 'label'],
+      ],
       limit: 10,
       raw: true,
     });
 
-    const datosNormalizado = data.map((row) => ({
-      value: row.id,
-      label: row.nombre_calle,
-    }));
-
-    return datosNormalizado;
-
     return data;
   }
   static async getId(id) {
-    const datoId = await model.findByPk(id, { raw: true });
+    const datoId = await calleRamalModel.findByPk(id, { raw: true });
     if (!datoId) {
       const err = new Error('No se encontro la calle');
       err.statusCode = 404;
@@ -98,7 +95,7 @@ export class CalleRamalServices {
   static async create(payload) {
     const { nombre_calle } = payload;
 
-    const calleSearch = await model.findOne({
+    const calleSearch = await calleRamalModel.findOne({
       where: {
         nombre_calle,
       },
@@ -110,13 +107,13 @@ export class CalleRamalServices {
       throw err;
     }
 
-    const created = await model.create({ nombre_calle });
+    const created = await calleRamalModel.create({ nombre_calle });
     return created;
   }
   static async update(id, payload) {
     const { nombre_calle } = payload;
 
-    const calleUpdate = await model.findByPk(id);
+    const calleUpdate = await calleRamalModel.findByPk(id);
 
     if (!calleUpdate) {
       const err = new Error('No exites la calle');
@@ -124,7 +121,7 @@ export class CalleRamalServices {
       throw err;
     }
 
-    const calleSearch = await model.findOne({
+    const calleSearch = await calleRamalModel.findOne({
       where: {
         nombre_calle,
         id: {
@@ -142,26 +139,25 @@ export class CalleRamalServices {
     await calleUpdate.update({ nombre_calle });
     return calleUpdate;
   }
-  static async delete(id) {
-    const dataId = await model.findByPk(id);
+  static async cambiarEstado(id) {
+    const dataId = await calleRamalModel.findByPk(id);
     if (!dataId) {
-      const err = new Error('No exites la calle');
-      err.statusCode = 400;
+      const err = new Error('No se encotro la calle');
+      err.statusCode = 404;
       throw err;
     }
+    if (dataId.estado === true) {
+      const accionAsociada = await accionModel.findOne({
+        where: { calle_id: id },
+      });
 
-    //relaciones socios agregar
-
-    //
-    await dataId.destroy();
-    return;
-  }
-  static async toggleStatus(id) {
-    const dataId = await model.findByPk(id);
-    if (!dataId) {
-      const err = new Error('No exite la calle');
-      err.statusCode = 400;
-      throw err;
+      if (accionAsociada) {
+        const err = new Error(
+          'No se puede desactivar la calle, tiene acciones asociadas',
+        );
+        err.statusCode = 409;
+        throw err;
+      }
     }
 
     dataId.estado = !dataId.estado;

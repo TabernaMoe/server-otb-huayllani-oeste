@@ -19,11 +19,10 @@ export const reciboAguaModel = sequelize.define(
     },
     numero_recibo: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       // unique: true,
-      defaultValue: sequelize.literal(
-        "nextval('recibo_agua_numero_recibo_seq')",
-      ),
+      // defaultValue: sequelize.literal(
+      //   "nextval('recibo_agua_numero_recibo_seq')",
+      // ),
     },
     fecha_emision: {
       type: DataTypes.DATE,

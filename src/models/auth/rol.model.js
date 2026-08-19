@@ -6,10 +6,9 @@ export const rolModel = sequelize.define(
   'auth_roles',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false,
     },
     nombre_rol: {
       type: DataTypes.STRING,

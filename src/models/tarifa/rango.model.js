@@ -2,18 +2,18 @@ import { sequelize } from '../../config/database.js';
 import { DataTypes } from 'sequelize';
 import { tarifaModel } from './tarifa.model.js';
 export const rangoTarifaModel = sequelize.define(
-  'tarifa_rango',
+  'TarifaRango',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     tarifa_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: tarifaModel,
+        model: 'tarifas',
         key: 'id',
       },
       onDelete: 'CASCADE',
@@ -33,8 +33,8 @@ export const rangoTarifaModel = sequelize.define(
     },
   },
   {
-    tableName: 'tarifa_rango',
-    timestamps: false,
+    tableName: 'tarifas_rango',
+    timestamps: true,
   },
 );
 

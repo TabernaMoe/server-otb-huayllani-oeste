@@ -63,7 +63,7 @@ export class TarifaServices {
       data: rows,
     };
   }
-  static async getAllSelect(search = '') {
+  static async getSelect(search = '') {
     search = search?.trim() || '';
 
     let where = { estado: true };

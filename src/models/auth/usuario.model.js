@@ -6,10 +6,9 @@ export const usuarioModel = sequelize.define(
   'auth_usuarios',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false,
     },
     nombre_usuario: {
       type: DataTypes.STRING(50),
@@ -30,6 +29,10 @@ export const usuarioModel = sequelize.define(
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
+    debe_camibiar_contrasenia: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     estado: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
@@ -38,15 +41,6 @@ export const usuarioModel = sequelize.define(
   {
     tableName: 'auth_usuarios',
     timestamps: false,
-    indexes: [
-      {
-        unique: true,
-        fields: ['nombre_usuario'],
-      },
-      {
-        fields: ['rol_id'],
-      },
-    ],
   },
 );
 

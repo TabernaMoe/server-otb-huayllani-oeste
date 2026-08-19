@@ -1,4 +1,4 @@
-import { col, fn, literal, Op } from 'sequelize';
+import { col, fn, literal, Op, Sequelize } from 'sequelize';
 import { sequelize } from '../../../config/database.js';
 import { accionModel } from '../../../models/accion/accion.model.js';
 import { accionDetalleModel } from '../../../models/accion/accionDetalle.model.js';
@@ -41,11 +41,12 @@ export class accionServices {
 
     if (search) {
       where[Op.or] = [
-        {
-          codigo_interno: {
+        Sequelize.where(
+          Sequelize.cast(Sequelize.col('acciones.codigo_interno'), 'TEXT'),
+          {
             [Op.iLike]: `%${search}%`,
           },
-        },
+        ),
         {
           '$calleAccion.nombre_calle$': {
             [Op.iLike]: `%${search}%`,
@@ -240,6 +241,7 @@ export class accionServices {
 
       const cobroPayload = detallePagoAccionSearch.map((row) => ({
         socio_id,
+        accion_id: accionCreated.id,
         periodo_id: peridoActivo.id,
         tipo_cobro: 'ACCION',
         concepto: row.nombre_accion,
@@ -423,7 +425,7 @@ export class accionServices {
           (row) => row.estado === 'PENDIENTE',
         );
 
-        if (CobrosEstado.length === 0) {
+        if (CobrosEstado.length > 0) {
           const err = new Error(
             'No se puede eliminar algunos detalles pago accion porque ya fueron pagados o estan en proceso de pago',
           );
@@ -437,6 +439,7 @@ export class accionServices {
               [Op.in]: cobrosIds,
             },
           },
+          transaction: t,
         });
         await cobroModel.destroy({
           where: {
@@ -444,6 +447,7 @@ export class accionServices {
               [Op.in]: cobrosIds,
             },
           },
+          transaction: t,
         });
 
         await accionDetalleModel.destroy({
@@ -453,6 +457,7 @@ export class accionServices {
               [Op.in]: faltantesId,
             },
           },
+          transaction: t,
         });
       }
       await accionSearch.update(dataUpdate, { transaction: t });
@@ -475,6 +480,7 @@ export class accionServices {
             },
           },
         ],
+        transaction: t,
       });
       return dataId;
     });

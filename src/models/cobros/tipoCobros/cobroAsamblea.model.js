@@ -7,9 +7,9 @@ import { asistenciaAsambleaModel } from '../../asamblea/asistenciaAsamblea.model
 export const cobroAsamblea = sequelize.define(
   'cobro_asamblea',
   {
-    id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     asistencia_asamblea_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       references: {
         model: 'asistencias_asamblea',
         key: 'id',
@@ -18,7 +18,7 @@ export const cobroAsamblea = sequelize.define(
       onUpdate: 'CASCADE',
     },
     accion_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'acciones',
@@ -28,7 +28,7 @@ export const cobroAsamblea = sequelize.define(
       onDelete: 'RESTRICT',
     },
     cobro_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'cobros',

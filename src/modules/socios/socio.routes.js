@@ -7,7 +7,6 @@ import { checkPermiss } from '../../middlewares/auth.middlewares.js';
 const routes = new Router();
 
 routes.get('/', checkPermiss('socio.ver'), controller.getAll);
-routes.get('/select', checkPermiss('socio.ver'), controller.getAllSelect);
 routes.get('/:id', checkPermiss('socio.ver'), controller.getId);
 routes.post(
   '/',
@@ -22,9 +21,9 @@ routes.patch(
   controller.update,
 );
 routes.patch(
-  '/toggle-status/:id',
+  '/cambiar-estado/:id',
   checkPermiss('socio.estado'),
-  controller.toggleStatus,
+  controller.cambiarEstado,
 );
 
 export default routes;

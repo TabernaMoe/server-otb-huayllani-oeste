@@ -10,7 +10,7 @@ export const cobroAguaModel = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     lectura_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'lecturas_agua',
@@ -20,7 +20,7 @@ export const cobroAguaModel = sequelize.define(
       onUpdate: 'CASCADE',
     },
     accion_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'acciones',
@@ -30,7 +30,7 @@ export const cobroAguaModel = sequelize.define(
       onUpdate: 'CASCADE',
     },
     socio_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'socios',
@@ -40,7 +40,7 @@ export const cobroAguaModel = sequelize.define(
       onDelete: 'RESTRICT',
     },
     periodo_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'periodos',

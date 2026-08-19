@@ -6,7 +6,7 @@ export const pagoModel = sequelize.define(
   'pagos',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
@@ -33,12 +33,12 @@ export const pagoDetalleModel = sequelize.define(
   'pago_detalle',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     cobro_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'cobros',
@@ -48,7 +48,7 @@ export const pagoDetalleModel = sequelize.define(
       onUpdate: 'CASCADE',
     },
     pago_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'pagos',

@@ -5,10 +5,9 @@ export const calleRamalModel = sequelize.define(
   'calles_ramal',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false,
     },
     nombre_calle: {
       type: DataTypes.STRING,

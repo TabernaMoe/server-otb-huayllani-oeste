@@ -33,7 +33,7 @@ export class TaricaController {
       next(e);
     }
   }
-  static async getAllSelect(req, res, next) {
+  static async getSelect(req, res, next) {
     try {
       let search = req.query.search;
 
@@ -42,7 +42,7 @@ export class TaricaController {
           ? search.trim()
           : '';
 
-      const result = await services.getAllSelect(search);
+      const result = await services.getSelect(search);
 
       return res.status(200).json({
         ok: true,

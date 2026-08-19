@@ -1,7 +1,8 @@
 import { socioModel } from '../../models/socio.model.js';
 import { usuarioModel } from '../../models/auth/usuario.model.js';
 import { sequelize } from '../../config/database.js';
-import { Op, Sequelize } from 'sequelize';
+import { Op, Sequelize, fn, col } from 'sequelize';
+import { auditoriaModel } from '../../models/auth/auditoria.model.js';
 import bcrypt from 'bcrypt';
 
 export class SocioServices {
@@ -19,7 +20,6 @@ export class SocioServices {
       const error = new Error(
         `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
       );
-
       error.status = 400;
       throw error;
     }
@@ -88,7 +88,7 @@ export class SocioServices {
       data: rows,
     };
   }
-  static async getAllSelect(search = '') {
+  static async getSelect(search = '') {
     search = search?.trim() || '';
 
     let where = { estado: true };
@@ -134,11 +134,19 @@ export class SocioServices {
     const data = await socioModel.findAll({
       where,
       attributes: [
-        'id',
-        'ci_socio',
-        'nombres',
-        'primer_apellido',
-        'segundo_apellido',
+        ['id', 'value'],
+        [
+          fn(
+            'CONCAT_WS',
+            ' ',
+            col('ci_socio'),
+            '-',
+            col('nombres'),
+            col('primer_apellido'),
+            col('segundo_apellido'),
+          ),
+          'label',
+        ],
       ],
       limit: 10,
       raw: true,
@@ -149,7 +157,7 @@ export class SocioServices {
   static async getId(id) {
     const dataId = await socioModel.findByPk(id, {
       attributes: {
-        exclude: ['createdAt', 'updatedAt', 'deletedAt', 'user_id'],
+        exclude: ['createdAt', 'updatedAt', 'user_id'],
       },
       raw: true,
     });
@@ -160,21 +168,27 @@ export class SocioServices {
     }
     return dataId;
   }
-  static async create(payload) {
-    const dataCreate = await sequelize.transaction(async (t) => {
-      const { ci_socio } = payload;
+  static async create(id, payload) {
+    return sequelize.transaction(async (t) => {
+      const { ci_socio, nombre_completo_auditoria, ...datosSocio } = payload;
+
+      const usuarioSearch = await usuarioModel.findByPk(id, { transaction: t });
+      if (!usuarioSearch) {
+        const err = new Error('No se encontro el usuario');
+        err.statuCode = 404;
+        throw err;
+      }
 
       const socioSearch = await socioModel.findOne({
         where: {
           ci_socio,
         },
-        paranoid: false,
         transaction: t,
       });
 
       if (socioSearch) {
         const err = new Error('El socio ya existe');
-        err.statuCode = 403;
+        err.statuCode = 409;
         throw err;
       }
 
@@ -192,7 +206,7 @@ export class SocioServices {
       );
 
       const socioCreated = await socioModel.create(
-        { ...payload, user_id: userCreated.id },
+        { ci_socio, ...datosSocio, user_id: userCreated.id },
         { transaction: t },
       );
 
@@ -207,12 +221,30 @@ export class SocioServices {
         transaction: t,
       });
 
-      return socioWithUser;
+      const socioJson = socioWithUser.toJSON();
+
+      // await auditoriaModel.create(
+      //   {
+      //     usuario_id: id,
+      //     registro_id: socioJson.id,
+      //     tabla_afectada: 'SOCIOS',
+      //     accion: 'CREAR',
+      //     nombre_completo: nombre_completo_auditoria,
+      //     descripcion: `Se creo el socio ${socioJson.ci_socio} ${socioJson.ci_expedido} ${socioJson.nombres} ${socioJson.primer_apellido} ${socioJson.segundo_apellido}`,
+      //     datos_anteriores: null,
+      //     datos_nuevos: socioJson,
+      //   },
+      //   {
+      //     transaction: t,
+      //   },
+      // );
+
+      return socioJson;
     });
-    return dataCreate;
   }
   static async update(id, payload) {
     const dataUpdate = await sequelize.transaction(async (t) => {
+      //----------------
       const socioSearch = await socioModel.findByPk(id, {
         transaction: t,
       });
@@ -263,11 +295,12 @@ export class SocioServices {
         ],
         transaction: t,
       });
+
       return socioUpdated;
     });
     return dataUpdate;
   }
-  static async toggleStatus(id) {
+  static async cambiarEstado(id) {
     return await sequelize.transaction(async (t) => {
       const socioSearch = await socioModel.findByPk(id, {
         transaction: t,

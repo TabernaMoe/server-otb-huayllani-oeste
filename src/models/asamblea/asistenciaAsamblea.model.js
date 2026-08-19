@@ -6,9 +6,9 @@ import { accionModel } from '../accion/accion.model.js';
 export const asistenciaAsambleaModel = sequelize.define(
   'asistencias_asamblea',
   {
-    id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     asamblea_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'asambleas',
@@ -18,7 +18,7 @@ export const asistenciaAsambleaModel = sequelize.define(
       onUpdate: 'CASCADE',
     },
     accion_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'acciones',

@@ -2,88 +2,74 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 import { usuarioModel } from './usuario.model.js';
 
-export const auditoriaLogModel = sequelize.define(
+export const auditoriaModel = sequelize.define(
   'auditoria_log',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-
     usuario_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: usuarioModel,
+        model: 'auth_usuarios',
         key: 'id',
       },
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
-
-    tabla_afectada: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
-
     registro_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
-
-    nombre_completo: {
-      type: DataTypes.STRING(150),
+    tabla_afectada: {
+      type: DataTypes.ENUM('SOCIOS'),
       allowNull: false,
     },
-
     accion: {
       type: DataTypes.ENUM(
         'CREAR',
         'ACTUALIZAR',
-        'ELIMINAR',
         'ANULAR',
-        'HABILITAR',
-        'DESHABILITAR',
+        'ACTIVAR',
+        'INACTIVAR',
       ),
       allowNull: false,
     },
-
-    motivo: {
+    nombre_completo: {
+      type: DataTypes.STRING(150),
+      allowNull: false,
+    },
+    descripcion: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-
     datos_anteriores: {
       type: DataTypes.JSONB,
-      allowNull: true,
     },
-
     datos_nuevos: {
       type: DataTypes.JSONB,
-      allowNull: true,
+    },
+    fecha: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
-    tableName: 'auditoria_log',
+    tableName: 'auditoria',
     timestamps: true,
-
-    indexes: [
-      { fields: ['usuario_id'] },
-      { fields: ['tabla_afectada'] },
-      { fields: ['registro_id'] },
-      { fields: ['accion'] },
-      { fields: ['created_at'] },
-    ],
   },
 );
 
-auditoriaLogModel.belongsTo(usuarioModel, {
+auditoriaModel.belongsTo(usuarioModel, {
   foreignKey: 'usuario_id',
-  as: 'usuario',
+  as: 'usuarioAuditoria',
 });
 
-usuarioModel.hasMany(auditoriaLogModel, {
+usuarioModel.hasMany(auditoriaModel, {
   foreignKey: 'usuario_id',
   as: 'auditorias',
 });

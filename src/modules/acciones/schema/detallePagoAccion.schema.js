@@ -3,9 +3,11 @@ import {
   reqString,
   reqDecimal,
   reqEnum,
+  reqIntegerId,
 } from '../../../validators/funcionesZod.js';
 
 export const detallePagoAccionSchema = z.object({
+  tipo_accion_id: reqIntegerId({ label: 'Tipo accion' }),
   nombre_accion: reqString({
     label: 'Nombre de calle',
     min: 3,

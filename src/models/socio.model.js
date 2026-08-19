@@ -6,16 +6,15 @@ export const socioModel = sequelize.define(
   'socios',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false,
     },
     user_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: usuarioModel,
+        model: 'auth_usuarios',
         key: 'id',
       },
     },

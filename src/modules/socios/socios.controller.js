@@ -33,7 +33,7 @@ export class SocioController {
       next(e);
     }
   }
-  static async getAllSelect(req, res, next) {
+  static async getSelect(req, res, next) {
     try {
       let search = req.query.search;
 
@@ -42,7 +42,7 @@ export class SocioController {
           ? search.trim()
           : '';
 
-      const result = await services.getAllSelect(search);
+      const result = await services.getSelect(search);
 
       return res.status(200).json({
         ok: true,
@@ -74,7 +74,8 @@ export class SocioController {
   static async create(req, res, next) {
     try {
       const payload = req.body;
-      const dataCreated = await services.create(payload);
+      const { id } = req.usuario;
+      const dataCreated = await services.create(id, payload);
       return res
         .status(200)
         .json({ ok: true, message: 'Socio creado correctamente', dataCreated });
@@ -85,6 +86,7 @@ export class SocioController {
   static async update(req, res, next) {
     try {
       const { id } = req.params;
+
       const payload = req.body;
 
       const idNumber = Number(id);
@@ -103,7 +105,7 @@ export class SocioController {
       next(e);
     }
   }
-  static async toggleStatus(req, res, next) {
+  static async cambiarEstado(req, res, next) {
     try {
       const { id } = req.params;
 
@@ -113,7 +115,7 @@ export class SocioController {
         const err = new Error('El id debe ser un número entero');
         throw err;
       }
-      const dataToggled = await services.toggleStatus(id);
+      const dataToggled = await services.cambiarEstado(id);
       return res.status(200).json({
         ok: true,
         ...dataToggled,

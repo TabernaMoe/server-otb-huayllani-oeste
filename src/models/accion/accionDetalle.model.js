@@ -5,12 +5,12 @@ export const accionDetalleModel = sequelize.define(
   'accion_detalle',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     accion_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'acciones',
@@ -20,7 +20,7 @@ export const accionDetalleModel = sequelize.define(
       onDelete: 'RESTRICT',
     },
     detalle_pago_accion_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'detalle_pago_accion',

@@ -7,7 +7,6 @@ const routes = new Router();
 
 routes
   .get('/', checkPermiss('calle.ver'), controller.getAll)
-  .get('/select', checkPermiss('calle.ver'), controller.getAllSelect)
   .get('/:id', checkPermiss('calle.ver'), controller.getId)
   .post(
     '/',
@@ -22,10 +21,9 @@ routes
     controller.update,
   )
   .patch(
-    '/toggle-status/:id',
+    '/cambiar-estado/:id',
     checkPermiss('calle.estado'),
-    controller.toggleStatus,
-  )
-  .delete('/:id', checkPermiss('calle.eliminar'), controller.delete);
+    controller.cambiarEstado,
+  );
 
 export default routes;

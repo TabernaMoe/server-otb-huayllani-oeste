@@ -6,15 +6,15 @@ export const periodoModel = sequelize.define(
   'periodos',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     gestion_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: gestionModel,
+        model: 'gestiones',
         key: 'id',
       },
       onUpdate: 'CASCADE',
@@ -51,7 +51,7 @@ export const periodoModel = sequelize.define(
       allowNull: false,
     },
     estado: {
-      type: DataTypes.ENUM('ACTIVO', 'PENDIENTE', 'CERRADO'),
+      type: DataTypes.ENUM('ACTIVO', 'PENDIENTE', 'CERRADO', 'BLOQUEADO'),
       defaultValue: 'PENDIENTE',
     },
     fecha_cierre: {

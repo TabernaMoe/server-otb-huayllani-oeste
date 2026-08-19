@@ -5,7 +5,7 @@ export const permisoModel = sequelize.define(
   'auth_permisos',
   {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false,

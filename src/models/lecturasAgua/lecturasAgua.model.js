@@ -8,7 +8,7 @@ export const lecturaAguaModel = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     accion_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'acciones',
@@ -18,7 +18,7 @@ export const lecturaAguaModel = sequelize.define(
       onUpdate: 'CASCADE',
     },
     periodo_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'periodos',
