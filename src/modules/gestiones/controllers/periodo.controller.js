@@ -4,7 +4,7 @@ export class peridoController {
   static async getAll(req, res, next) {
     try {
       const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 10;
+      const limit = Number(req.query.limit) || 12;
 
       let search = req.query.search;
 

@@ -62,4 +62,22 @@ export class AccionController {
       next(e);
     }
   }
+  static async cambiarEstado(req, res, next) {
+    try {
+      const { id } = req.params;
+      const payload = req.body;
+      let idNumber = Number(id);
+      if (isNaN(idNumber) && !Number.isInteger(idNumber)) {
+        const err = new Error('El id debe ser un numero entero');
+        throw err;
+      }
+      await services.cambiarEstado(idNumber, payload);
+      return res.status(200).json({
+        ok: true,
+        message: 'Se cambio el estado correctamente',
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

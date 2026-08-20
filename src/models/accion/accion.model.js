@@ -49,7 +49,6 @@ export const accionModel = sequelize.define(
     },
     nro_medidor: {
       type: DataTypes.STRING,
-      allowNull: false,
       unique: true,
     },
     direccion: {

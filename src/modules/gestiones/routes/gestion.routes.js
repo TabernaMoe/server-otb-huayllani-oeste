@@ -15,7 +15,6 @@ routes
     checkPermiss('admin.admin'),
     validateSchema(gestionSchema),
     controller.create,
-  )
-  .delete('/:id', checkPermiss('admin.admin'), controller.delete);
+  );
 
 export default routes;

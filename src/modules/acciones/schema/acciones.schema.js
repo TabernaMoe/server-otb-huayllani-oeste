@@ -11,7 +11,7 @@ export const accionSchema = z.object({
   socio_id: reqIntegerSelect('Socio'),
   calle_id: reqIntegerSelect('Calle'),
   tarifa_id: reqIntegerSelect('Tarifa'),
-  nro_medidor: reqString({ label: 'Nro medidor', min: 3 }),
+  nro_medidor: reqString({ label: 'Nro medidor', min: 3, required: false }),
   //
   direccion: reqString({
     label: 'Dirección',
@@ -56,4 +56,8 @@ export const accionUpdateSchema = z.object({
   estado: reqEstadoAccion('Estado', false),
 
   detallesAccion: reqArrayInteger('Detalles accion', false),
+});
+
+export const estadoAccionSchema = z.object({
+  estado: reqEstadoAccion(),
 });

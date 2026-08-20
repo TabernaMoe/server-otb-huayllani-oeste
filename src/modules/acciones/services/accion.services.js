@@ -10,6 +10,7 @@ import { cobroModel } from '../../../models/cobros/cobro.model.js';
 import { cobroAccionModel } from '../../../models/cobros/tipoCobros/cobroAccion.model.js';
 import { gestionModel } from '../../../models/gestiones/gestion.model.js';
 import { periodoModel } from '../../../models/gestiones/periodo.model.js';
+import { lecturaAguaModel } from '../../../models/lecturasAgua/lecturasAgua.model.js';
 //
 import { ValidacionesSequelize as Validaciones } from '../../../validators/ValidacionesSequelize.js';
 
@@ -146,6 +147,11 @@ export class accionServices {
         },
       ],
     });
+    if (!dataId) {
+      const err = new Error('No se encontro la accion');
+      err.statusCode = 404;
+      throw err;
+    }
 
     const dataPlano = dataId.toJSON();
 
@@ -185,8 +191,6 @@ export class accionServices {
         { transaction: t },
       );
 
-      const nroAcciones = await accionModel.count({ transaction: t });
-
       const nroMedidorSearch = await accionModel.findOne({
         where: {
           nro_medidor,
@@ -208,6 +212,16 @@ export class accionServices {
         err.statusCode = 400;
         throw err;
       }
+      const ultimaAccion = await accionModel.findOne({
+        order: [['codigo_interno', 'DESC']],
+        attributes: ['codigo_interno'],
+        transaction: t,
+        raw: true,
+      });
+
+      const nuevoCodigo = ultimaAccion
+        ? Number(ultimaAccion.codigo_accion) + 1
+        : 1;
 
       const accionCreated = await accionModel.create(
         {
@@ -215,7 +229,7 @@ export class accionServices {
           socio_id,
           calle_id,
           tarifa_id,
-          codigo_interno: nroAcciones + 1,
+          codigo_interno: nuevoCodigo,
           nro_medidor,
           estado,
         },
@@ -245,7 +259,7 @@ export class accionServices {
         periodo_id: peridoActivo.id,
         tipo_cobro: 'ACCION',
         concepto: row.nombre_accion,
-        descripcion: `Cobro de accion del codigo ${nroAcciones + 1}`,
+        descripcion: `Cobro de accion del codigo ${nuevoCodigo}`,
         monto_total: row.precio_accion,
         saldo: row.precio_accion,
       }));
@@ -485,5 +499,75 @@ export class accionServices {
       return dataId;
     });
     return update;
+  }
+  static async cambiarEstado(id, payload) {
+    const { estado } = payload;
+
+    const accionSearch = await accionModel.findByPk(id);
+    if (!accionSearch) {
+      const err = new Error('No se econtro la accion');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const estadosAccion = ['ACTIVO', 'PASIVO', 'ANULADO'];
+    if (!estadosAccion.includes(estado)) {
+      const error = new Error(
+        `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
+      );
+      error.status = 400;
+      throw error;
+    }
+    //--------------ANULADO
+
+    if (estado === 'ANULADO') {
+      const cobroSearch = await cobroModel.findOne({
+        where: {
+          accion_id: id,
+          estado: {
+            [Op.in]: ['PENDIENTE', 'PARCIAL', 'PAGADO'],
+          },
+        },
+      });
+      if (cobroSearch) {
+        const err = new Error(
+          'No se pude cambiar el estado porque tiene cobros pendientes o falta completar cobros',
+        );
+        err.statusCode = 409;
+        throw err;
+      }
+      const lecturas = await lecturaAguaModel.findOne({
+        where: {
+          accion_id: id,
+        },
+      });
+      if (lecturas) {
+        const err = new Error(
+          'No se pude cambiar el estado porque tiene lecturas',
+        );
+        err.statusCode = 409;
+        throw err;
+      }
+    }
+    //-------------PASIVO
+    if (estado === 'PASIVO') {
+      const lecturas = await lecturaAguaModel.findOne({
+        where: {
+          accion_id: id,
+        },
+      });
+      if (lecturas) {
+        const err = new Error(
+          'No se pude cambiar el estado porque tiene lecturas',
+        );
+        err.statusCode = 409;
+        throw err;
+      }
+    }
+    //-------------
+
+    await accionSearch.update({ estado });
+
+    return;
   }
 }

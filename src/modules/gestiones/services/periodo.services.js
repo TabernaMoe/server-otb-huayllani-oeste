@@ -67,6 +67,12 @@ export class periodoServices {
   }
   static async closePeriodo(id) {
     const closeData = await sequelize.transaction(async (t) => {
+      const gestionActiva = await gestionModel.findOne({
+        where: {
+          estado: 'ACTIVO',
+        },
+        transaction: t,
+      });
       const periodoSearch = await periodoModel.findByPk(id, { transaction: t });
       if (!periodoSearch) {
         const err = new Error('No se encontro el periodo');
@@ -81,12 +87,32 @@ export class periodoServices {
 
       await periodoSearch.update({ estado: 'CERRADO' }, { transaction: t });
 
+      const periodoParaBloquear = await periodoModel.findOne({
+        where: {
+          estado: 'CERRADO',
+        },
+      });
+
+      if (periodoParaBloquear) {
+        await periodoParaBloquear.update(
+          { estado: 'BLOQUEADO' },
+          { transaction: t },
+        );
+      }
+
       const nextPeriodo = await periodoModel.findOne({
-        numero_mes: periodoSearch.numero_mes + 1,
+        where: {
+          numero_mes: periodoSearch.numero_mes + 1,
+          gestion_id: gestionActiva.id,
+        },
         transaction: t,
       });
-      await nextPeriodo.update({ estado: 'ACTIVO' }, { transaction: t });
-      return;
+      if (!nextPeriodo) {
+        return;
+      } else {
+        await nextPeriodo.update({ estado: 'ACTIVO' }, { transaction: t });
+        return;
+      }
     });
     return;
   }

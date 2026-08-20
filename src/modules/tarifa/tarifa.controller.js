@@ -104,26 +104,7 @@ export class TaricaController {
       next(e);
     }
   }
-  static async delete(req, res, next) {
-    try {
-      const { id } = req.params;
-      const idNumber = Number(id);
-
-      if (isNaN(idNumber) || !Number.isInteger(idNumber)) {
-        const err = new Error('El id debe ser un número entero');
-        throw err;
-      }
-
-      await services.delete(idNumber);
-      return res.status(200).json({
-        ok: true,
-        message: 'Tarifa eliminada correctamente',
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-  static async toggleStatus(req, res, next) {
+  static async cambiarEstado(req, res, next) {
     try {
       const { id } = req.params;
       const idNumber = Number(id);
@@ -131,7 +112,7 @@ export class TaricaController {
         const err = new Error('El id debe ser un número entero');
         throw err;
       }
-      await services.toggleStatus(idNumber);
+      await services.cambiarEstado(idNumber);
       return res.status(200).json({
         ok: true,
         message: 'Se cambio su estado correctamente',

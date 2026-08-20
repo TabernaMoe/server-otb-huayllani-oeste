@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import { AccionController as controller } from '../controllers/accion.controller.js';
 import { validateSchema } from '../../../middlewares/validateSchema.middlewares.js';
-import { accionSchema, accionUpdateSchema } from '../schema/acciones.schema.js';
+import {
+  accionSchema,
+  accionUpdateSchema,
+  estadoAccionSchema,
+} from '../schema/acciones.schema.js';
 import { checkPermiss } from '../../../middlewares/auth.middlewares.js';
 import { TipoAccionController } from '../controllers/tipoAccion.controller.js';
 import { DetallePagoAccionController } from '../controllers/detallePagoAccion.controller.js';
@@ -44,6 +48,12 @@ routes
     checkPermiss('acciones.accion.editar'),
     validateSchema(accionUpdateSchema),
     controller.update,
+  )
+  .patch(
+    '/camibiar-estado/:id',
+    checkPermiss('acciones.accion.cambiarEstado'),
+    validateSchema(estadoAccionSchema),
+    controller.cambiarEstado,
   );
 
 export default routes;
