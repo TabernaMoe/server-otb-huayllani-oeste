@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { col, fn, Op, Sequelize } from 'sequelize';
 import { accionModel } from '../../models/accion/accion.model.js';
 import { cobroModel } from '../../models/cobros/cobro.model.js';
@@ -6,7 +7,9 @@ import { reciboModel } from '../../models/cobros/recibo.model.js';
 import { socioModel } from '../../models/socio.model.js';
 import { periodoModel } from '../../models/gestiones/periodo.model.js';
 import { sequelize } from '../../config/database.js';
-
+import { BancoEconomicoQr } from '../../integrations/bancoEconomico/bancoEconomico.qr.js';
+import { PagoQrRepository } from '../pagoQr/pagoQr.repository.js';
+import { PagoQrDetalleModel } from '../../modules/pagoQr/pagoQr.model.js';
 export class CobroServices {
   static async getAll(page = 1, limit = 10, search = '', estado = true) {
     page = Number(page) || 1;
@@ -122,10 +125,6 @@ export class CobroServices {
     };
   }
   static async getId(id) {
-    console.log('**************');
-    console.log(id);
-    console.log('**************');
-
     const dataId = await socioModel.findByPk(id, {
       attributes: [
         'ci_socio',
@@ -177,12 +176,7 @@ export class CobroServices {
   }
   static async pagarAdmin(payload) {
     return await sequelize.transaction(async (t) => {
-      const {
-        socio_id,
-        monto,
-        cobros = [],
-        metodo_pago = 'EFECTIVO',
-      } = payload;
+      const { socio_id, monto, cobros = [], metodo_pago } = payload;
 
       const montoPago = Number(monto);
 
@@ -250,76 +244,223 @@ export class CobroServices {
           );
         }
       }
+      if (metodo_pago === 'EFECTIVO') {
+        const pagoCreated = await pagoModel.create(
+          {
+            monto_pagado: montoPago,
+            metodo_pago,
+            fecha_pago: new Date(),
+          },
+          { transaction: t },
+        );
 
-      const pagoCreated = await pagoModel.create(
-        {
-          monto_pagado: montoPago,
-          metodo_pago,
-          fecha_pago: new Date(),
-        },
-        { transaction: t },
-      );
+        const detalles = [];
 
-      const detalles = [];
+        for (const cobro of cobrosDB) {
+          const saldoActual = Number(cobro.saldo || 0);
 
-      for (const cobro of cobrosDB) {
-        const saldoActual = Number(cobro.saldo || 0);
+          let montoAplicado = saldoActual;
 
-        let montoAplicado = saldoActual;
+          if (cobrosDB.length === 1) {
+            montoAplicado = montoPago;
+          }
 
-        if (cobrosDB.length === 1) {
-          montoAplicado = montoPago;
+          const nuevoMontoPagado =
+            Number(cobro.monto_pagado || 0) + montoAplicado;
+
+          const nuevoSaldo = saldoActual - montoAplicado;
+
+          const nuevoEstado = nuevoSaldo === 0 ? 'PAGADO' : 'PARCIAL';
+
+          await cobro.update(
+            {
+              monto_pagado: nuevoMontoPagado,
+              saldo: nuevoSaldo,
+              estado: nuevoEstado,
+            },
+            { transaction: t },
+          );
+
+          const detalle = await pagoDetalleModel.create(
+            {
+              cobro_id: cobro.id,
+              pago_id: pagoCreated.id,
+              monto: montoAplicado,
+            },
+            { transaction: t },
+          );
+
+          detalles.push(detalle);
         }
-
-        const nuevoMontoPagado =
-          Number(cobro.monto_pagado || 0) + montoAplicado;
-
-        const nuevoSaldo = saldoActual - montoAplicado;
-
-        const nuevoEstado = nuevoSaldo === 0 ? 'PAGADO' : 'PARCIAL';
-
-        await cobro.update(
+        //
+        const reciboCreated = await reciboModel.create(
           {
-            monto_pagado: nuevoMontoPagado,
-            saldo: nuevoSaldo,
-            estado: nuevoEstado,
-          },
-          { transaction: t },
-        );
-
-        const detalle = await pagoDetalleModel.create(
-          {
-            cobro_id: cobro.id,
             pago_id: pagoCreated.id,
-            monto: montoAplicado,
+            // numero_recibo: numeroRecibo,
+            fecha_emision: new Date(),
           },
           { transaction: t },
         );
 
-        detalles.push(detalle);
+        return {
+          pago: pagoCreated,
+          recibo: reciboCreated,
+          detalle: detalles,
+        };
+      } else {
+        const transactionId = `QR-${crypto.randomUUID()}`;
+        const bancoResponse = await BancoEconomicoQr.generateQR({
+          transactionId,
+          currency: 'BOB',
+          amount: montoPago,
+          description: 'Prueba pagos',
+          dueDate: '2026-08-25',
+          singleUse: true,
+          modifyAmount: false,
+        });
+
+        try {
+          const pagoQr = await PagoQrRepository.create({
+            transaction_id: transactionId,
+
+            qr_id: bancoResponse.qrId,
+
+            qr_image: bancoResponse.qrImage,
+
+            monto: montoPago,
+
+            moneda: 'BOB',
+
+            descripcion: 'description' || null,
+
+            fecha_vencimiento: '2026-08-25',
+
+            single_use: true,
+
+            modify_amount: false,
+
+            estado: 'PENDIENTE',
+          });
+
+          for (const cobro of cobrosDB) {
+            const saldoActual = Number(cobro.saldo || 0);
+
+            let montoAplicado = saldoActual;
+
+            if (cobrosDB.length === 1) {
+              montoAplicado = montoPago;
+            }
+
+            const nuevoMontoPagado =
+              Number(cobro.monto_pagado || 0) + montoAplicado;
+
+            const nuevoSaldo = saldoActual - montoAplicado;
+
+            const nuevoEstado = nuevoSaldo === 0 ? 'PAGADO' : 'PARCIAL';
+
+            await cobro.update(
+              {
+                monto_pagado: nuevoMontoPagado,
+                saldo: nuevoSaldo,
+                estado: nuevoEstado,
+              },
+              { transaction: t },
+            );
+
+            await PagoQrDetalleModel.create(
+              {
+                cobro_id: cobro.id,
+                pago_qr_id: pagoQr.id,
+                monto: montoAplicado,
+              },
+              { transaction: t },
+            );
+          }
+
+          return {
+            id: pagoQr.id,
+            transactionId: pagoQr.transaction_id,
+            qrId: pagoQr.qr_id,
+            qrImage: pagoQr.qr_image,
+            amount: pagoQr.monto,
+            currency: pagoQr.moneda,
+            description: pagoQr.descripcion,
+            dueDate: pagoQr.fecha_vencimiento,
+            estado: pagoQr.estado,
+          };
+        } catch (dbError) {
+          await this.cancelarQrCompensatorio({
+            qrId: bancoResponse.qrId,
+
+            transactionId,
+
+            dbError,
+          });
+
+          throw dbError;
+        }
       }
-
-      const [result] = await sequelize.query(
-        "SELECT nextval('recibo_seq') as numero",
-        { transaction: t },
-      );
-
-      const numeroRecibo = result[0].numero;
-
-      const reciboCreated = await reciboModel.create(
-        {
-          pago_id: pagoCreated.id,
-          numero_recibo: numeroRecibo,
-          fecha_emision: new Date(),
-        },
-        { transaction: t },
-      );
-
-      return {
-        pago: pagoCreated,
-        recibo: reciboCreated,
-        detalle: detalles,
-      };
     });
+  }
+  static async cancelarQrCompensatorio({ qrId, transactionId, dbError }) {
+    try {
+      await BancoEconomicoQr.cancelQR(qrId);
+
+      console.error(`[QR COMPENSADO] QR anulado: ${qrId}`);
+    } catch (cancelError) {
+      console.error('[QR COMPENSACIÓN FALLIDA]', {
+        qrId,
+        transactionId,
+
+        databaseError: dbError.message,
+
+        cancelError: cancelError.message,
+      });
+
+      const error = new Error('No se pudo registrar ni anular el QR generado');
+
+      error.statusCode = 500;
+
+      throw error;
+    }
+  }
+  static async verificarPago(id) {
+    const pago = await PagoQrRepository.findById(id);
+
+    if (!pago) {
+      const error = new Error('Pago QR no encontrado');
+
+      error.statusCode = 404;
+
+      throw error;
+    }
+
+    const bancoResponse = await BancoEconomicoQr.statusQR(pago.qr_id);
+
+    const statusQrCode = Number(bancoResponse.statusQrCode);
+
+    let estado;
+
+    switch (statusQrCode) {
+      case 0:
+        estado = 'PENDIENTE';
+        break;
+
+      case 1:
+        estado = 'PAGADO';
+        break;
+
+      case 9:
+        estado = 'ANULADO';
+        break;
+
+      default: {
+        const error = new Error(`Estado QR desconocido: ${statusQrCode}`);
+
+        error.statusCode = 502;
+
+        throw error;
+      }
+    }
   }
 }

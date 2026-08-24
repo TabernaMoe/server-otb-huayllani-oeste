@@ -17,4 +17,10 @@ export const env = {
   },
   JWT_SECRET: process.env.JWT_SECRET || 'default_secret',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '1d',
+  //partes del banco
+  BANCO_ECONOMICO_BASE_URL: process.env.BANCO_ECONOMICO_BASE_URL,
+  BANCO_ECONOMICO_USER: process.env.BANCO_ECONOMICO_USER,
+  BANCO_ECONOMICO_PASSWORD: process.env.BANCO_ECONOMICO_PASSWORD,
+  BANCO_ECONOMICO_AES_KEY: process.env.BANCO_ECONOMICO_AES_KEY,
+  BANCO_ECONOMICO_ACCOUNT: process.env.BANCO_ECONOMICO_ACCOUNT,
 };

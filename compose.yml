@@ -33,6 +33,11 @@ services:
       - NODE_ENV=development
       - JWT_SECRET=tu_secreto_aqui
       - JWT_EXPIRES_IN=720h
+      - BANCO_ECONOMICO_BASE_URL=https://apimktdesa.baneco.com.bo/ApiGateway
+      - BANCO_ECONOMICO_USER=26551010
+      - BANCO_ECONOMICO_PASSWORD=1234
+      - BANCO_ECONOMICO_AES_KEY=40A318B299F245C2B697176723088629
+      - BANCO_ECONOMICO_ACCOUNT=1061602532
     depends_on:
       - postgres
 volumes:

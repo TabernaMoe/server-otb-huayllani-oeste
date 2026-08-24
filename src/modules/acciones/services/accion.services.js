@@ -176,13 +176,13 @@ export class accionServices {
         estado,
         ...parent
       } = payload;
-      const socioSarch = await Validaciones.validarSocio(socio_id, {
+      await Validaciones.validarSocio(socio_id, {
         transaction: t,
       });
-      const calleSearch = await Validaciones.validarCalle(calle_id, {
+      await Validaciones.validarCalle(calle_id, {
         transaction: t,
       });
-      const tarifaSearch = await Validaciones.validarTarifa(tarifa_id, {
+      await Validaciones.validarTarifa(tarifa_id, {
         transaction: t,
       });
 
@@ -191,17 +191,19 @@ export class accionServices {
         { transaction: t },
       );
 
-      const nroMedidorSearch = await accionModel.findOne({
-        where: {
-          nro_medidor,
-        },
-        transaction: t,
-      });
+      if (nro_medidor) {
+        const nroMedidorSearch = await accionModel.findOne({
+          where: {
+            nro_medidor,
+          },
+          transaction: t,
+        });
 
-      if (nroMedidorSearch) {
-        const err = new Error('Ya hay una accion con ese nro de medidor');
-        err.statusCode = 400;
-        throw err;
+        if (nroMedidorSearch) {
+          const err = new Error('Ya hay una accion con ese nro de medidor');
+          err.statusCode = 400;
+          throw err;
+        }
       }
 
       const estadosPermitidos = ['ACTIVO', 'PASIVO'];
@@ -220,7 +222,7 @@ export class accionServices {
       });
 
       const nuevoCodigo = ultimaAccion
-        ? Number(ultimaAccion.codigo_accion) + 1
+        ? Number(ultimaAccion.codigo_interno) + 1
         : 1;
 
       const accionCreated = await accionModel.create(
