@@ -80,4 +80,22 @@ export class AccionController {
       next(e);
     }
   }
+
+  static async getAcciones(req, res, next) {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const search = req.query.search || '';
+
+      const result = await services.getAcciones(page, limit, search);
+
+      return res.status(200).json({
+        ok: true,
+        message: 'Acciones obtenidas correctamente',
+        ...result,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

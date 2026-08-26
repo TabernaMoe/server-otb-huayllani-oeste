@@ -572,4 +572,105 @@ export class accionServices {
 
     return;
   }
+  static async getAcciones(page = 1, limit = 10, search = '') {
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+
+    const offset = (page - 1) * limit;
+
+    search = search?.trim() || '';
+
+    const where = {};
+
+    where.estado = {
+      [Op.in]: ['ACTIVO', 'PASIVO'],
+    };
+
+    if (search) {
+      where[Op.or] = [
+        Sequelize.where(
+          Sequelize.cast(Sequelize.col('acciones.codigo_interno'), 'TEXT'),
+          {
+            [Op.iLike]: `%${search}%`,
+          },
+        ),
+        {
+          '$calleAccion.nombre_calle$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          '$socioAccion.nombres$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          '$socioAccion.primer_apellido$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          '$socioAccion.segundo_apellido$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          '$tarifaAccion.nombre_tarifa$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+      ];
+    }
+
+    const { count, rows } = await accionModel.findAndCountAll({
+      attributes: {
+        exclude: [
+          'socio_id',
+          'calle_id',
+          'tarifa_id',
+          'createdAt',
+          'updatedAt',
+          'observacion',
+          'direccion',
+        ],
+        include: [
+          [
+            fn(
+              'CONCAT_WS',
+              ' ',
+              col(`socioAccion.nombres`),
+              col(`socioAccion.primer_apellido`),
+              col(`socioAccion.segundo_apellido`),
+            ),
+            'nombre_completo',
+          ],
+          [col('calleAccion.nombre_calle'), 'nombre_calle'],
+          [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
+        ],
+      },
+      include: [
+        { model: socioModel, as: 'socioAccion', attributes: [] },
+        { model: calleRamalModel, as: 'calleAccion', attributes: [] },
+        {
+          model: tarifaModel,
+          as: 'tarifaAccion',
+          attributes: [],
+        },
+      ],
+      where,
+      limit,
+      offset,
+      order: [['id', 'DESC']],
+      subQuery: false,
+      distinct: true,
+    });
+
+    return {
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+      data: rows,
+    };
+  }
 }

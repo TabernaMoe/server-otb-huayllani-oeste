@@ -4,6 +4,9 @@ import { sequelize } from '../../config/database.js';
 import { Op, Sequelize, fn, col } from 'sequelize';
 import { auditoriaModel } from '../../models/auth/auditoria.model.js';
 import bcrypt from 'bcrypt';
+import { accionModel } from '../../models/accion/accion.model.js';
+import { calleRamalModel } from '../../models/calleRamal.model.js';
+import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
 
 export class SocioServices {
   static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
@@ -336,5 +339,33 @@ export class SocioServices {
         socioSearch,
       };
     });
+  }
+  static async getDetalle(id) {
+    const socioSearch = await socioModel.findByPk(id, {
+      attributes: { exclude: ['createdAt', 'updatedAt', 'user_id'] },
+    });
+    if (!socioSearch) {
+      const err = new Error('No se econtro el socio');
+      err.statuCode = 404;
+      throw err;
+    }
+
+    const accionesSearch = await accionModel.findAll({
+      attributes: {
+        include: [
+          [col('calleAccion.nombre_calle'), 'nombre_calle'],
+          [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
+        ],
+        exclude: ['socio_id', 'calle_id', 'tarifa_id'],
+      },
+      where: {
+        socio_id: id,
+      },
+      include: [
+        { model: calleRamalModel, as: 'calleAccion', attributes: [] },
+        { model: tarifaModel, as: 'tarifaAccion', attributes: [] },
+      ],
+    });
+    return { ...socioSearch.toJSON(), acciones: accionesSearch };
   }
 }

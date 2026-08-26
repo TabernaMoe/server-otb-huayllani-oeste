@@ -124,4 +124,22 @@ export class SocioController {
       next(e);
     }
   }
+  static async getDetalle(req, res, next) {
+    try {
+      const { id } = req.params;
+      const idNumber = Number(id);
+
+      if (isNaN(idNumber) || !Number.isInteger(idNumber)) {
+        const err = new Error('El id debe ser un número entero');
+        throw err;
+      }
+      const data = await services.getDetalle(idNumber);
+
+      return res
+        .status(200)
+        .json({ ok: true, message: 'Se obtuvo el perfil correctamente', data });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

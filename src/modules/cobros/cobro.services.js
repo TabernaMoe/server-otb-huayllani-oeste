@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { col, fn, Op, Sequelize } from 'sequelize';
+import { col, fn, Op, Sequelize, where as sequelizeWhere } from 'sequelize';
 import { accionModel } from '../../models/accion/accion.model.js';
 import { cobroModel } from '../../models/cobros/cobro.model.js';
 import { pagoDetalleModel, pagoModel } from '../../models/cobros/pago.model.js';
@@ -122,6 +122,174 @@ export class CobroServices {
       limit,
       totalPages: Math.ceil(count / limit),
       data: rowNor,
+    };
+  }
+  static async getHistorialCobros(page = 1, limit = 10, search = '') {
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+
+    const offset = (page - 1) * limit;
+
+    search = search?.trim() || '';
+
+    let where = {};
+
+    where.estado = {
+      [Op.in]: ['PAGADO', 'PARCIAL'],
+    };
+
+    if (search) {
+      where = {
+        [Op.or]: [
+          // Buscar por CI
+          {
+            '$socioCobro.ci_socio$': {
+              [Op.iLike]: `%${search}%`,
+            },
+          },
+
+          // Buscar por nombres
+          {
+            '$socioCobro.nombres$': {
+              [Op.iLike]: `%${search}%`,
+            },
+          },
+
+          // Buscar por primer apellido
+          {
+            '$socioCobro.primer_apellido$': {
+              [Op.iLike]: `%${search}%`,
+            },
+          },
+
+          // Buscar por segundo apellido
+          {
+            '$socioCobro.segundo_apellido$': {
+              [Op.iLike]: `%${search}%`,
+            },
+          },
+
+          // Buscar nombre completo
+          sequelizeWhere(
+            fn(
+              'CONCAT',
+              col('socioCobro.nombres'),
+              ' ',
+              col('socioCobro.primer_apellido'),
+              ' ',
+              col('socioCobro.segundo_apellido'),
+            ),
+            {
+              [Op.iLike]: `%${search}%`,
+            },
+          ),
+
+          // Buscar por código de acción
+          {
+            '$accionCobro.codigo_interno$': {
+              [Op.iLike]: `%${search}%`,
+            },
+          },
+        ],
+      };
+    }
+
+    const { count, rows } = await cobroModel.findAndCountAll({
+      attributes: {
+        include: [
+          [col('socioCobro.ci_socio'), 'socio_ci'],
+          [
+            fn(
+              'CONCAT',
+              col('socioCobro.nombres'),
+              ' ',
+              col('socioCobro.primer_apellido'),
+              ' ',
+              col('socioCobro.segundo_apellido'),
+            ),
+            'socio_nombre_completo',
+          ],
+          [col('accionCobro.codigo_interno'), 'accion_codigo_interno'],
+        ],
+        exclude: [
+          'createdAt',
+          'updatedAt',
+          'socio_id',
+          'accion_id',
+          'periodo_id',
+        ],
+      },
+      include: [
+        {
+          model: socioModel,
+          as: 'socioCobro',
+          attributes: [],
+        },
+        {
+          model: accionModel,
+          as: 'accionCobro',
+          attributes: [],
+        },
+      ],
+      where,
+      limit,
+      offset,
+      order: [['id', 'DESC']],
+    });
+
+    return {
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+      data: rows,
+    };
+  }
+  static async getHistorialAccion(
+    page = 1,
+    limit = 10,
+    search = '',
+    accion_id,
+  ) {
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+
+    const offset = (page - 1) * limit;
+
+    search = search?.trim() || '';
+
+    let where = {
+      accion_id,
+    };
+
+    const accionSearch = await accionModel.findByPk(accion_id, { raw: true });
+    if (!accionSearch) {
+      const err = new Error('No se econtro la accion');
+      err.statusCode = 404;
+      throw err;
+    }
+    const { count, rows } = await cobroModel.findAndCountAll({
+      attributes: {
+        exclude: [
+          'socio_id',
+          'accion_id',
+          'periodo_id',
+          'createdAt',
+          'updatedAt',
+        ],
+      },
+      where,
+      limit,
+      offset,
+      order: [['id', 'DESC']],
+    });
+
+    return {
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+      data: rows,
     };
   }
   static async getId(id) {

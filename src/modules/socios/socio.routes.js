@@ -8,6 +8,8 @@ const routes = new Router();
 
 routes.get('/', checkPermiss('socio.ver'), controller.getAll);
 routes.get('/:id', checkPermiss('socio.ver'), controller.getId);
+routes.get('/detalle/:id', checkPermiss('socio.ver'), controller.getDetalle);
+
 routes.post(
   '/',
   checkPermiss('socio.crear'),
