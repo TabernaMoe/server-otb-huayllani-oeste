@@ -326,12 +326,12 @@ export class CobroServices {
             'saldo',
             'estado',
           ],
-
           where: {
             estado: {
               [Op.ne]: 'PAGADO',
             },
           },
+          required: false,
         },
       ],
     });
