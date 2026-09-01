@@ -5,6 +5,7 @@ import {
   reqEstadoAccion,
   reqArrayInteger,
   reqIntegerSelect,
+  reqIntegerId,
 } from '../../../validators/funcionesZod.js';
 
 export const accionSchema = z.object({
@@ -60,4 +61,8 @@ export const accionUpdateSchema = z.object({
 
 export const estadoAccionSchema = z.object({
   estado: reqEstadoAccion(),
+});
+
+export const cambiarNombreSchema = z.object({
+  nuevoSocioId: reqIntegerId({ label: 'nuevo socio' }),
 });

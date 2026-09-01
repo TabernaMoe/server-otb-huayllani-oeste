@@ -5,6 +5,7 @@ import {
   accionSchema,
   accionUpdateSchema,
   estadoAccionSchema,
+  cambiarNombreSchema,
 } from '../schema/acciones.schema.js';
 import { checkPermiss } from '../../../middlewares/auth.middlewares.js';
 import { TipoAccionController } from '../controllers/tipoAccion.controller.js';
@@ -54,6 +55,12 @@ routes
     checkPermiss('acciones.accion.cambiarEstado'),
     validateSchema(estadoAccionSchema),
     controller.cambiarEstado,
+  )
+  .patch(
+    '/cambiar-nombre/:id',
+    validateSchema(cambiarNombreSchema),
+    checkPermiss('acciones.accion.cambiarNombre'),
+    controller.cambiarNombreAccion,
   );
 
 export default routes;

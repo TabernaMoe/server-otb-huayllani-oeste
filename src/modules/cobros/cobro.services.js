@@ -461,10 +461,12 @@ export class CobroServices {
           detalles.push(detalle);
         }
         //
+        const numeroRecibo = Math.floor(10000000 + Math.random() * 90000000);
+
         const reciboCreated = await reciboModel.create(
           {
             pago_id: pagoCreated.id,
-            // numero_recibo: numeroRecibo,
+            numero_recibo: numeroRecibo,
             fecha_emision: new Date(),
           },
           { transaction: t },

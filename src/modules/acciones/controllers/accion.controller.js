@@ -80,7 +80,26 @@ export class AccionController {
       next(e);
     }
   }
-
+  static async cambiarNombreAccion(req, res, next) {
+    try {
+      const { id } = req.params;
+      const payload = req.body;
+      let numberId = Number(id);
+      if (isNaN(numberId) || !Number.isInteger(numberId)) {
+        const err = new Error('El id debe ser un numero');
+        err.statusCode = 409;
+        throw err;
+      }
+      const data = await services.cambiarNombreAccion(id, payload);
+      return res.status(200).json({
+        ok: true,
+        message: 'Se logro cambiar el nombre de la accion correctamente',
+        data,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
   static async getAcciones(req, res, next) {
     try {
       const page = Number(req.query.page) || 1;

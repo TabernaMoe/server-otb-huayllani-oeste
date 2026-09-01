@@ -317,7 +317,7 @@ export class accionServices {
     return create;
   }
   static async update(id, payload) {
-    const update = sequelize.transaction(async (t) => {
+    const update = await sequelize.transaction(async (t) => {
       const {
         calle_id,
         tarifa_id,
@@ -571,6 +571,93 @@ export class accionServices {
     await accionSearch.update({ estado });
 
     return;
+  }
+  static async cambiarNombreAccion(id, payload) {
+    const data = await sequelize.transaction(async (t) => {
+      const { nuevoSocioId } = payload;
+      const accionSearch = await accionModel.findByPk(id, { transaction: t });
+      if (!accionSearch) {
+        const err = new Error('No se econtro la accion');
+        err.statusCode = 404;
+        throw err;
+      }
+      //
+      const existeCobros = await cobroModel.findOne({
+        where: {
+          accion_id: id,
+          estado: {
+            [Op.in]: ['PENDIENTE', 'PARCIAL'],
+          },
+        },
+        transaction: t,
+      });
+
+      if (existeCobros) {
+        const err = new Error(
+          'Para cambiar el nombre de la accion no debe tener deudas pendientes',
+        );
+        err.statusCode = 409;
+        throw err;
+      }
+      const buscarSocioAnterior = await socioModel.findByPk(
+        accionSearch.socio_id,
+        { transaction: t },
+      );
+      //
+      const buscarSocio = await socioModel.findByPk(nuevoSocioId, {
+        transaction: t,
+      });
+      if (!buscarSocio) {
+        const err = new Error('No se encontro el socio');
+        err.statusCode = 404;
+        throw err;
+      }
+      //
+      await accionSearch.update({ socio_id: nuevoSocioId }, { transaction: t });
+
+      const gestionSearch = await gestionModel.findOne({
+        where: {
+          estado: 'ACTIVO',
+        },
+        transaction: t,
+      });
+      if (!gestionSearch) {
+        const err = new Error('No se encontro gestion acctiva');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      const periodoSearch = await periodoModel.findOne({
+        where: {
+          gestion_id: gestionSearch.id,
+          estado: 'ACTIVO',
+        },
+        transaction: t,
+      });
+      if (!periodoSearch) {
+        const err = new Error('No se encontro gestion acctiva');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      await cobroModel.create(
+        {
+          socio_id: nuevoSocioId,
+          accion_id: id,
+          periodo_id: periodoSearch.id,
+          tipo_cobro: 'CAMBIO_NOMBRE_ACCION',
+          concepto: 'CAMBIO DE NOMBRE',
+          descripcion: `CAMBIO DE ACCION DE ${buscarSocioAnterior.ci_socio} ${buscarSocioAnterior.nombres} ${buscarSocioAnterior.primer_apellido} ${buscarSocioAnterior.segundo_apellido} a ${buscarSocio.ci_socio} ${buscarSocio.nombres} ${buscarSocio.primer_apellido} ${buscarSocio.segundo_apellido}`,
+          monto_total: 350,
+          saldo: 350,
+          estado: 'PENDIENTE',
+        },
+        { transaction: t },
+      );
+
+      return accionSearch;
+    });
+    return data;
   }
   static async getAcciones(page = 1, limit = 10, search = '') {
     page = Number(page) || 1;
