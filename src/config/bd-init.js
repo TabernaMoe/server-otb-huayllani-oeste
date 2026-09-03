@@ -38,6 +38,9 @@ import { tipoAccionModel } from '../models/accion/tipoAccion.model.js';
 import { inventarioModel } from '../models/inventario.model.js';
 import { asambleaModel } from '../models/asamblea/asamblea.model.js';
 import { asistenciaAsambleaModel } from '../models/asamblea/asistenciaAsamblea.model.js';
+//multas
+import { multaModel } from '../models/multas.model.js';
+import { cobroMultaModel } from '../models/cobros/tipoCobros/cobroMulta.model.js';
 
 //qr
 import {
@@ -97,6 +100,9 @@ export async function ConnectDB() {
     //await pagoQrModel.sync({ alter: true });
     //await PagoQrDetalleModel.sync({ alter: true });
     // console.log('✅ Tablas cargadas correctamente');
+
+    await multaModel.sync({ alter: true });
+    await cobroMultaModel.sync({ alter: true });
   } catch (e) {
     console.error('❌ Error DB:', e.message);
     process.exit(1);

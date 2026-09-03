@@ -6,6 +6,7 @@ import {
   reqArrayInteger,
   reqIntegerSelect,
   reqIntegerId,
+  reqEnum,
 } from '../../../validators/funcionesZod.js';
 
 export const accionSchema = z.object({
@@ -65,4 +66,5 @@ export const estadoAccionSchema = z.object({
 
 export const cambiarNombreSchema = z.object({
   nuevoSocioId: reqIntegerId({ label: 'nuevo socio' }),
+  tipo: reqEnum({ label: 'Tipo', values: ['FAMILIAR', 'PARTICULAR'] }),
 });

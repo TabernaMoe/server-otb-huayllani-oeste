@@ -12,6 +12,8 @@ import lecturaRoutes from '../modules/lecturas/lectura.routes.js';
 import cobroAguaRoutes from '../modules/cobrosAgua/cobrosAgua.routes.js';
 import InventarioRoutes from '../modules/inventario/inventario.routes.js';
 import AsambleaRotues from '../modules/asambleas/asamblea.routes.js';
+//
+import MultaRoutes from '../modules/multas/multa.routes.js';
 
 const routes = new Router();
 
@@ -26,6 +28,7 @@ routes
   .use('/lectura', lecturaRoutes)
   .use('/pago-agua', cobroAguaRoutes)
   .use('/inventario', InventarioRoutes)
-  .use('/asamblea', AsambleaRotues);
+  .use('/asamblea', AsambleaRotues)
+  .use('/multa', MultaRoutes);
 
 export default routes;

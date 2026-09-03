@@ -373,6 +373,12 @@ export class accionServices {
         const estadosPermitidos = ['ACTIVO', 'PASIVO'];
         const esValido = estadosPermitidos.includes(estado);
 
+        if (estado == 'PASIVO') {
+          const err = new Error('No se puede cambiar de activo a pasivo');
+          err.statusCode = 404;
+          throw err;
+        }
+
         if (!esValido) {
           const err = new Error('No existe ese estado');
           err.statusCode = 400;

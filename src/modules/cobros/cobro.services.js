@@ -10,6 +10,10 @@ import { sequelize } from '../../config/database.js';
 import { BancoEconomicoQr } from '../../integrations/bancoEconomico/bancoEconomico.qr.js';
 import { PagoQrRepository } from '../pagoQr/pagoQr.repository.js';
 import { PagoQrDetalleModel } from '../../modules/pagoQr/pagoQr.model.js';
+import { multaModel } from '../../models/multas.model.js';
+import { cobroMultaModel } from '../../models/cobros/tipoCobros/cobroMulta.model.js';
+
+import { ValidacionesSequelize as validaciones } from './../../validators/ValidacionesSequelize.js';
 export class CobroServices {
   static async getAll(page = 1, limit = 10, search = '', estado = true) {
     page = Number(page) || 1;
@@ -632,5 +636,53 @@ export class CobroServices {
         throw error;
       }
     }
+  }
+  static async AsignarMulta(id, payload) {
+    return sequelize.transaction(async (t) => {
+      const { multa_id } = payload;
+      const accionSearch = await accionModel.findByPk(id, { transaction: t });
+      if (!accionSearch) {
+        const err = new Error('No se encontro la accion');
+        err.statusCode = 404;
+        throw err;
+      }
+      const multaSearch = await multaModel.findByPk(multa_id, {
+        transaction: t,
+      });
+      if (!multaSearch) {
+        const err = new Error('No se encontro la multa');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      const periodoAcutal = await validaciones.ObtenerPeriodoActivo({
+        transaction: t,
+      });
+      const cobroCreated = await cobroModel.create(
+        {
+          socio_id: accionSearch.socio_id,
+          accion_id: accionSearch.id,
+          periodo_id: periodoAcutal.id,
+          tipo_cobro: 'OTRO',
+          concepto: multaSearch.nombre_multa,
+          descripcion: `Cobro de multa a la accion ${accionSearch.codigo_interno}`,
+          monto_total: multaSearch.precio,
+          saldo: multaSearch.precio,
+        },
+        { transaction: t },
+      );
+
+      await cobroMultaModel.create(
+        {
+          cobro_id: cobroCreated.id,
+          multa_id: multa_id,
+          multa_snapshot: multaSearch.nombre_multa,
+          precio: multaSearch.precio,
+        },
+        { transaction: t },
+      );
+
+      return cobroCreated;
+    });
   }
 }
