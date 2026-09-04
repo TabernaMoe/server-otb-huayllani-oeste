@@ -42,6 +42,13 @@ import { asistenciaAsambleaModel } from '../models/asamblea/asistenciaAsamblea.m
 import { multaModel } from '../models/multas.model.js';
 import { cobroMultaModel } from '../models/cobros/tipoCobros/cobroMulta.model.js';
 
+//
+
+import {
+  accionAlcantarilladoDetalle,
+  detallePagoAccionAlcantarillado,
+} from '../models/accionAlcantarillado/detallePagoAccionAlcantarillado.model.js';
+import { accionAlcantarillado } from '../models/accionAlcantarillado/acccionAlcantarillado.model.js';
 //qr
 import {
   pagoQrModel,
@@ -101,8 +108,12 @@ export async function ConnectDB() {
     //await PagoQrDetalleModel.sync({ alter: true });
     // console.log('✅ Tablas cargadas correctamente');
 
-    await multaModel.sync({ alter: true });
-    await cobroMultaModel.sync({ alter: true });
+    // await multaModel.sync({ alter: true });
+    // await cobroMultaModel.sync({ alter: true });
+
+    await detallePagoAccionAlcantarillado.sync({ alter: true });
+    await accionAlcantarillado.sync({ alter: true });
+    await accionAlcantarilladoDetalle.sync({ alter: true });
   } catch (e) {
     console.error('❌ Error DB:', e.message);
     process.exit(1);

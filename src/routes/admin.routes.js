@@ -15,6 +15,8 @@ import AsambleaRotues from '../modules/asambleas/asamblea.routes.js';
 //
 import MultaRoutes from '../modules/multas/multa.routes.js';
 
+import AlcantarilladoRoutes from '../modules/accionesAlcantarillado/index.routes.js';
+
 const routes = new Router();
 
 routes
@@ -29,6 +31,7 @@ routes
   .use('/pago-agua', cobroAguaRoutes)
   .use('/inventario', InventarioRoutes)
   .use('/asamblea', AsambleaRotues)
-  .use('/multa', MultaRoutes);
+  .use('/multa', MultaRoutes)
+  .use('/alcantarillado', AlcantarilladoRoutes);
 
 export default routes;
