@@ -1,4 +1,4 @@
-import { Op, col, fn } from 'sequelize';
+import { Op, col, fn, Sequelize } from 'sequelize';
 import { accionModel } from '../../models/accion/accion.model.js';
 import { asistenciaAsambleaModel } from '../../models/asamblea/asistenciaAsamblea.model.js';
 import { asambleaModel } from '../../models/asamblea/asamblea.model.js';
@@ -55,6 +55,7 @@ export class AsambleaServices {
     }
 
     const { count, rows } = await asambleaModel.findAndCountAll({
+      attributes: { exclude: ['createdAt', 'updatedAt', 'periodo_id'] },
       where,
       limit,
       offset,
@@ -69,6 +70,46 @@ export class AsambleaServices {
       totalPages: Math.ceil(count / limit),
       data: rows,
     };
+  }
+  static async getAcciones(asamblea_id) {
+    const asambleaSearch = await asambleaModel.findByPk(asamblea_id);
+    if (!asambleaSearch) {
+      const err = new Error('No se encontro la asamblea');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const acciones = await asistenciaAsambleaModel.findAll({
+      attributes: {
+        include: [
+          [col('accionAsamblea.codigo_interno'), 'codigo_interno'],
+          [col('accionAsamblea.socioAccion.ci_socio'), 'ci_socio'],
+          [
+            Sequelize.fn(
+              'CONCAT',
+              col('accionAsamblea.socioAccion.nombres'),
+              ' ',
+              col('accionAsamblea.socioAccion.primer_apellido'),
+              ' ',
+              col('accionAsamblea.socioAccion.segundo_apellido'),
+            ),
+            'nombre_completo',
+          ],
+          [col('accionAsamblea.socioAccion.numero_celular'), 'numero_celular'],
+        ],
+        exclude: ['createdAt', 'updatedAt', 'accion_id', 'asamblea_id'],
+      },
+      include: [
+        {
+          model: accionModel,
+          as: 'accionAsamblea',
+          attributes: [],
+          include: [{ model: socioModel, as: 'socioAccion' }],
+        },
+      ],
+    });
+
+    return acciones;
   }
   static async getId(id) {
     const data = await asambleaModel.findByPk(id, {
@@ -117,10 +158,9 @@ export class AsambleaServices {
   }
   static async create(payload) {
     return await sequelize.transaction(async (t) => {
-      const createdAsamblea = await asambleaModel.create(
-        { payload },
-        { transaction: t },
-      );
+      const createdAsamblea = await asambleaModel.create(payload, {
+        transaction: t,
+      });
 
       const ObtenerAcciones = await accionModel.findAll({
         where: {
@@ -140,21 +180,22 @@ export class AsambleaServices {
           { transaction: t },
         );
       }
-      return createdAsamblea;
+      return createdAsamblea.toJSON();
     });
   }
   static async update(id, payload) {
-    const data = asambleaModel.findByPk(id);
+    const data = await asambleaModel.findByPk(id);
     if (!data) {
       const err = new Error('No se encontro la asamblea');
       err.statusCode = 404;
       throw err;
     }
-    return await data.update(id, payload);
+    await data.update(payload);
+    return data;
   }
-  static async updateAccion(id_asamblea, payload) {
+  static async updateAccion(asistente_id, payload) {
     return await sequelize.transaction(async (t) => {
-      const { id_accion, asistio, observacion } = payload;
+      const { asistio, observacion } = payload;
 
       // =====================================================
       // VALIDAR ESTADO
@@ -171,55 +212,12 @@ export class AsambleaServices {
       }
 
       // =====================================================
-      // BUSCAR ASAMBLEA
-      // =====================================================
-
-      const asamblea = await asambleaModel.findByPk(id_asamblea, {
-        transaction: t,
-      });
-
-      if (!asamblea) {
-        const err = new Error('No se encontró la asamblea');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      // =====================================================
-      // BUSCAR ACCIÓN
-      // =====================================================
-
-      const accion = await accionModel.findByPk(id_accion, {
-        transaction: t,
-      });
-
-      if (!accion) {
-        const err = new Error('No se encontró la acción');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      // =====================================================
-      // BUSCAR SOCIO
-      // =====================================================
-
-      const socio = await socioModel.findByPk(accion.socio_id, {
-        transaction: t,
-      });
-
-      if (!socio) {
-        const err = new Error('No se encontró el socio');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      // =====================================================
       // BUSCAR ASISTENCIA
       // =====================================================
 
       const asistencia = await asistenciaAsambleaModel.findOne({
         where: {
-          asamblea_id: id_asamblea,
-          accion_id: id_accion,
+          id: asistente_id,
         },
         transaction: t,
       });
@@ -229,13 +227,6 @@ export class AsambleaServices {
         err.statusCode = 404;
         throw err;
       }
-
-      // Guardamos el estado anterior
-      const estadoAnterior = asistencia.asistio;
-
-      // =====================================================
-      // ACTUALIZAR ASISTENCIA
-      // =====================================================
 
       await asistencia.update(
         {
@@ -247,6 +238,9 @@ export class AsambleaServices {
         },
       );
 
+      const asamblea = await asambleaModel.findByPk(asistencia.asamblea_id, {
+        transaction: t,
+      });
       // =====================================================
       // ASISTIÓ O SIN EFECTO
       // =====================================================
@@ -305,10 +299,12 @@ export class AsambleaServices {
 
         const periodoActual = await valids.ObtenerPeriodoActivo();
 
+        const accionSearch = await accionModel.findByPk(asistencia.accion_id);
+
         const cobroAsistencia = await cobroModel.create(
           {
-            socio_id: socio.id,
-            accion_id: accion.id,
+            socio_id: accionSearch.socio_id,
+            accion_id: accionSearch.id,
             periodo_id: periodoActual.id,
 
             tipo_cobro: 'ASAMBLEA',
@@ -330,7 +326,7 @@ export class AsambleaServices {
         await cobroAsamblea.create(
           {
             asistencia_asamblea_id: asistencia.id,
-            accion_id: accion.id,
+            accion_id: accionSearch.id,
             cobro_id: cobroAsistencia.id,
 
             monto: asamblea.monto_multa,

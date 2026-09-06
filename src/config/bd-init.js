@@ -38,6 +38,7 @@ import { tipoAccionModel } from '../models/accion/tipoAccion.model.js';
 import { inventarioModel } from '../models/inventario.model.js';
 import { asambleaModel } from '../models/asamblea/asamblea.model.js';
 import { asistenciaAsambleaModel } from '../models/asamblea/asistenciaAsamblea.model.js';
+import { cobroAsamblea } from '../models/cobros/tipoCobros/cobroAsamblea.model.js';
 //multas
 import { multaModel } from '../models/multas.model.js';
 import { cobroMultaModel } from '../models/cobros/tipoCobros/cobroMulta.model.js';
@@ -103,6 +104,7 @@ export async function ConnectDB() {
 
     // await asambleaModel.sync({ alter: true });
     // await asistenciaAsambleaModel.sync({ alter: true });
+    await cobroAsamblea.sync({ alter: true });
 
     //await pagoQrModel.sync({ alter: true });
     //await PagoQrDetalleModel.sync({ alter: true });
@@ -111,9 +113,9 @@ export async function ConnectDB() {
     // await multaModel.sync({ alter: true });
     // await cobroMultaModel.sync({ alter: true });
 
-    await detallePagoAccionAlcantarillado.sync({ alter: true });
-    await accionAlcantarillado.sync({ alter: true });
-    await accionAlcantarilladoDetalle.sync({ alter: true });
+    // await detallePagoAccionAlcantarillado.sync({ alter: true });
+    // await accionAlcantarillado.sync({ alter: true });
+    // await accionAlcantarilladoDetalle.sync({ alter: true });
   } catch (e) {
     console.error('❌ Error DB:', e.message);
     process.exit(1);

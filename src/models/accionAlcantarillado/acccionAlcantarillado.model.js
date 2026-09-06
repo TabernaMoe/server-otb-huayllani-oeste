@@ -70,6 +70,6 @@ calleRamalModel.hasMany(accionAlcantarillado, {
   foreignKey: 'calle_id',
 });
 accionAlcantarillado.belongsTo(calleRamalModel, {
-  as: 'calleAccionAlcantarillado',
+  as: 'calleAlcantarillado',
   foreignKey: 'calle_id',
 });

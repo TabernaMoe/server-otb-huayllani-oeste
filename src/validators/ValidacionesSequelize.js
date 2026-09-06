@@ -5,6 +5,7 @@ import { tarifaModel } from '../models/tarifa/tarifa.model.js';
 import { detallePagoAccion } from '../models/accion/detallePagoAccion.model.js';
 import { gestionModel } from '../models/gestiones/gestion.model.js';
 import { periodoModel } from '../models/gestiones/periodo.model.js';
+import { detallePagoAccionAlcantarillado } from '../models/accionAlcantarillado/detallePagoAccionAlcantarillado.model.js';
 
 export class ValidacionesSequelize {
   static async ObtenerPeriodoActivo(options = {}) {
@@ -74,6 +75,26 @@ export class ValidacionesSequelize {
       },
       ...options,
     });
+
+    if (detallePagoAccionSearch.length !== detallePagoAccionIds.length) {
+      const err = new Error('Uno o varios detalles de accion no existen');
+      err.statusCode = 404;
+      throw err;
+    }
+    return detallePagoAccionSearch;
+  }
+  static async ValidadPagoAlcantarillado(array, options = {}) {
+    const detallePagoAccionIds = [...new Set(array)];
+
+    const detallePagoAccionSearch =
+      await detallePagoAccionAlcantarillado.findAll({
+        where: {
+          id: {
+            [Op.in]: detallePagoAccionIds,
+          },
+        },
+        ...options,
+      });
 
     if (detallePagoAccionSearch.length !== detallePagoAccionIds.length) {
       const err = new Error('Uno o varios detalles de accion no existen');

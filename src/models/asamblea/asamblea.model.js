@@ -27,10 +27,6 @@ export const asambleaModel = sequelize.define(
       type: DataTypes.TIME,
       allowNull: false,
     },
-    hora_final: {
-      type: DataTypes.TIME,
-      allowNull: false,
-    },
     lugar: {
       type: DataTypes.STRING,
       allowNull: false,

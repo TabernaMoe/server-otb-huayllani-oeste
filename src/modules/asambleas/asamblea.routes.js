@@ -11,11 +11,12 @@ const routes = new Router();
 
 routes
   .get('/', controller.getAll)
+  .get('/acciones/:id', controller.getAcciones)
   .get('/:id', controller.getId)
   .post('/', validateSchema(asambleaSchema), controller.create)
   .patch('/:id', validateSchema(asambleaUpdateSchema), controller.update)
   .patch(
-    '/especifica/:id',
+    '/accion/:id',
     validateSchema(asambleaUpdateAccion),
     controller.updateAccion,
   );

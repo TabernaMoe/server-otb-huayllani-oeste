@@ -24,6 +24,19 @@ export class AsambleaController {
       next(e);
     }
   }
+  static async getAcciones(req, res, next) {
+    try {
+      const { id } = req.params;
+      const data = await services.getAcciones(id);
+      return res.status(200).json({
+        ok: true,
+        message: 'Acciones obtenidas correctamente',
+        data,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
   static async getId(req, res, next) {
     try {
       const { id } = req.params;
