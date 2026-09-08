@@ -102,8 +102,8 @@ export async function ConnectDB() {
 
     // await inventarioModel.sync({ alter: true });
 
-    // await asambleaModel.sync({ alter: true });
-    // await asistenciaAsambleaModel.sync({ alter: true });
+    await asambleaModel.sync({ alter: true });
+    await asistenciaAsambleaModel.sync({ alter: true });
     await cobroAsamblea.sync({ alter: true });
 
     //await pagoQrModel.sync({ alter: true });

@@ -8,6 +8,7 @@ import {
   reqIntegerSelect,
   reqFecha,
   reqEnum,
+  reqDecimal,
 } from '../../validators/funcionesZod.js';
 
 export const asambleaSchema = z.object({
@@ -35,7 +36,8 @@ export const asambleaSchema = z.object({
     regexMessage:
       'El nombre del tipo accion solo puede contener letras, números, espacios y los caracteres # . -',
   }),
-  monto_multa: reqInteger('multa'),
+  monto_multa: reqDecimal('multa'),
+  monto_retraso: reqDecimal('retraso'),
 });
 
 export const asambleaUpdateSchema = asambleaSchema.partial();
@@ -43,14 +45,14 @@ export const asambleaUpdateSchema = asambleaSchema.partial();
 export const asambleaUpdateAccion = z.object({
   asistio: reqEnum({
     label: 'asitio',
-    values: ['ASISTIO', 'FALTA', 'SIN EFECTO'],
+    values: ['ASISTIO', 'FALTA', 'SIN EFECTO', 'RETRASO', 'PERMISO'],
   }),
-  // observacion: reqString({
-  //   label: 'Observacion',
-  //   required: false,
-  //   min: 5,
-  //   max: 255,
-  //   regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s#\-.,/]+$/,
-  //   regexMessage: 'La Observacion contiene caracteres inválidos',
-  // }),
+  observacion: reqString({
+    label: 'Observacion',
+    required: false,
+    min: 5,
+    max: 255,
+    regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s#\-.,/]+$/,
+    regexMessage: 'La Observacion contiene caracteres inválidos',
+  }),
 });

@@ -201,7 +201,13 @@ export class AsambleaServices {
       // VALIDAR ESTADO
       // =====================================================
 
-      const valoresPermitidos = ['ASISTIO', 'FALTA', 'SIN EFECTO'];
+      const valoresPermitidos = [
+        'ASISTIO',
+        'FALTA',
+        'SIN EFECTO',
+        'PERMISO',
+        'RETRASO',
+      ];
 
       if (!valoresPermitidos.includes(asistio)) {
         const err = new Error(
@@ -245,7 +251,11 @@ export class AsambleaServices {
       // ASISTIÓ O SIN EFECTO
       // =====================================================
 
-      if (asistio === 'ASISTIO' || asistio === 'SIN EFECTO') {
+      if (
+        asistio === 'ASISTIO' ||
+        asistio === 'SIN EFECTO' ||
+        asistio === 'PERMISO'
+      ) {
         // Buscar si tenía una multa anteriormente
         const cobroAsambleaSearch = await cobroAsamblea.findOne({
           where: {
@@ -332,6 +342,61 @@ export class AsambleaServices {
             monto: asamblea.monto_multa,
 
             concepto: `${cobroAsistencia.descripcion} multa: ${cobroAsistencia.monto_total}`,
+          },
+          {
+            transaction: t,
+          },
+        );
+
+        return asistencia;
+      }
+      if (asistio === 'RETRASO') {
+        const cobroExistente = await cobroAsamblea.findOne({
+          where: {
+            asistencia_asamblea_id: asistencia.id,
+          },
+          transaction: t,
+        });
+        // Si ya existe, NO crear otra multa
+        if (cobroExistente) {
+          return asistencia;
+        }
+        const periodoActual = await valids.ObtenerPeriodoActivo();
+
+        const accionSearch = await accionModel.findByPk(asistencia.accion_id);
+
+        const cobroAsistencia = await cobroModel.create(
+          {
+            socio_id: accionSearch.socio_id,
+            accion_id: accionSearch.id,
+            periodo_id: periodoActual.id,
+
+            tipo_cobro: 'ASAMBLEA',
+
+            concepto: `RETRASO A LA ASAMBLEA DEL ${periodoActual.mes}`,
+
+            descripcion: `${asamblea.titulo} fecha: ${asamblea.fecha}`,
+
+            monto_total: asamblea.monto_retraso,
+            saldo: asamblea.monto_retraso,
+
+            estado: 'PENDIENTE',
+          },
+          {
+            transaction: t,
+            raw: true,
+          },
+        );
+
+        await cobroAsamblea.create(
+          {
+            asistencia_asamblea_id: asistencia.id,
+            accion_id: accionSearch.id,
+            cobro_id: cobroAsistencia.id,
+
+            monto: cobroAsistencia.monto_total,
+
+            concepto: `${cobroAsistencia.descripcion} retraso: ${cobroAsistencia.monto_total}`,
           },
           {
             transaction: t,

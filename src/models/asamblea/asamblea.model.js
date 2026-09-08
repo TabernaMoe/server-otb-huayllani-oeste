@@ -35,6 +35,10 @@ export const asambleaModel = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+    monto_retraso: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
     estado: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,

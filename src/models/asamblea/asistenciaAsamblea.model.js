@@ -28,7 +28,13 @@ export const asistenciaAsambleaModel = sequelize.define(
       onUpdate: 'CASCADE',
     },
     asistio: {
-      type: DataTypes.ENUM('ASISTIO', 'FALTA', 'SIN EFECTO'),
+      type: DataTypes.ENUM(
+        'ASISTIO',
+        'FALTA',
+        'SIN EFECTO',
+        'PERMISO',
+        'RETRASO',
+      ),
       defaultValue: 'ASISTIO',
     },
     observacion: {
