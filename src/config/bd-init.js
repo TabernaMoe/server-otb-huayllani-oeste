@@ -4,6 +4,7 @@ import { sequelize } from './database.js';
 import { permisoModel } from '../models/auth/permiso.model.js';
 import { permisoRolModel, rolModel } from '../models/auth/rol.model.js';
 import { usuarioModel } from '../models/auth/usuario.model.js';
+import { personaAdminModel } from '../models/auth/personaAdmin.js';
 import { auditoriaModel } from '../models/auth/auditoria.model.js';
 
 //Primera
@@ -56,6 +57,10 @@ import {
   PagoQrDetalleModel,
 } from '../modules/pagoQr/pagoQr.model.js';
 
+//
+import { cambiarNombreModel } from '../models/cambioNombre.model.js';
+import { cobroCambioNombreModel } from '../models/cobros/tipoCobros/cobroCambioNombre.model.js';
+
 export async function ConnectDB() {
   try {
     console.log('🌐 Conectando a la base de datos PostgreSQL...');
@@ -67,6 +72,7 @@ export async function ConnectDB() {
     // await rolModel.sync({ alter: true });
     // await permisoRolModel.sync({ alter: true });
     // await usuarioModel.sync({ alter: true });
+    // await personaAdminModel.sync({ force: true });
     // await auditoriaModel.sync({ alter: true });
     // //Segunda Migracion
     // await calleRamalModel.sync({ alter: true });
@@ -102,9 +108,9 @@ export async function ConnectDB() {
 
     // await inventarioModel.sync({ alter: true });
 
-    await asambleaModel.sync({ alter: true });
-    await asistenciaAsambleaModel.sync({ alter: true });
-    await cobroAsamblea.sync({ alter: true });
+    // await asambleaModel.sync({ alter: true });
+    // await asistenciaAsambleaModel.sync({ alter: true });
+    // await cobroAsamblea.sync({ alter: true });
 
     //await pagoQrModel.sync({ alter: true });
     //await PagoQrDetalleModel.sync({ alter: true });
@@ -116,6 +122,10 @@ export async function ConnectDB() {
     // await detallePagoAccionAlcantarillado.sync({ alter: true });
     // await accionAlcantarillado.sync({ alter: true });
     // await accionAlcantarilladoDetalle.sync({ alter: true });
+
+    //cambio nombre
+    await cambiarNombreModel.sync({ alter: true });
+    await cobroCambioNombreModel.sync({ alter: true });
   } catch (e) {
     console.error('❌ Error DB:', e.message);
     process.exit(1);

@@ -1,4 +1,12 @@
-import { col, fn, literal, Op, Sequelize } from 'sequelize';
+import {
+  col,
+  fn,
+  literal,
+  Op,
+  Sequelize,
+  cast,
+  where as sequelizeWhere,
+} from 'sequelize';
 import { sequelize } from '../../../config/database.js';
 import { accionModel } from '../../../models/accion/accion.model.js';
 import { accionDetalleModel } from '../../../models/accion/accionDetalle.model.js';
@@ -778,5 +786,77 @@ export class accionServices {
       totalPages: Math.ceil(count / limit),
       data: rows,
     };
+  }
+  static async getSelect(search = '') {
+    search = search?.trim() || '';
+
+    let where = {
+      estado: {
+        [Op.ne]: 'ANULADO',
+      },
+    };
+    if (search) {
+      where[Op.or] = [
+        // codigo_interno es numérico, lo convertimos a texto
+        sequelizeWhere(cast(col('codigo_interno'), 'TEXT'), {
+          [Op.iLike]: `%${search}%`,
+        }),
+
+        {
+          '$socioAccion.ci_socio$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+
+        {
+          '$socioAccion.nombres$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+
+        {
+          '$socioAccion.primer_apellido$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+
+        {
+          '$socioAccion.segundo_apellido$': {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+      ];
+    }
+
+    const data = await accionModel.findAll({
+      attributes: [
+        ['id', 'value'],
+        [
+          fn(
+            'CONCAT_WS',
+            ' ',
+            col('codigo_interno'),
+            '-',
+            col('socioAccion.ci_socio'),
+            col('socioAccion.nombres'),
+            col('socioAccion.primer_apellido'),
+            col('socioAccion.segundo_apellido'),
+          ),
+          'label',
+        ],
+      ],
+      include: [
+        {
+          model: socioModel,
+          as: 'socioAccion',
+          attributes: [],
+        },
+      ],
+      where,
+      limit: 10,
+      raw: true,
+    });
+
+    return data;
   }
 }

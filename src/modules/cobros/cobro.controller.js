@@ -119,4 +119,16 @@ export class CobroController {
       next(e);
     }
   }
+  static async getAccionesPasivas(req, res, next) {
+    try {
+      const data = await services.getAccionesPasivas();
+      return res.status(200).json({
+        ok: true,
+        message: 'Se asigno correctamente la multa al socio',
+        data,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

@@ -151,8 +151,8 @@ export class SocioServices {
           'label',
         ],
       ],
-      limit: 10,
-      raw: true,
+        limit: 10,
+        raw: true,
     });
 
     return data;

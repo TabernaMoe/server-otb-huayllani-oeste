@@ -117,4 +117,24 @@ export class AccionController {
       next(e);
     }
   }
+  static async getSelect(req, res, next) {
+    try {
+      let search = req.query.search;
+
+      search =
+        search && search !== 'undefined' && search !== 'null'
+          ? search.trim()
+          : '';
+
+      const result = await services.getSelect(search);
+
+      return res.status(200).json({
+        ok: true,
+        message: 'Acciones obtenidas correctamente',
+        data: result,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

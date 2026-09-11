@@ -1,5 +1,12 @@
 import crypto from 'node:crypto';
-import { col, fn, Op, Sequelize, where as sequelizeWhere } from 'sequelize';
+import {
+  col,
+  fn,
+  literal,
+  Op,
+  Sequelize,
+  where as sequelizeWhere,
+} from 'sequelize';
 import { accionModel } from '../../models/accion/accion.model.js';
 import { cobroModel } from '../../models/cobros/cobro.model.js';
 import { pagoDetalleModel, pagoModel } from '../../models/cobros/pago.model.js';
@@ -14,6 +21,8 @@ import { multaModel } from '../../models/multas.model.js';
 import { cobroMultaModel } from '../../models/cobros/tipoCobros/cobroMulta.model.js';
 
 import { ValidacionesSequelize as validaciones } from './../../validators/ValidacionesSequelize.js';
+import { calleRamalModel } from '../../models/calleRamal.model.js';
+import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
 export class CobroServices {
   static async getAll(page = 1, limit = 10, search = '', estado = true) {
     page = Number(page) || 1;
@@ -684,5 +693,59 @@ export class CobroServices {
 
       return cobroCreated;
     });
+  }
+  static async getAccionesPasivas() {
+    const data = await accionModel.findAll({
+      where: {
+        estado: 'PASIVO',
+      },
+      attributes: {
+        exclude: [
+          'socio_id',
+          'calle_id',
+          'tarifa_id',
+          'createdAt',
+          'updatedAt',
+          'observacion',
+        ],
+        include: [
+          [col('socioAccion.ci_socio'), 'ci_socio'],
+          [
+            fn(
+              'CONCAT',
+              col('socioAccion.nombres'),
+              ' ',
+              col('socioAccion.primer_apellido'),
+              ' ',
+              col('socioAccion.segundo_apellido'),
+            ),
+            'nombre_completo',
+          ],
+          [col('calleAccion.nombre_calle'), 'nombre_calle'],
+          [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
+        ],
+      },
+      include: [
+        {
+          model: socioModel,
+          as: 'socioAccion',
+          attributes: [],
+        },
+        {
+          model: calleRamalModel,
+          as: 'calleAccion',
+          attributes: [],
+        },
+        {
+          model: tarifaModel,
+          as: 'tarifaAccion',
+          attributes: [],
+        },
+      ],
+    });
+    return data;
+  }
+  static async getAccionPasivaEspecifica(accion_id) {
+    
   }
 }

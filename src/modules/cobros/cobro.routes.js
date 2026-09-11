@@ -22,6 +22,7 @@ routes
     AccionController.getAcciones,
   )
   .get('/multas', MultasController.geSelect)
+  .get('/acciones-pasivas', controller.getAccionesPasivas)
   .get('/:id', checkPermiss('cobro.ver'), controller.getId)
   .get(
     '/accion-historial/:id',

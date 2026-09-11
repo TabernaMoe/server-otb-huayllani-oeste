@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import personaAdminRoutes from '../modules/personaAdmin/PersonaAdmin.routes.js';
 import loginRoutes from '../modules/login/login.routes.js';
 import authRoutes from '../modules/auth/routes/index.routes.js';
 import calleRoutes from '../modules/calleRamal/calleRamal.routes.js';
@@ -16,11 +17,14 @@ import AsambleaRotues from '../modules/asambleas/asamblea.routes.js';
 import MultaRoutes from '../modules/multas/multa.routes.js';
 
 import AlcantarilladoRoutes from '../modules/accionesAlcantarillado/index.routes.js';
+//
+import CambioNombreRoutes from '../modules/cambioNombre/cambioNombre.routes.js';
 
 const routes = new Router();
 
 routes
   .use('/auth', authRoutes)
+  .use('/persona-admin', personaAdminRoutes)
   .use('/calle', calleRoutes)
   .use('/tarifa', tarifaRoutes)
   .use('/socio', socioRoutes)
@@ -32,6 +36,7 @@ routes
   .use('/inventario', InventarioRoutes)
   .use('/asamblea', AsambleaRotues)
   .use('/multa', MultaRoutes)
-  .use('/alcantarillado', AlcantarilladoRoutes);
+  .use('/alcantarillado', AlcantarilladoRoutes)
+  .use('/cambio-nombre', CambioNombreRoutes);
 
 export default routes;

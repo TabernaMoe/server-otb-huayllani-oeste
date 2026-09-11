@@ -84,4 +84,13 @@ export class RolController {
       next(e);
     }
   }
+  //
+  static async getSelect(req, res, next) {
+    const data = await services.getSelect();
+    return res.status(200).json({
+      ok: true,
+      message: 'Se obtuvo los roles correctamente',
+      data,
+    });
+  }
 }

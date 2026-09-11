@@ -55,6 +55,15 @@ export class RolServices {
       data: rows,
     };
   }
+  static async getSelect() {
+    const data = await rolModel.findAll({
+      attributes: [
+        ['id', 'value'],
+        ['nombre_rol', 'label'],
+      ],
+    });
+    return data;
+  }
   static async getPermissos() {
     const dataPermiso = permisoModel.findAll();
     return dataPermiso;
