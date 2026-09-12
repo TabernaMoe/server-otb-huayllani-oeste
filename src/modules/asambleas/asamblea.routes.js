@@ -11,6 +11,7 @@ const routes = new Router();
 
 routes
   .get('/', controller.getAll)
+  .get('/reporte/:id', controller.reporte)
   .get('/acciones/:id', controller.getAcciones)
   .get('/:id', controller.getId)
   .post('/', validateSchema(asambleaSchema), controller.create)

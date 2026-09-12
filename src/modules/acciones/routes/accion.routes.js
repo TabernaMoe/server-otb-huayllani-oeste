@@ -32,6 +32,7 @@ routes
     checkPermiss('acciones.accion.ver'),
     TipoAccionController.getSelect,
   )
+  .get('/caratula/:id', controller.getDataPdf)
   .get(
     '/detalle-accion/:id',
     checkPermiss('acciones.accion.ver'),

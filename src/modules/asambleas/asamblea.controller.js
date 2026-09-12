@@ -1,4 +1,5 @@
 import { AsambleaServices as services } from './asamblea.services.js';
+import { generarPlanillaReunion } from './generarPlanillaReunion.js';
 
 export class AsambleaController {
   static async getAll(req, res, next) {
@@ -84,6 +85,40 @@ export class AsambleaController {
         ok: true,
         message: 'Asamblea actuzalizada correctamente',
         dataUpdated,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async reporte(req, res, next) {
+    try {
+      const { id } = req.params;
+      const dataAsamblea = await services.reporte({ id });
+
+      const { asamblea, detalle } = dataAsamblea;
+
+      const data = await generarPlanillaReunion({
+        institucion: 'COMITE DE AGUA POTABLE OTB HUAYLLANI OESTE',
+        reunion: asamblea.titulo,
+        fecha: asamblea.fecha,
+        hora: asamblea.hora_inicio,
+        lugar: asamblea.lugar,
+        detalle,
+      });
+
+      res.setHeader('Content-Type', 'application/pdf');
+
+      res.setHeader(
+        'Content-Disposition',
+        'inline; filename="caratula-accion.pdf"',
+      );
+
+      return res.send(Buffer.from(data));
+
+      return res.status(200).json({
+        ok: true,
+        message: 'Asamblea actuzalizada correctamente',
+        data,
       });
     } catch (e) {
       next(e);

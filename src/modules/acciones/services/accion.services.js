@@ -859,4 +859,48 @@ export class accionServices {
 
     return data;
   }
+  static async getDataPdf(id) {
+    const accion = await accionModel.findByPk(id, {
+      attributes: [
+        'socio_id',
+        'codigo_interno',
+        'nro_medidor',
+        [col('tarifaAccion.nombre_tarifa'), 'tarifa'],
+        [col('calleAccion.nombre_calle'), 'calle'],
+        'direccion',
+        'observacion',
+        'estado',
+        ['created_at', 'fechaRegistro'],
+      ],
+      include: [
+        {
+          model: tarifaModel,
+          as: 'tarifaAccion',
+          attributes: [],
+        },
+        {
+          model: calleRamalModel,
+          as: 'calleAccion',
+          attributes: [],
+        },
+      ],
+      raw: true,
+    });
+    const socio = await socioModel.findByPk(accion.socio_id, {
+      attributes: [
+        'ci_socio',
+        'nombres',
+        'primer_apellido',
+        'segundo_apellido',
+        'numero_celular',
+      ],
+      raw: true,
+    });
+    if (!accion || !socio) {
+      const err = new Error('No se encontro la accion');
+      err.statusCode = 404;
+      throw err;
+    }
+    return { accion, socio };
+  }
 }

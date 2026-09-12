@@ -407,4 +407,67 @@ export class AsambleaServices {
       }
     });
   }
+  static async reporte({ id, where = null }) {
+    const buscarAsamblea = await asambleaModel.findByPk(id, {
+      attributes: [
+        'titulo',
+        'fecha',
+        'hora_inicio',
+        'lugar',
+        'monto_multa',
+        'monto_retraso',
+      ],
+      raw: true,
+    });
+    if (!buscarAsamblea) {
+      const err = new Error('No se encontro asamblea');
+      err.statusCode = 404;
+      throw err;
+    }
+    const data = await asistenciaAsambleaModel.findAll({
+      attributes: [
+        [col('accionAsamblea.socioAccion.ci_socio'), 'ci_socio'],
+        [
+          fn(
+            'CONCAT_WS',
+            ' ',
+            col('accionAsamblea.socioAccion.nombres'),
+            col('accionAsamblea.socioAccion.primer_apellido'),
+            col('accionAsamblea.socioAccion.segundo_apellido'),
+          ),
+          'socio',
+        ],
+        [col('accionAsamblea.codigo_interno'), 'codigo_interno'],
+        'asistio',
+        [col('cobroAsamblea.monto'), 'multa'],
+        'observacion',
+      ],
+      where: {
+        asamblea_id: id,
+        asistio: {
+          [Op.in]: ['FALTA', 'RETRASO'],
+        },
+      },
+      include: [
+        {
+          model: accionModel,
+          as: 'accionAsamblea',
+          attributes: [],
+          include: [
+            {
+              model: socioModel,
+              as: 'socioAccion',
+            },
+          ],
+        },
+        {
+          model: cobroAsamblea,
+          as: 'cobroAsamblea',
+          attributes: [],
+        },
+      ],
+      raw: true,
+    });
+    return { asamblea: buscarAsamblea, detalle: data };
+  }
 }

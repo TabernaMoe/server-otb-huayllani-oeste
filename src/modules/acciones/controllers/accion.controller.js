@@ -1,5 +1,5 @@
 import { accionServices as services } from '../services/accion.services.js';
-
+import { generarCaratulaAccion } from '../utils/generarCaratulaAccion.js';
 export class AccionController {
   static async getAll(req, res, next) {
     try {
@@ -133,6 +133,24 @@ export class AccionController {
         message: 'Acciones obtenidas correctamente',
         data: result,
       });
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async getDataPdf(req, res, next) {
+    try {
+      const data = await services.getDataPdf(req.params.id);
+
+      const pdfBytes = await generarCaratulaAccion(data);
+
+      res.setHeader('Content-Type', 'application/pdf');
+
+      res.setHeader(
+        'Content-Disposition',
+        'inline; filename="caratula-accion.pdf"',
+      );
+
+      return res.send(Buffer.from(pdfBytes));
     } catch (e) {
       next(e);
     }
