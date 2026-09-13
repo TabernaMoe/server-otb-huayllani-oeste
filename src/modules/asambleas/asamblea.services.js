@@ -107,6 +107,11 @@ export class AsambleaServices {
           include: [{ model: socioModel, as: 'socioAccion' }],
         },
       ],
+      where: [
+        {
+          asamblea_id,
+        },
+      ],
     });
 
     return acciones;

@@ -15,7 +15,6 @@ export const cobroModel = sequelize.define(
     },
     socio_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: 'socios',
         key: 'id',
@@ -46,6 +45,8 @@ export const cobroModel = sequelize.define(
     tipo_cobro: {
       type: DataTypes.ENUM(
         'ACCION',
+        'ACCION_ALCANTARILLADO',
+        'MULTA',
         'CAMBIO_NOMBRE_ACCION',
         'MANTENIMIENTO',
         'ASAMBLEA',

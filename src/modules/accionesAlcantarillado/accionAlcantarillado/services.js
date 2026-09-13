@@ -8,9 +8,8 @@ import { col, fn, literal, Op, Sequelize } from 'sequelize';
 import { socioModel } from '../../../models/socio.model.js';
 import { calleRamalModel } from '../../../models/calleRamal.model.js';
 import { ValidacionesSequelize as Validaciones } from '../../../validators/ValidacionesSequelize.js';
-
-import { gestionModel } from '../../../models/gestiones/gestion.model.js';
-import { periodoModel } from '../../../models/gestiones/periodo.model.js';
+import { cobroModel } from '../../../models/cobros/cobro.model.js';
+import { cobroAccionAlcantarilladoModel } from '../../../models/cobros/tipoCobros/cobro_alcantarillado.js';
 
 export class Services {
   static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
@@ -164,6 +163,78 @@ export class Services {
       await Validaciones.validarCalle(calle_id, {
         transaction: t,
       });
+      const detallePagoAccionSearch =
+        await Validaciones.ValidadPagoAlcantarillado(detallesAlcantarrillado, {
+          transaction: t,
+        });
+
+      const ultimaAccion = await accionAlcantarillado.findOne({
+        order: [['codigo_interno', 'DESC']],
+        attributes: ['codigo_interno'],
+        transaction: t,
+        raw: true,
+      });
+
+      const nuevoCodigo = ultimaAccion
+        ? Number(ultimaAccion.codigo_interno) + 1
+        : 1;
+
+      const accionCreated = await accionAlcantarillado.create(
+        {
+          ...parent,
+          socio_id,
+          calle_id,
+          codigo_interno: nuevoCodigo,
+        },
+        {
+          transaction: t,
+        },
+      );
+      const payloadAcciones = detallePagoAccionSearch.map((row) => ({
+        accion_alcantarillado_id: accionCreated.id,
+        detalle_alcantarillado_id: row.id,
+      }));
+
+      const tablaItermediariaAccionCreate =
+        await accionAlcantarilladoDetalle.bulkCreate(payloadAcciones, {
+          transaction: t,
+        });
+      //
+      const peridoActivo = await Validaciones.ObtenerPeriodoActivo({
+        transaction: t,
+      });
+
+      const cobroPayload = detallePagoAccionSearch.map((row) => ({
+        socio_id,
+        accion_id: 5000 + accionCreated.id,
+        periodo_id: peridoActivo.id,
+        tipo_cobro: 'ACCION_ALCANTARILLADO',
+        concepto: row.nombre_accion,
+        descripcion: `Cobro de accion alcantarillado del codigo ${nuevoCodigo}`,
+        monto_total: row.precio_accion,
+        saldo: row.precio_accion,
+      }));
+
+      const cobroCreate = await cobroModel.bulkCreate(cobroPayload, {
+        transaction: t,
+      });
+
+      return {
+        accionCreated,
+        cobroCreate,
+      };
     });
+  }
+  static async cambiarEstado(id, payload) {
+    const accionSearch = await accionAlcantarillado.findByPk(id);
+    if (!accionSearch) {
+      const err = new Error('No se econtro la accion');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    await accionSearch.update({ estado: !accionSearch.estado });
+
+    return;
   }
 }

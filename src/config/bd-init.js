@@ -51,6 +51,7 @@ import {
   detallePagoAccionAlcantarillado,
 } from '../models/accionAlcantarillado/detallePagoAccionAlcantarillado.model.js';
 import { accionAlcantarillado } from '../models/accionAlcantarillado/acccionAlcantarillado.model.js';
+import { cobroAccionAlcantarilladoModel } from '../models/cobros/tipoCobros/cobro_alcantarillado.js';
 //qr
 import {
   pagoQrModel,
@@ -119,13 +120,15 @@ export async function ConnectDB() {
     // await multaModel.sync({ alter: true });
     // await cobroMultaModel.sync({ alter: true });
 
-    // await detallePagoAccionAlcantarillado.sync({ alter: true });
-    // await accionAlcantarillado.sync({ alter: true });
-    // await accionAlcantarilladoDetalle.sync({ alter: true });
+    await detallePagoAccionAlcantarillado.sync({ alter: true });
+    await accionAlcantarillado.sync({ alter: true });
+    await accionAlcantarilladoDetalle.sync({ alter: true });
 
     //cambio nombre
     await cambiarNombreModel.sync({ alter: true });
     await cobroCambioNombreModel.sync({ alter: true });
+    //
+    await cobroAccionAlcantarilladoModel.sync({ alter: true });
   } catch (e) {
     console.error('❌ Error DB:', e.message);
     process.exit(1);
