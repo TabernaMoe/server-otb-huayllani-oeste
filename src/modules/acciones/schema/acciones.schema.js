@@ -28,6 +28,7 @@ export const accionSchema = z.object({
     max: 255,
     regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s#\-.,/]+$/,
     regexMessage: 'La dirección contiene caracteres inválidos',
+    required: false,
   }),
   estado: reqEstadoAccion(),
 

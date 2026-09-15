@@ -1,9 +1,9 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
-import { accionAlcantarillado } from './acccionAlcantarillado.model.js';
+import { accionAlcantarilladoModel } from './acccionAlcantarillado.model.js';
 
-export const detallePagoAccionAlcantarillado = sequelize.define(
-  'detallePagoAccionAlcantarillado',
+export const detalleAlcantarilladoModel = sequelize.define(
+  'detalleAncantarillado',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -30,13 +30,13 @@ export const detallePagoAccionAlcantarillado = sequelize.define(
     },
   },
   {
-    tableName: 'detalles_pago_accion_alcantarillado',
+    tableName: 'detalle_ancantarillado',
     timestamps: true,
   },
 );
 
-export const accionAlcantarilladoDetalle = sequelize.define(
-  'accionAlcantarrilladoDetalle',
+export const accionDetalleAlcantarilladoModel = sequelize.define(
+  'accionDetalleAlcantarrillado',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -57,7 +57,7 @@ export const accionAlcantarilladoDetalle = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'detalles_pago_accion_alcantarillado',
+        model: 'accion_detalle_alcantarillado',
         key: 'id',
       },
       onUpdate: 'CASCADE',
@@ -70,15 +70,23 @@ export const accionAlcantarilladoDetalle = sequelize.define(
   },
 );
 
-accionAlcantarillado.belongsToMany(detallePagoAccionAlcantarillado, {
+accionAlcantarilladoModel.belongsToMany(detalleAlcantarilladoModel, {
   as: 'detallesAlcantarrillado',
-  through: accionAlcantarilladoDetalle,
+  through: accionDetalleAlcantarilladoModel,
   foreignKey: 'accion_alcantarillado_id',
   otherKey: 'detalle_alcantarillado_id',
 });
-detallePagoAccionAlcantarillado.belongsToMany(accionAlcantarillado, {
-  as: 'accionesAlcantarilladoDetalle',
-  through: accionAlcantarilladoDetalle,
+detalleAlcantarilladoModel.belongsToMany(accionAlcantarilladoModel, {
+  as: 'accionesAlcantarillado',
+  through: accionDetalleAlcantarilladoModel,
   foreignKey: 'detalle_alcantarillado_id',
   otherKey: 'accion_alcantarillado_id',
+});
+//
+detalleAlcantarilladoModel.hasMany(accionDetalleAlcantarilladoModel, {
+  foreignKey: 'detalle_alcantarillado_id',
+});
+accionDetalleAlcantarilladoModel.belongsTo(detalleAlcantarilladoModel, {
+  as: 'detallesADA',
+  foreignKey: 'detalle_alcantarillado_id',
 });

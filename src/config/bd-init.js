@@ -47,11 +47,18 @@ import { cobroMultaModel } from '../models/cobros/tipoCobros/cobroMulta.model.js
 //
 
 import {
-  accionAlcantarilladoDetalle,
-  detallePagoAccionAlcantarillado,
-} from '../models/accionAlcantarillado/detallePagoAccionAlcantarillado.model.js';
-import { accionAlcantarillado } from '../models/accionAlcantarillado/acccionAlcantarillado.model.js';
-import { cobroAccionAlcantarilladoModel } from '../models/cobros/tipoCobros/cobro_alcantarillado.js';
+  accionDetalleAlcantarilladoModel,
+  detalleAlcantarilladoModel,
+} from '../models/accionAlcantarillado/detalleAlcantarillado.model.js';
+import { accionAlcantarilladoModel } from '../models/accionAlcantarillado/acccionAlcantarillado.model.js';
+//
+import { cobroAlcantarilladoModel } from '../models/accionAlcantarillado/cobroAlcantarillado/cobroAlcantarillado.model.js';
+import {
+  pagoAlcantarilladoModel,
+  pagoDetalleAlcantarilladoModel,
+} from '../models/accionAlcantarillado/cobroAlcantarillado/pagoAlcantarillado.model.js';
+import { reciboAlcantarilladoModel } from '../models/accionAlcantarillado/cobroAlcantarillado/reciboAlcantarillado.model.js';
+import { cobroAccionAlcantarilladoModel } from '../models/accionAlcantarillado/cobroAlcantarillado/tipoCobros/cobroAccionAlcantarillado.model.js';
 //qr
 import {
   pagoQrModel,
@@ -120,15 +127,23 @@ export async function ConnectDB() {
     // await multaModel.sync({ alter: true });
     // await cobroMultaModel.sync({ alter: true });
 
-    await detallePagoAccionAlcantarillado.sync({ alter: true });
-    await accionAlcantarillado.sync({ alter: true });
-    await accionAlcantarilladoDetalle.sync({ alter: true });
-
     //cambio nombre
-    await cambiarNombreModel.sync({ alter: true });
-    await cobroCambioNombreModel.sync({ alter: true });
+    // await cambiarNombreModel.sync({ alter: true });
+    // await cobroCambioNombreModel.sync({ alter: true });
     //
+
+    await detalleAlcantarilladoModel.sync({ alter: true });
+    await accionAlcantarilladoModel.sync({ alter: true });
+    await accionDetalleAlcantarilladoModel.sync({ alter: true });
+
+    // //
+    await cobroAlcantarilladoModel.sync({ alter: true });
+    await pagoAlcantarilladoModel.sync({ alter: true });
+    await pagoDetalleAlcantarilladoModel.sync({ alter: true });
+    await reciboAlcantarilladoModel.sync({ alter: true });
     await cobroAccionAlcantarilladoModel.sync({ alter: true });
+
+    console.log('✅ Tablas cargadas correctamente');
   } catch (e) {
     console.error('❌ Error DB:', e.message);
     process.exit(1);

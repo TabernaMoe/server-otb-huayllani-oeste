@@ -1,11 +1,9 @@
 import { Router } from 'express';
-import DetalleAlcantarilladoRoutes from './detallePagoAccionAlcantarillado/routes.js';
-import accionAlcantarilladoRoutes from './accionAlcantarillado/routes.js';
+import DetalleAlcantarilladoRoutes from './detalleAlcantarillado/detalleAlcantarillado.routes.js';
+import AccionAlcantarilladoRoutes from './accionAlcantarillado/accionAlcantarillado.routes.js';
 
 const routes = new Router();
-
-routes
-  .use('/detalle', DetalleAlcantarilladoRoutes)
-  .use('/', accionAlcantarilladoRoutes);
+routes.use('/accion', AccionAlcantarilladoRoutes);
+routes.use('/detalle', DetalleAlcantarilladoRoutes);
 
 export default routes;

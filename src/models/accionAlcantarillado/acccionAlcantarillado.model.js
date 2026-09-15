@@ -3,7 +3,7 @@ import { sequelize } from '../../config/database.js';
 import { calleRamalModel } from '../calleRamal.model.js';
 import { socioModel } from '../socio.model.js';
 
-export const accionAlcantarillado = sequelize.define(
+export const accionAlcantarilladoModel = sequelize.define(
   'AccionAlcantarillado',
   {
     id: {
@@ -48,6 +48,10 @@ export const accionAlcantarillado = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    paso_a_accion_agua: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   },
   {
     tableName: 'acciones_alcantarillado',
@@ -55,21 +59,21 @@ export const accionAlcantarillado = sequelize.define(
   },
 );
 
-socioModel.hasMany(accionAlcantarillado, {
+socioModel.hasMany(accionAlcantarilladoModel, {
   as: 'accionesAlcantarillado',
   foreignKey: 'socio_id',
 });
 
-accionAlcantarillado.belongsTo(socioModel, {
+accionAlcantarilladoModel.belongsTo(socioModel, {
   as: 'socioAlcantarillado',
   foreignKey: 'socio_id',
 });
 
-calleRamalModel.hasMany(accionAlcantarillado, {
+calleRamalModel.hasMany(accionAlcantarilladoModel, {
   as: 'accionesAlcantarilladoCalle',
   foreignKey: 'calle_id',
 });
-accionAlcantarillado.belongsTo(calleRamalModel, {
+accionAlcantarilladoModel.belongsTo(calleRamalModel, {
   as: 'calleAlcantarillado',
   foreignKey: 'calle_id',
 });

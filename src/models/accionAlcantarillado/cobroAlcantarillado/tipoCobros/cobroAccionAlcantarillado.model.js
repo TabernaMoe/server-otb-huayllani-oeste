@@ -1,8 +1,7 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../config/database.js';
-import { accionModel } from '../../accion/accion.model.js';
-import { cobroModel } from '../cobro.model.js';
-import { accionDetalleModel } from '../../accion/accionDetalle.model.js';
+import { sequelize } from '../../../../config/database.js';
+import { cobroAlcantarilladoModel } from '../cobroAlcantarillado.model.js';
+import { accionAlcantarilladoModel } from '../../acccionAlcantarillado.model.js';
 
 export const cobroAccionAlcantarilladoModel = sequelize.define(
   'cobroAccionAlcantarillado',
@@ -13,21 +12,11 @@ export const cobroAccionAlcantarilladoModel = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
-    accion_alcantarillado_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'acciones_alcantarillado',
-        key: 'id',
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'RESTRICT',
-    },
     cobro_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'cobros',
+        model: 'cobros_alcantarillado',
         key: 'id',
       },
       onUpdate: 'CASCADE',
@@ -53,3 +42,13 @@ export const cobroAccionAlcantarilladoModel = sequelize.define(
     timestamps: true,
   },
 );
+
+cobroAlcantarilladoModel.hasMany(cobroAccionAlcantarilladoModel, {
+  as: 'cobroAccionAlcantarillado',
+  foreignKey: 'cobro_id',
+});
+
+cobroAccionAlcantarilladoModel.belongsTo(cobroAlcantarilladoModel, {
+  as: 'cobroAlcantarillado',
+  foreignKey: 'cobro_id',
+});

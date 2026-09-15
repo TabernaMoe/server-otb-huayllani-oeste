@@ -896,11 +896,27 @@ export class accionServices {
       ],
       raw: true,
     });
+
+    const cobros = await accionDetalleModel.findAll({
+      attributes: [
+        [col('detalleAccionAD.nombre_accion'), 'nombre_accion'],
+        [col('detalleAccionAD.precio_accion'), 'precio_accion'],
+      ],
+      where: { accion_id: id },
+      include: [
+        {
+          model: detallePagoAccion,
+          as: 'detalleAccionAD',
+          attributes: [],
+        },
+      ],
+      raw: true,
+    });
     if (!accion || !socio) {
       const err = new Error('No se encontro la accion');
       err.statusCode = 404;
       throw err;
     }
-    return { accion, socio };
+    return { accion, socio, cobros };
   }
 }

@@ -1,10 +1,27 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
+const formatFechaHora = (fecha) => {
+  if (!fecha) return '-';
+
+  const date = new Date(fecha);
+
+  return date.toLocaleString('es-BO', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'UTC',
+  });
+};
+
 export const generarCaratulaAccion = async (data) => {
   const pdfDoc = await PDFDocument.create();
 
   // A4
-  const page = pdfDoc.addPage([595.28, 841.89]);
+  let page = pdfDoc.addPage([612, 792]);
+
   const { width, height } = page.getSize();
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -201,12 +218,12 @@ export const generarCaratulaAccion = async (data) => {
 
   const infoY = headerY - 38;
 
-  texto('FECHA DE REGISTRO', margen, infoY + 13, 6.5, {
+  texto('FECHA DE CREARCION DE LA ACCION', margen, infoY + 13, 6.5, {
     bold: true,
     color: grisMedio,
   });
 
-  texto(data.accion?.fechaRegistro || '-', margen, infoY - 1, 9, {
+  texto(formatFechaHora(data.accion?.fechaRegistro), margen, infoY - 1, 9, {
     color: negro,
   });
 
@@ -403,6 +420,338 @@ export const generarCaratulaAccion = async (data) => {
   const footerY = 57;
 
   linea(margen, footerY, width - margen, footerY, azulInstitucional, 1);
+
+  const cobros = Array.isArray(data.cobros) ? data.cobros : [];
+
+  if (cobros.length > 0) {
+    const PAGE_WIDTH = 612;
+    const PAGE_HEIGHT = 792;
+
+    const margenCobros = 42;
+    const contentCobrosWidth = PAGE_WIDTH - margenCobros * 2;
+
+    const rowHeight = 30;
+
+    // Anchos de columnas
+    const columnas = [
+      {
+        label: 'N°',
+        width: 40,
+      },
+      {
+        label: 'CONCEPTO',
+        width: 345,
+      },
+      {
+        label: 'PRECIO (Bs.)',
+        width: 126,
+      },
+    ];
+
+    let cobroY;
+
+    // =====================================================
+    // HELPER CENTRAR TEXTO
+    // =====================================================
+
+    const textoCentrado = (value, x, y, cellWidth, size = 8, options = {}) => {
+      const valueString =
+        value === null || value === undefined || value === ''
+          ? '-'
+          : String(value);
+
+      const selectedFont = options.bold ? fontBold : font;
+
+      const textWidth = selectedFont.widthOfTextAtSize(valueString, size);
+
+      page.drawText(valueString, {
+        x: x + (cellWidth - textWidth) / 2,
+        y,
+        size,
+        font: selectedFont,
+        color: options.color || negro,
+      });
+    };
+
+    // =====================================================
+    // ENCABEZADO DE HOJA DE COBROS
+    // =====================================================
+
+    const dibujarEncabezadoCobros = () => {
+      texto(
+        data.institucion || 'COMITE DE AGUA POTABLE OTB HUAYLLANI OESTE',
+        margenCobros,
+        PAGE_HEIGHT - 49,
+        16,
+        {
+          bold: true,
+          color: azulInstitucional,
+        },
+      );
+
+      linea(
+        margenCobros,
+        PAGE_HEIGHT - 80,
+        PAGE_WIDTH - margenCobros,
+        PAGE_HEIGHT - 80,
+        azulInstitucional,
+        1.4,
+      );
+
+      texto(
+        'DETALLE DE COBROS DE LA ACCIÓN',
+        margenCobros,
+        PAGE_HEIGHT - 115,
+        15,
+        {
+          bold: true,
+          color: azulInstitucional,
+        },
+      );
+
+      // Información de la acción
+      rectangulo(margenCobros, PAGE_HEIGHT - 168, contentCobrosWidth, 35, {
+        color: grisFondo,
+        borderColor: grisBorde,
+        borderWidth: 0.6,
+      });
+
+      texto('CÓDIGO DE ACCIÓN', margenCobros + 15, PAGE_HEIGHT - 148, 7, {
+        bold: true,
+        color: grisMedio,
+      });
+
+      texto(
+        data.accion?.codigo_interno || '-',
+        margenCobros + 110,
+        PAGE_HEIGHT - 148,
+        9,
+        {
+          bold: true,
+          color: negro,
+        },
+      );
+
+      texto('SOCIO', margenCobros + 230, PAGE_HEIGHT - 148, 7, {
+        bold: true,
+        color: grisMedio,
+      });
+
+      const nombreSocio = [
+        data.socio?.nombres,
+        data.socio?.primer_apellido,
+        data.socio?.segundo_apellido,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+      texto(
+        cortarTexto(nombreSocio || '-', 220, 9),
+        margenCobros + 275,
+        PAGE_HEIGHT - 148,
+        9,
+        {
+          color: negro,
+        },
+      );
+
+      cobroY = PAGE_HEIGHT - 215;
+    };
+
+    // =====================================================
+    // CABECERA DE LA TABLA
+    // =====================================================
+
+    const dibujarCabeceraCobros = () => {
+      let x = margenCobros;
+
+      columnas.forEach((col) => {
+        page.drawRectangle({
+          x,
+          y: cobroY,
+          width: col.width,
+          height: rowHeight,
+          color: azulInstitucional,
+          borderColor: blanco,
+          borderWidth: 0.4,
+        });
+
+        textoCentrado(col.label, x, cobroY + 10, col.width, 7.5, {
+          bold: true,
+          color: blanco,
+        });
+
+        x += col.width;
+      });
+
+      cobroY -= rowHeight;
+    };
+
+    // =====================================================
+    // PIE DE PÁGINA COBROS
+    // =====================================================
+
+    const dibujarFooterCobros = () => {
+      linea(
+        margenCobros,
+        57,
+        PAGE_WIDTH - margenCobros,
+        57,
+        azulInstitucional,
+        1,
+      );
+
+      texto(
+        data.institucion || 'COMITE DE AGUA POTABLE OTB HUAYLLANI OESTE',
+        margenCobros,
+        40,
+        7,
+        {
+          color: grisMedio,
+        },
+      );
+    };
+
+    // =====================================================
+    // NUEVA PÁGINA
+    // =====================================================
+
+    const crearPaginaCobros = () => {
+      page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+
+      dibujarEncabezadoCobros();
+
+      dibujarCabeceraCobros();
+    };
+
+    // Crear segunda página
+    crearPaginaCobros();
+
+    // =====================================================
+    // FILAS DE COBROS
+    // =====================================================
+
+    cobros.forEach((cobro, index) => {
+      // Si ya no entra otra fila
+      if (cobroY < 90) {
+        dibujarFooterCobros();
+
+        crearPaginaCobros();
+      }
+
+      let x = margenCobros;
+
+      // Fondo alternado
+      const fondo = index % 2 === 0 ? blanco : grisFondo;
+
+      // =========================
+      // N°
+      // =========================
+
+      rectangulo(x, cobroY, columnas[0].width, rowHeight, {
+        color: fondo,
+        borderColor: grisBorde,
+        borderWidth: 0.5,
+      });
+
+      textoCentrado(index + 1, x, cobroY + 10, columnas[0].width, 8, {
+        color: negro,
+      });
+
+      x += columnas[0].width;
+
+      // =========================
+      // CONCEPTO
+      // =========================
+
+      rectangulo(x, cobroY, columnas[1].width, rowHeight, {
+        color: fondo,
+        borderColor: grisBorde,
+        borderWidth: 0.5,
+      });
+
+      texto(
+        cortarTexto(cobro.nombre_accion || '-', columnas[1].width - 15, 8.5),
+        x + 8,
+        cobroY + 10,
+        8.5,
+        {
+          color: negro,
+        },
+      );
+
+      x += columnas[1].width;
+
+      // =========================
+      // PRECIO
+      // =========================
+
+      rectangulo(x, cobroY, columnas[2].width, rowHeight, {
+        color: fondo,
+        borderColor: grisBorde,
+        borderWidth: 0.5,
+      });
+
+      const precio = Number(cobro.precio_accion || 0).toFixed(2);
+
+      const precioWidth = fontBold.widthOfTextAtSize(precio, 8.5);
+
+      texto(
+        precio,
+        x + columnas[2].width - precioWidth - 10,
+        cobroY + 10,
+        8.5,
+        {
+          bold: true,
+          color: azulInstitucional,
+        },
+      );
+
+      cobroY -= rowHeight;
+    });
+
+    // =====================================================
+    // TOTAL
+    // =====================================================
+
+    const totalCobros = cobros.reduce(
+      (total, cobro) => total + Number(cobro.precio_accion || 0),
+      0,
+    );
+
+    // Si no entra el total, crear otra página
+    if (cobroY < 115) {
+      dibujarFooterCobros();
+
+      crearPaginaCobros();
+    }
+
+    cobroY -= 15;
+
+    rectangulo(margenCobros + 385, cobroY - 25, 126, 40, {
+      color: grisFondo,
+      borderColor: grisBorde,
+      borderWidth: 0.7,
+    });
+
+    texto('TOTAL', margenCobros + 397, cobroY, 7, {
+      bold: true,
+      color: grisMedio,
+    });
+
+    texto(
+      `Bs. ${totalCobros.toFixed(2)}`,
+      margenCobros + 397,
+      cobroY - 15,
+      11,
+      {
+        bold: true,
+        color: azulInstitucional,
+      },
+    );
+
+    dibujarFooterCobros();
+  }
 
   return await pdfDoc.save();
 };

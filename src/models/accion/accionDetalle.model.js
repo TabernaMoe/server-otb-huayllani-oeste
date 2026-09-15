@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
+import { detallePagoAccion } from './detallePagoAccion.model.js';
 
 export const accionDetalleModel = sequelize.define(
   'accion_detalle',
@@ -36,3 +37,12 @@ export const accionDetalleModel = sequelize.define(
     timestamps: false,
   },
 );
+
+detallePagoAccion.hasMany(accionDetalleModel, {
+  as: 'accionDetalleDP',
+  foreignKey: 'detalle_pago_accion_id',
+});
+accionDetalleModel.belongsTo(detallePagoAccion, {
+  as: 'detalleAccionAD',
+  foreignKey: 'detalle_pago_accion_id',
+});
