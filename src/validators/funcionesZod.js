@@ -161,6 +161,28 @@ export const reqDecimal = (label = 'Monto', required = true) => {
   return schema;
 };
 
+export const reqIntegerCobro = ({ label = 'Monto', required = true } = {}) => {
+  return z
+    .preprocess(
+      (val) =>
+        val === '' || val === null || val === undefined
+          ? undefined
+          : Number(val),
+      z
+        .number({
+          required_error: `Debe ingresar ${label.toLowerCase()}`,
+          invalid_type_error: `${label} debe ser un número`,
+        })
+        .finite(`${label} debe ser un número válido`)
+        .int(`${label} debe ser un número entero`)
+        .min(1, `${label} debe ser mayor a 0`)
+        .optional(),
+    )
+    .refine((val) => (required ? val !== undefined : true), {
+      message: `Debe ingresar ${label.toLowerCase()}`,
+    });
+};
+
 export const reqInteger = (
   label = 'Número',
   required = true,

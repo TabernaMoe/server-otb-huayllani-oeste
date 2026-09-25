@@ -173,4 +173,28 @@ export class AccionAlcantarilladoRepository {
     }
     return data;
   }
+  static async getSelection({ search = '' } = {}) {
+    const data = await accionAlcantarilladoModel.findAll({
+      attributes: [
+        ['id', 'value'],
+        [
+          fn(
+            'CONCAT_WS',
+            ' ',
+            col('codigo_interno'),
+            '-',
+            col('socioAlcantarillado.nombres'),
+            col('socioAlcantarillado.primer_apellido'),
+            col('socioAlcantarillado.segundo_apellido'),
+          ),
+          'label',
+        ],
+      ],
+      include: [
+        { model: socioModel, as: 'socioAlcantarillado', attributes: [] },
+      ],
+    });
+
+    return data;
+  }
 }

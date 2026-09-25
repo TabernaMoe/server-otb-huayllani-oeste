@@ -14,7 +14,7 @@ export const reciboAlcantarilladoModel = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'pagos',
+        model: 'pagos_alcantarillado',
         key: 'id',
       },
       onUpdate: 'CASCADE',

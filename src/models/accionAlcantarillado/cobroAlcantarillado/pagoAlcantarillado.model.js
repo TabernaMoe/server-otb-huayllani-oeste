@@ -41,7 +41,7 @@ export const pagoDetalleAlcantarilladoModel = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'cobros',
+        model: 'cobros_alcantarillado',
         key: 'id',
       },
       onDelete: 'RESTRICT',
@@ -51,7 +51,7 @@ export const pagoDetalleAlcantarilladoModel = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'pagos',
+        model: 'pagos_alcantarillado',
         key: 'id',
       },
       onDelete: 'RESTRICT',

@@ -3,6 +3,7 @@ import { GetIdUseCase } from './use-case/get-id.use-case.js';
 import { CreateUseCase } from './use-case/create.use-case.js';
 import { UpdateUseCase } from './use-case/update.use-case.js';
 import { ChangeStatusUseCase } from './use-case/change-status.case-use.js';
+import { GetSelectUseCase } from './use-case/get-select.use-case.js';
 
 export class AcccionAlcantarilladoController {
   static async getAll(req, res, next) {
@@ -78,5 +79,11 @@ export class AcccionAlcantarilladoController {
     } catch (e) {
       next(e);
     }
+  }
+  static async getSelect(req, res) {
+    const data = await GetSelectUseCase.execute();
+    return res
+      .status(200)
+      .json({ ok: true, message: 'Acciones obtenida correctamente', data });
   }
 }
