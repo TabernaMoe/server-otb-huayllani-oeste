@@ -139,7 +139,7 @@ export class AccionAlcantarilladoRepository {
     };
     return dataNorm;
   }
-  static async create({ payload, detalles, transaction = null }) {
+  static async create({ payload, transaction = null }) {
     const data = await accionAlcantarilladoModel.create(payload, {
       transaction,
     });
