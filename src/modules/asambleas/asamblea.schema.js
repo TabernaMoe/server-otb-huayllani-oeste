@@ -49,7 +49,7 @@ export const asambleaUpdateAccion = z.object({
   }),
   observacion: reqString({
     label: 'Observacion',
-    required: false,
+    required: true,
     min: 5,
     max: 255,
     regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s#\-.,/]+$/,

@@ -316,4 +316,12 @@ export class DetalleAlcantarilladoRepository {
 
     return true;
   }
+  static async getMantenientos({ transaction = null }) {
+    const data = await detalleAlcantarilladoModel.findAll({
+      where: { tipo_cobro: 'MENSUAL' },
+      transaction,
+      raw: true,
+    });
+    return data;
+  }
 }

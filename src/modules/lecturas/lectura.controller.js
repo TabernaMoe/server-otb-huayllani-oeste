@@ -1,4 +1,5 @@
 import { LecturaServices as services } from './lectura.services.js';
+import { GetLecturasByAccionUseCase } from './use-case/get-lecturas-accion.use-case.js';
 
 export class LecturaController {
   static async getAll(req, res, next) {
@@ -116,6 +117,20 @@ export class LecturaController {
       return res.status(200).json({
         ok: true,
         message: 'Lectura actualizada correctamente',
+        data,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async GetLecturasByAccion(req, res, next) {
+    try {
+      const data = await GetLecturasByAccionUseCase.execute({
+        accion_id: req.params.id,
+      });
+      return res.status(200).json({
+        ok: true,
+        message: 'Se obtuvo la lectuas correctamente',
         data,
       });
     } catch (e) {

@@ -75,6 +75,7 @@ export class SocioController {
     try {
       const payload = req.body;
       const { id } = req.usuario;
+
       const dataCreated = await services.create(id, payload);
       return res
         .status(200)
@@ -88,6 +89,9 @@ export class SocioController {
       const { id } = req.params;
 
       const payload = req.body;
+      console.log('***************');
+      console.log(payload);
+      console.log('***************');
 
       const idNumber = Number(id);
 

@@ -46,3 +46,4 @@ accionDetalleModel.belongsTo(detallePagoAccion, {
   as: 'detalleAccionAD',
   foreignKey: 'detalle_pago_accion_id',
 });
+//

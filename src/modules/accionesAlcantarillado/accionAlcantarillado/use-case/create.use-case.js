@@ -97,6 +97,31 @@ export class CreateUseCase {
           transaction: t,
         });
       }
+      const periodosPendientes = await PeriodoRepository.getPeriodosPendientes({
+        transaction: t,
+      });
+      const cobrosMantenimiento =
+        await DetalleAlcantarilladoRepository.getMantenientos({
+          transaction: t,
+        });
+
+      for (const row of periodosPendientes) {
+        for (const column of cobrosMantenimiento) {
+          await CobroAlcantarilladoRepository.create({
+            payload: {
+              socio_id,
+              accion_id: crearAccion.id,
+              periodo_id: row.id,
+              tipo_cobro: 'ACCION',
+              concepto: 'COMPRA DE ACCION',
+              descripcion: `COMPRA DE ${column.nombre_accion}`,
+              monto_total: column.precio_accion,
+              saldo: column.precio_accion,
+            },
+            transaction: t,
+          });
+        }
+      }
 
       return crearAccion;
     });

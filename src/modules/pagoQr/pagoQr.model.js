@@ -13,7 +13,7 @@ export const pagoQrModel = sequelize.define(
     },
     pago_id: {
       type: DataTypes.INTEGER,
-      defaultValue: null,
+      allowNull: true,
       references: {
         model: 'pagos',
         key: 'id',

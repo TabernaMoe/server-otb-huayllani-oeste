@@ -29,6 +29,7 @@ import { pagoDetalleModel, pagoModel } from '../models/cobros/pago.model.js';
 import { reciboModel } from '../models/cobros/recibo.model.js';
 //cobro agua
 import { cobroAguaModel } from '../models/cobroAgua/cobroAgua.model.js';
+import { CobroLecturaModel } from '../models/cobroAgua/cobrosLectura.model.js';
 import { pagoAguaModel } from '../models/cobroAgua/pagoAgua.model.js';
 import { reciboAguaModel } from '../models/cobroAgua/recibo.mode.js';
 //lectura
@@ -80,7 +81,7 @@ export async function ConnectDB() {
     // await rolModel.sync({ alter: true });
     // await permisoRolModel.sync({ alter: true });
     // await usuarioModel.sync({ alter: true });
-    // await personaAdminModel.sync({ force: true });
+    // await personaAdminModel.sync({ alter: true });
     // await auditoriaModel.sync({ alter: true });
     // //Segunda Migracion
     // await calleRamalModel.sync({ alter: true });
@@ -95,7 +96,7 @@ export async function ConnectDB() {
     // //
     // await accionModel.sync({ alter: true });
     // await accionDetalleModel.sync({ alter: true });
-    // // Gestiones
+    // Gestiones
     // await gestionModel.sync({ alter: true });
     // await periodoModel.sync({ alter: true });
     // //
@@ -104,13 +105,13 @@ export async function ConnectDB() {
     // await pagoModel.sync({ alter: true });
     // await pagoDetalleModel.sync({ alter: true });
     // await reciboModel.sync({ alter: true });
-    // //primera ejecucion alter y lugeo alter
 
     // //
     // await lecturaAguaModel.sync({ alter: true });
     // await cambioMedidor.sync({ alter: true });
     // //
     // await cobroAguaModel.sync({ alter: true });
+    // await CobroLecturaModel.sync({ alter: true });
     // await pagoAguaModel.sync({ alter: true });
     // await reciboAguaModel.sync({ alter: true });
 
@@ -120,28 +121,26 @@ export async function ConnectDB() {
     // await asistenciaAsambleaModel.sync({ alter: true });
     // await cobroAsamblea.sync({ alter: true });
 
-    //await pagoQrModel.sync({ alter: true });
-    //await PagoQrDetalleModel.sync({ alter: true });
-    // console.log('✅ Tablas cargadas correctamente');
+    // await pagoQrModel.sync({ alter: true });
+    // await PagoQrDetalleModel.sync({ alter: true });
 
     // await multaModel.sync({ alter: true });
     // await cobroMultaModel.sync({ alter: true });
 
-    //cambio nombre
+    // // cambio nombre
     // await cambiarNombreModel.sync({ alter: true });
     // await cobroCambioNombreModel.sync({ alter: true });
-    //
 
-    await detalleAlcantarilladoModel.sync({ alter: true });
-    await accionAlcantarilladoModel.sync({ alter: true });
-    await accionDetalleAlcantarilladoModel.sync({ alter: true });
+    // await detalleAlcantarilladoModel.sync({ alter: true });
+    // await accionAlcantarilladoModel.sync({ alter: true });
+    // await accionDetalleAlcantarilladoModel.sync({ alter: true });
 
-    // //
-    await cobroAlcantarilladoModel.sync({ alter: true });
-    await pagoAlcantarilladoModel.sync({ alter: true });
-    await pagoDetalleAlcantarilladoModel.sync({ alter: true });
-    await reciboAlcantarilladoModel.sync({ alter: true });
-    await cobroAccionAlcantarilladoModel.sync({ alter: true });
+    // // //
+    // await cobroAlcantarilladoModel.sync({ alter: true });
+    // await pagoAlcantarilladoModel.sync({ alter: true });
+    // await pagoDetalleAlcantarilladoModel.sync({ alter: true });
+    // await reciboAlcantarilladoModel.sync({ alter: true });
+    // await cobroAccionAlcantarilladoModel.sync({ alter: true });
 
     console.log('✅ Tablas cargadas correctamente');
   } catch (e) {

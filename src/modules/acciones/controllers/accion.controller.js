@@ -1,5 +1,6 @@
 import { accionServices as services } from '../services/accion.services.js';
 import { generarCaratulaAccion } from '../utils/generarCaratulaAccion.js';
+import { UpdateUseCase } from '../accionesAgua/use-case/update.use-case.js';
 export class AccionController {
   static async getAll(req, res, next) {
     try {
@@ -52,11 +53,12 @@ export class AccionController {
     try {
       const { id } = req.params;
       const payload = req.body;
+      const data = await UpdateUseCase.execute({ id, payload });
       const dataUpdated = await services.update(id, payload);
       return res.status(200).json({
         ok: true,
         message: 'Accion actuzalizada correctamente',
-        dataUpdated,
+        data,
       });
     } catch (e) {
       next(e);

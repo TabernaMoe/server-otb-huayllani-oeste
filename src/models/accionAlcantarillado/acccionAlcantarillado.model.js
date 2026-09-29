@@ -42,7 +42,6 @@ export const accionAlcantarilladoModel = sequelize.define(
     },
     observacion: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     estado: {
       type: DataTypes.BOOLEAN,

@@ -37,7 +37,7 @@ export const accionSchema = z.object({
 
 export const accionUpdateSchema = z.object({
   calle_id: reqIntegerSelect('Calle', false),
-  tarifa_id: reqIntegerSelect('Tarifa'),
+  tarifa_id: reqIntegerSelect('Tarifa', false),
   nro_medidor: reqString({ label: 'Nro medidor', min: 3, required: false }),
   //
   direccion: reqString({

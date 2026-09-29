@@ -148,7 +148,7 @@ export class accionServices {
         {
           model: detallePagoAccion,
           as: 'detallesAccion',
-          attributes: ['id'],
+          attributes: ['id', 'tipo_accion_id'],
           through: {
             attributes: [],
           },
@@ -169,6 +169,7 @@ export class accionServices {
     const dataNormalizado = {
       ...dataPlano,
       detallesAccion: detalleAccioneIds,
+      tipo_accion_id: dataPlano.detallesAccion[0].tipo_accion_id,
     };
 
     return dataNormalizado;

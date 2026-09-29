@@ -2,7 +2,6 @@ import { col, fn, literal, Op } from 'sequelize';
 import { lecturaAguaModel } from '../../models/lecturasAgua/lecturasAgua.model.js';
 import { cambioMedidor } from '../../models/lecturasAgua/cambioMedidor.model.js';
 import { accionModel } from '../../models/accion/accion.model.js';
-import { id } from 'zod/locales';
 import { sequelize } from '../../config/database.js';
 import { ValidacionesSequelize as validaciones } from '../../validators/ValidacionesSequelize.js';
 //

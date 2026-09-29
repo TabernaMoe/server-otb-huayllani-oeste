@@ -57,7 +57,6 @@ export const accionModel = sequelize.define(
     },
     observacion: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     estado: {
       type: DataTypes.ENUM('ACTIVO', 'PASIVO', 'ANULADO'),

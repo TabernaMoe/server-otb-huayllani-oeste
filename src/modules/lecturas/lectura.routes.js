@@ -8,7 +8,11 @@ const routes = new Router();
 
 routes
   .get('/', checkPermiss('lectura.ver'), controller.getAll)
-  .get('/historial/:id', checkPermiss('lectura.ver'), controller.hitoryId)
+  .get(
+    '/historial/:id',
+    checkPermiss('lectura.ver'),
+    controller.GetLecturasByAccion,
+  )
   .get('/:id', checkPermiss('lectura.ver'), controller.getId)
   .post(
     '/:id',
