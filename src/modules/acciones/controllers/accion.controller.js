@@ -1,6 +1,8 @@
 import { accionServices as services } from '../services/accion.services.js';
 import { generarCaratulaAccion } from '../utils/generarCaratulaAccion.js';
 import { UpdateUseCase } from '../accionesAgua/use-case/update.use-case.js';
+import { GetAccionesWithMoraUseCase } from '../accionesAgua/use-case/get-acciones-mora.use-case.js';
+
 export class AccionController {
   static async getAll(req, res, next) {
     try {
@@ -153,6 +155,21 @@ export class AccionController {
       );
 
       return res.send(Buffer.from(pdfBytes));
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async getAccionesWithMora(req, res, next) {
+    try {
+      const data = await GetAccionesWithMoraUseCase.execute();
+
+      return res
+        .status(200)
+        .json({
+          ok: true,
+          message: 'Se obtuvo las acciones correctamente',
+          data,
+        });
     } catch (e) {
       next(e);
     }

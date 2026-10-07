@@ -145,7 +145,7 @@ export const reqEstadoAccion = (label = 'Estado', required = true) => {
 
   return schema;
 };
-export const reqDecimal = (label = 'Monto', required = true) => {
+export const reqDecimal = ({ label = 'Monto', required = true } = {}) => {
   let schema = z.coerce
     .number({
       required_error: `Debe ingresar ${label.toLowerCase()}`,

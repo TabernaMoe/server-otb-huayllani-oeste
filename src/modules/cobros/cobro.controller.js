@@ -99,7 +99,7 @@ export class CobroController {
 
       return res
         .status(200)
-        .json({ ok: true, message: 'Pago registrado correctamente', ...data });
+        .json({ ok: true, message: 'Pago registrado correctamente', data });
     } catch (e) {
       next(e);
     }

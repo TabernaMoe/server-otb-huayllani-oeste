@@ -1,9 +1,11 @@
 import { lecturaAguaModel } from '../../models/lecturasAgua/lecturasAgua.model.js';
-import { cambioMedidor } from '../../models/lecturasAgua/cambioMedidor.model.js';
 
 export class LecturaAguaRepository {
   static async getById({ id, transaction = null }) {
-    const data = await lecturaAguaModel.findByPk(id, { transaction });
+    const data = await lecturaAguaModel.findByPk(id, {
+      transaction,
+      raw: true,
+    });
     if (!data) {
       return null;
     }
@@ -20,11 +22,14 @@ export class LecturaAguaRepository {
           'updatedAt',
         ],
       },
+      where: {
+        accion_id,
+      },
       transaction,
     });
     return data;
   }
-  static async UpdateLectura({ id, payload, transaction = null }) {
+  static async update({ id, payload, transaction = null }) {
     const data = await lecturaAguaModel.findByPk(id, { transaction });
     if (!data) {
       return null;

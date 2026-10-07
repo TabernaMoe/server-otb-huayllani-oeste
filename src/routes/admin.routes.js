@@ -19,6 +19,8 @@ import MultaRoutes from '../modules/multas/multa.routes.js';
 import AlcantarilladoRoutes from '../modules/accionesAlcantarillado/index.routes.js';
 //
 import CambioNombreRoutes from '../modules/cambioNombre/cambioNombre.routes.js';
+//
+import CobroUniversal from '../modules/cobroUniversal/cobroUniversal.routes.js';
 
 const routes = new Router();
 
@@ -37,6 +39,7 @@ routes
   .use('/asamblea', AsambleaRotues)
   .use('/multa', MultaRoutes)
   .use('/alcantarillado', AlcantarilladoRoutes)
-  .use('/cambio-nombre', CambioNombreRoutes);
+  .use('/cambio-nombre', CambioNombreRoutes)
+  .use('/cobro-universal', CobroUniversal);
 
 export default routes;

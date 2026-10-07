@@ -23,6 +23,7 @@ import { cobroMultaModel } from '../../models/cobros/tipoCobros/cobroMulta.model
 import { ValidacionesSequelize as validaciones } from './../../validators/ValidacionesSequelize.js';
 import { calleRamalModel } from '../../models/calleRamal.model.js';
 import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
+import { fechaBonita } from '.././../utils/funciones.js';
 export class CobroServices {
   static async getAll(page = 1, limit = 10, search = '', estado = true) {
     page = Number(page) || 1;
@@ -475,7 +476,10 @@ export class CobroServices {
         }
         //
         const numeroRecibo = Math.floor(10000000 + Math.random() * 90000000);
-
+        //
+        const buscarAccion = await accionModel.findByPk(cobrosDB[0].accion_id, {
+          transaction: t,
+        });
         const reciboCreated = await reciboModel.create(
           {
             pago_id: pagoCreated.id,
@@ -485,11 +489,20 @@ export class CobroServices {
           { transaction: t },
         );
 
-        return {
-          pago: pagoCreated,
-          recibo: reciboCreated,
-          detalle: detalles,
+        const reciboEnvar = {
+          socio: `${socioSearch.ci_socio} ${socioSearch.nombres} ${socioSearch.primer_apellido} ${socioSearch.segundo_apellido}`,
+          codigo_interno: buscarAccion.codigo_interno,
+          numero_recibo: reciboCreated.numero_recibo,
+          fecha_emision: fechaBonita(reciboCreated.createdAt),
+          monto_pagado: pagoCreated.monto_pagado,
+          metodo_pago: pagoCreated.metodo_pago,
+          cobros_pagados: cobrosDB.map((row) => ({
+            descripcion: row.descripcion,
+            monto_pagado: row.monto_total,
+          })),
         };
+
+        return reciboEnvar;
       } else {
         const transactionId = `QR-${crypto.randomUUID()}`;
         const bancoResponse = await BancoEconomicoQr.generateQR({
@@ -744,8 +757,5 @@ export class CobroServices {
       ],
     });
     return data;
-  }
-  static async getAccionPasivaEspecifica(accion_id) {
-    
   }
 }

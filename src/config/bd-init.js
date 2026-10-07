@@ -107,8 +107,8 @@ export async function ConnectDB() {
     // await reciboModel.sync({ alter: true });
 
     // //
-    // await lecturaAguaModel.sync({ alter: true });
-    // await cambioMedidor.sync({ alter: true });
+    await lecturaAguaModel.sync({ alter: true });
+    await cambioMedidor.sync({ alter: true });
     // //
     // await cobroAguaModel.sync({ alter: true });
     // await CobroLecturaModel.sync({ alter: true });

@@ -385,7 +385,7 @@ export class LecturaServices {
         { transaction: t },
       );
 
-      const cobroCreated = await cobroAguaModel.create(
+      await cobroAguaModel.create(
         {
           lectura_id: createdLectura.id,
           socio_id: accionSearch.socio_id,
