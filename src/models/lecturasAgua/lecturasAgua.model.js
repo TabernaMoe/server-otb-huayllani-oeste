@@ -43,17 +43,38 @@ export const lecturaAguaModel = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+    mora: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
     periodo: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     observacion: {
       type: DataTypes.STRING,
-      defaultValue: 'Sin observaciones',
     },
     estado: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    puede_editar: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    pude_editar_m3: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    puede_editar_mora: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    observacion_modificacion: {
+      type: DataTypes.STRING,
+    },
+    observacion_mora: {
+      type: DataTypes.STRING,
     },
   },
   {

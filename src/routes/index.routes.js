@@ -4,13 +4,16 @@ import adminRoutes from './admin.routes.js';
 import usuarioNormalRoutes from './usuarioNormal.routes.js';
 import { checkAuth } from '../middlewares/auth.middlewares.js';
 import PruebaRoutes from '../modules/pruebapdf/prueba.routes.js';
+import pagoQrRoutes from '../modules/pagoQr/pagoQr.routes.js';
 
 const routes = new Router();
 
 routes
+  .use('/pagos-qr', pagoQrRoutes)
   .use('/prueba', PruebaRoutes)
   .use('/login', loginRoutes)
   .use('/admin', checkAuth, adminRoutes)
+  .use('/socio', checkAuth, usuarioNormalRoutes)
   .use('/cliente', checkAuth, usuarioNormalRoutes);
 
 export default routes;

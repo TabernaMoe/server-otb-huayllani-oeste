@@ -3,6 +3,7 @@ import { sequelize } from '../../../config/database.js';
 import { accionModel } from '../../accion/accion.model.js';
 import { cobroModel } from '../cobro.model.js';
 import { asistenciaAsambleaModel } from '../../asamblea/asistenciaAsamblea.model.js';
+import { asambleaModel } from '../../asamblea/asamblea.model.js';
 
 export const cobroAsamblea = sequelize.define(
   'cobro_asamblea',
@@ -51,3 +52,11 @@ export const cobroAsamblea = sequelize.define(
     timestamps: true,
   },
 );
+
+asistenciaAsambleaModel.hasMany(cobroAsamblea, {
+  as: 'cobroAsamblea',
+  foreignKey: 'asistencia_asamblea_id',
+});
+cobroAsamblea.belongsTo(asistenciaAsambleaModel, {
+  foreignKey: 'asistencia_asamblea_id',
+});

@@ -2,7 +2,6 @@ import { col, fn, literal, Op } from 'sequelize';
 import { lecturaAguaModel } from '../../models/lecturasAgua/lecturasAgua.model.js';
 import { cambioMedidor } from '../../models/lecturasAgua/cambioMedidor.model.js';
 import { accionModel } from '../../models/accion/accion.model.js';
-import { id } from 'zod/locales';
 import { sequelize } from '../../config/database.js';
 import { ValidacionesSequelize as validaciones } from '../../validators/ValidacionesSequelize.js';
 //
@@ -386,7 +385,7 @@ export class LecturaServices {
         { transaction: t },
       );
 
-      const cobroCreated = await cobroAguaModel.create(
+      await cobroAguaModel.create(
         {
           lectura_id: createdLectura.id,
           socio_id: accionSearch.socio_id,
@@ -527,6 +526,8 @@ export class LecturaServices {
     return await sequelize.transaction(async (t) => {
       const { lectura_actual, observacion } = payload;
 
+      const periodoActivo = await validaciones.ObtenerPeriodoActivo();
+
       const accionSearch = await accionModel.findByPk(accion_id, {
         transaction: t,
       });
@@ -537,6 +538,19 @@ export class LecturaServices {
         throw err;
       }
 
+      const lecturaPeriodo = await lecturaAguaModel.findOne({
+        where: { accion_id, periodo_id: periodoActivo.id },
+        order: [['id', 'DESC']],
+        transaction: t,
+      });
+
+      if (lecturaPeriodo) {
+        const err = new Error(
+          'No se puede cambiar le medidor cuando ya existe una lectura en este periodo',
+        );
+        err.statusCode = 409;
+        throw err;
+      }
       const ultimaLectura = await lecturaAguaModel.findOne({
         where: { accion_id },
         order: [['id', 'DESC']],
@@ -557,7 +571,6 @@ export class LecturaServices {
         err.statusCode = 400;
         throw err;
       }
-      const periodoActivo = await validaciones.ObtenerPeriodoActivo();
 
       const createdLectura = await lecturaAguaModel.create(
         {
@@ -573,7 +586,7 @@ export class LecturaServices {
         { transaction: t },
       );
 
-      const createdChangeMedidor = await cambioMedidor.create(
+      await cambioMedidor.create(
         {
           lectura_agua_id: createdLectura.id,
           consumo_m3: consumoM3,

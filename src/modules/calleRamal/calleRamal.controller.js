@@ -1,3 +1,4 @@
+import { GetSelectUseCase } from './use-case/get-select.use-case.js';
 import { CalleRamalServices as services } from './calleRamal.services.js';
 
 export class CalleRamalController {
@@ -37,17 +38,12 @@ export class CalleRamalController {
     try {
       let search = req.query.search;
 
-      search =
-        search && search !== 'undefined' && search !== 'null'
-          ? search.trim()
-          : '';
-
-      const result = await services.getSelect(search);
+      const data = await GetSelectUseCase.execute({ searchQuery: search });
 
       return res.status(200).json({
         ok: true,
         message: 'Calles obtenidas correctamente para el select',
-        data: result,
+        data,
       });
     } catch (e) {
       next(e);

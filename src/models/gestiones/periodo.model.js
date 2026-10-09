@@ -43,19 +43,16 @@ export const periodoModel = sequelize.define(
     },
 
     fecha_inicio: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: false,
     },
     fecha_fin: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: false,
     },
     estado: {
       type: DataTypes.ENUM('ACTIVO', 'PENDIENTE', 'CERRADO', 'BLOQUEADO'),
       defaultValue: 'PENDIENTE',
-    },
-    fecha_cierre: {
-      type: DataTypes.DATE,
     },
   },
   {

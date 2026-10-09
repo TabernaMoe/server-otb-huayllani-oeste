@@ -1,31 +1,29 @@
 import { Router } from 'express';
 import { TaricaController as controller } from './tarifa.controller.js';
-import { TarifaSchema, TarifaUpdateSchema } from './tarifa.schema.js';
+import { tarifaCreateSchema, tarifaUpdateSchema } from './tarifa.schema.js';
 import { validateSchema } from '../../middlewares/validateSchema.middlewares.js';
 import { checkPermiss } from '../../middlewares/auth.middlewares.js';
 
 const routes = new Router();
 routes
   .get('/', checkPermiss('tarifa.ver'), controller.getAll)
-  .get('/select', checkPermiss('tarifa.ver'), controller.getSelect)
   .get('/:id', checkPermiss('tarifa.ver'), controller.getId)
   .post(
     '/',
     checkPermiss('tarifa.crear'),
-    validateSchema(TarifaSchema),
+    validateSchema(tarifaCreateSchema),
     controller.create,
   )
   .patch(
     '/:id',
     checkPermiss('tarifa.editar'),
-    validateSchema(TarifaUpdateSchema),
+    validateSchema(tarifaUpdateSchema),
     controller.update,
   )
   .patch(
-    '/toggle-status/:id',
+    '/cambiar-estado/:id',
     checkPermiss('tarifa.estado'),
-    controller.toggleStatus,
-  )
-  .delete('/:id', checkPermiss('tarifa.eliminar'), controller.delete);
+    controller.cambiarEstado,
+  );
 
 export default routes;

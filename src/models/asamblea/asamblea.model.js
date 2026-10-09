@@ -27,15 +27,15 @@ export const asambleaModel = sequelize.define(
       type: DataTypes.TIME,
       allowNull: false,
     },
-    hora_final: {
-      type: DataTypes.TIME,
-      allowNull: false,
-    },
     lugar: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     monto_multa: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
+    monto_retraso: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },

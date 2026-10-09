@@ -1,4 +1,4 @@
-import { col, Op, Sequelize } from 'sequelize';
+import { col, Op } from 'sequelize';
 import { detallePagoAccion } from '../../../models/accion/detallePagoAccion.model.js';
 import { tipoAccionModel } from '../../../models/accion/tipoAccion.model.js';
 import { accionDetalleModel } from '../../../models/accion/accionDetalle.model.js';

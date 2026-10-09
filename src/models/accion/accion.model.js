@@ -49,7 +49,6 @@ export const accionModel = sequelize.define(
     },
     nro_medidor: {
       type: DataTypes.STRING,
-      allowNull: false,
       unique: true,
     },
     direccion: {
@@ -58,7 +57,6 @@ export const accionModel = sequelize.define(
     },
     observacion: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     estado: {
       type: DataTypes.ENUM('ACTIVO', 'PASIVO', 'ANULADO'),

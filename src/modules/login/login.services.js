@@ -1,20 +1,43 @@
-import { usuarioModel } from '../../models/auth/usuario.model.js';
-import { rolModel } from '../../models/auth/rol.model.js';
-import { permisoModel } from '../../models/auth/permiso.model.js';
-import { socioModel } from '../../models/socio.model.js';
 import bcrypt from 'bcrypt';
+
 import { generateToken } from '../../helpers/token.helpers.js';
-import { accionModel } from '../../models/accion/accion.model.js';
-import { calleRamalModel } from '../../models/calleRamal.model.js';
-import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
-import { col } from 'sequelize';
+import { permisoModel } from '../../models/auth/permiso.model.js';
+import { rolModel } from '../../models/auth/rol.model.js';
+import { usuarioModel } from '../../models/auth/usuario.model.js';
+import { socioModel } from '../../models/socio.model.js';
+
+const SOCIO_ROLE = 'usuario_normal';
+
+function buildFullName(socio) {
+  return [socio?.nombres, socio?.primer_apellido, socio?.segundo_apellido]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+}
+
+function buildSessionUser(usuario) {
+  const role = usuario.rol?.nombre_rol ?? null;
+  const isSocio = role === SOCIO_ROLE;
+  const permissions = isSocio
+    ? []
+    : (usuario.rol?.permisos ?? []).map((item) => item.codigo_permiso);
+
+  return {
+    id: usuario.id,
+    nombre_usuario: usuario.nombre_usuario,
+    nombre: isSocio ? buildFullName(usuario.socio) : usuario.nombre_usuario,
+    rol: role,
+    tipo_usuario: isSocio ? 'SOCIO' : 'ADMIN',
+    socio_id: isSocio ? usuario.socio?.id ?? null : null,
+    permisos: permissions,
+    debe_cambiar_password: Boolean(usuario.debe_camibiar_contrasenia),
+  };
+}
 
 export class LoginServices {
-  static async InicarSesion(nombre_usuario, contrasenia_usuario) {
-    const usuarioSearch = await usuarioModel.findOne({
-      where: {
-        nombre_usuario,
-      },
+  static async iniciarSesion(nombre_usuario, contrasenia_usuario) {
+    const usuario = await usuarioModel.findOne({
+      where: { nombre_usuario },
       include: [
         {
           model: socioModel,
@@ -36,145 +59,68 @@ export class LoginServices {
       ],
     });
 
-    if (!usuarioSearch) {
-      const err = new Error('Credenciales incorrectas');
-      err.statusCode = 400;
-      throw err;
+    if (!usuario) {
+      const error = new Error('Credenciales incorrectas');
+      error.statusCode = 400;
+      throw error;
     }
 
-    const isContraseniaCorrecta = await bcrypt.compare(
+    const passwordIsValid = await bcrypt.compare(
       contrasenia_usuario,
-      usuarioSearch.contrasenia_usuario,
+      usuario.contrasenia_usuario,
     );
-    if (!isContraseniaCorrecta) {
-      const err = new Error('Credenciales incorrectas');
-      err.statusCode = 403;
-      throw err;
+
+    if (!passwordIsValid) {
+      const error = new Error('Credenciales incorrectas');
+      error.statusCode = 403;
+      throw error;
     }
 
-    if (!usuarioSearch.estado) {
-      const err = new Error('Usuario deshabilitado');
-      err.statusCode = 403;
-      throw err;
+    if (!usuario.estado) {
+      const error = new Error('Usuario deshabilitado');
+      error.statusCode = 403;
+      throw error;
     }
 
-    if (usuarioSearch.rol.nombre_rol === 'usuario_normal') {
-      if (!usuarioSearch?.socio?.id) {
-        throw new Error('Credenciales incorrectas');
-      }
+    const sessionUser = buildSessionUser(usuario);
 
-      const token = generateToken(usuarioSearch.socio.id);
-
-      const acciones = await accionModel.findAll({
-        attributes: {
-          include: [
-            [col('calleAccion.nombre_calle'), 'nombre_calle'],
-            [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
-          ],
-        },
-        where: {
-          socio_id: usuarioSearch.socio.id,
-        },
-        include: [
-          {
-            model: calleRamalModel,
-            as: 'calleAccion',
-            attributes: [],
-          },
-          {
-            model: tarifaModel,
-            as: 'tarifaAccion',
-            attributes: [],
-          },
-        ],
-      });
-      const usuario = {
-        rol: usuarioSearch.rol.nombre_rol,
-        ci_socio: usuarioSearch.socio.ci_socio,
-        ci_expedido: usuarioSearch.socio.ci_expedido,
-        nombre_completo: `${usuarioSearch.socio.nombres} ${usuarioSearch.socio.primer_apellido} ${usuarioSearch.socio.segundo_apellido}`,
-        numero_celular: usuarioSearch.socio.numero_celular,
-        numero_telefono: usuarioSearch.socio.numero_telefono ?? '',
-        genero: usuarioSearch.socio.genero,
-        direccion: usuarioSearch.socio.direccion,
-        acciones,
-      };
-      return { usuario, token };
+    if (sessionUser.tipo_usuario === 'SOCIO' && !sessionUser.socio_id) {
+      const error = new Error('La cuenta no está vinculada a un socio');
+      error.statusCode = 403;
+      throw error;
     }
 
-    if (usuarioSearch.rol.nombre_rol === 'super_admin') {
-      const token = generateToken(usuarioSearch.id);
-      return {
-        nombre_usuario,
-        rol: usuarioSearch.rol.nombre_rol,
-        token,
-      };
-    }
-    const token = generateToken(usuarioSearch.id);
-
-    const codigoPermisos = usuarioSearch.rol.permisos.map(
-      (row) => row.codigo_permiso,
-    );
     return {
-      nombre_usuario,
-      rol: usuarioSearch.rol.nombre_rol,
-      permisos: codigoPermisos,
-      token,
+      usuario: sessionUser,
+      token: generateToken(usuario.id),
     };
   }
-  static async updateMe(id, payload, tipo_usuario) {
-    if (tipo_usuario === 'ESPECIAL') {
-      const { contrasenia_antigua, contrasenia_nueva } = payload;
 
-      const userSearch = await usuarioModel.findByPk(id);
-      if (!userSearch) {
-        const err = new Error('No se encotro el usuario');
-        err.statusCode = 404;
-        throw err;
-      }
+  static async updateMe(userId, payload) {
+    const { contrasenia_antigua, contrasenia_nueva } = payload;
+    const usuario = await usuarioModel.findByPk(userId);
 
-      const isValido = await bcrypt.compare(
-        contrasenia_antigua,
-        userSearch.contrasenia_usuario,
-      );
-
-      if (!isValido) {
-        const err = new Error('Contraseña actual incorrecta');
-        throw err;
-      }
-
-      await userSearch.update({ contrasenia_usuario: contrasenia_nueva });
-      return;
-    } else {
-      const { contrasenia_antigua, contrasenia_nueva } = payload;
-
-      const socioSearch = await socioModel.findByPk(id);
-
-      if (!socioSearch) {
-        const err = new Error('Socio no encontrado');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      const userSearch = await usuarioModel.findByPk(socioSearch.user_id);
-      if (!userSearch) {
-        const err = new Error('No se encotro el usuario');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      const isValido = await bcrypt.compare(
-        contrasenia_antigua,
-        userSearch.contrasenia_usuario,
-      );
-
-      if (!isValido) {
-        const err = new Error('Contraseña actual incorrecta');
-        throw err;
-      }
-
-      await userSearch.update({ contrasenia_usuario: contrasenia_nueva });
-      return;
+    if (!usuario) {
+      const error = new Error('Usuario no encontrado');
+      error.statusCode = 404;
+      throw error;
     }
+
+    const passwordIsValid = await bcrypt.compare(
+      contrasenia_antigua,
+      usuario.contrasenia_usuario,
+    );
+
+    if (!passwordIsValid) {
+      const error = new Error('Contraseña actual incorrecta');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const passwordHash = await bcrypt.hash(contrasenia_nueva, 12);
+    await usuario.update({
+      contrasenia_usuario: passwordHash,
+      debe_camibiar_contrasenia: false,
+    });
   }
 }

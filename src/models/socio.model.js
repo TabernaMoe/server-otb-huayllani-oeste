@@ -33,11 +33,9 @@ export const socioModel = sequelize.define(
     },
     primer_apellido: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     segundo_apellido: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     numero_celular: {
       type: DataTypes.STRING,

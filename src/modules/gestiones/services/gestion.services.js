@@ -23,6 +23,7 @@ export class GestionService {
     }
 
     const { count, rows } = await gestionModel.findAndCountAll({
+      attributes: ['id', 'anio', 'fecha_inicio', 'fecha_fin', 'estado'],
       where,
       limit,
       offset,
@@ -40,7 +41,14 @@ export class GestionService {
   }
   static async getId(id) {
     const dataId = await gestionModel.findByPk(id, {
-      include: [{ model: periodoModel, as: 'periodos' }],
+      attributes: { exclude: ['createdAt', 'updatedAt'] },
+      include: [
+        {
+          model: periodoModel,
+          as: 'periodos',
+          attributes: { exclude: ['createdAt', 'updatedAt', 'gestion_id', ''] },
+        },
+      ],
     });
 
     return dataId.toJSON();
@@ -81,6 +89,21 @@ export class GestionService {
       });
 
       if (gestionActiva) {
+        const periodosActios = await periodoModel.findAll({
+          where: {
+            gestion_id: gestionActiva.id,
+            estado: 'ACTIVO',
+          },
+          transaction: t,
+        });
+
+        if (periodosActios.length !== 0) {
+          const err = new Error(
+            'No se pude crear una nueva gestion si no estan cerradas todos lo periodos',
+          );
+          err.statusCode = 409;
+          throw err;
+        }
         if (gestionActiva.anio + 1 !== anio) {
           const err = new Error(
             `El año de la nueva gestión debe ser consecutivo al año activo actual (${gestionActiva.anio} → ${anio}). No se pueden saltar años.`,
@@ -116,6 +139,7 @@ export class GestionService {
 
       const activarPeriodo = await periodoModel.findOne({
         where: {
+          gestion_id: gestionCreated.id,
           numero_mes: 1,
         },
         transaction: t,
@@ -130,83 +154,5 @@ export class GestionService {
     });
 
     return created;
-  }
-  static async delete(id) {
-    return await sequelize.transaction(async (t) => {
-      const gestion = await gestionModel.findByPk(id, {
-        transaction: t,
-      });
-
-      if (!gestion) {
-        const err = new Error('No existe la gestión.');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      if (gestion.estado !== 'ACTIVO') {
-        const err = new Error(
-          'Solo se puede eliminar la gestión activa actual.',
-        );
-        err.statusCode = 400;
-        throw err;
-      }
-
-      const gestionAnterior = await gestionModel.findOne({
-        where: {
-          anio: gestion.anio - 1,
-        },
-        transaction: t,
-      });
-
-      if (!gestionAnterior) {
-        const err = new Error(
-          'No se puede eliminar la primera gestión creada.',
-        );
-        err.statusCode = 400;
-        throw err;
-      }
-
-      const periodos = await periodoModel.findAll({
-        where: { gestion_id: id },
-        attributes: ['id'],
-        transaction: t,
-      });
-
-      const periodoIds = periodos.map((p) => p.id);
-
-      // Aquí validas si hay datos relacionados reales.
-      // Ejemplo:
-      /*
-    const cobros = await cobroModel.count({
-      where: {
-        periodo_id: periodoIds,
-      },
-      transaction: t,
-    });
-
-    if (cobros > 0) {
-      const err = new Error(
-        'No se puede eliminar la gestión porque tiene cobros registrados.'
-      );
-      err.statusCode = 409;
-      throw err;
-    }
-    */
-
-      await periodoModel.destroy({
-        where: { gestion_id: id },
-        transaction: t,
-      });
-
-      await gestion.destroy({
-        transaction: t,
-      });
-
-      await gestionAnterior.update({ estado: 'ACTIVO' }, { transaction: t });
-
-      return {
-        message: 'Gestión eliminada correctamente.',
-      };
-    });
   }
 }

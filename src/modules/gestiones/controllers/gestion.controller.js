@@ -48,16 +48,4 @@ export class GestionController {
       next(e);
     }
   }
-  static async delete(req, res, next) {
-    try {
-      const { id } = req.params;
-      await services.delete(id);
-      return res.status(200).json({
-        ok: true,
-        message: 'Gestiones eliminada correctamente',
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
 }

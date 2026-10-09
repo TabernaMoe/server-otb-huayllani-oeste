@@ -1,14 +1,23 @@
 import { Router } from 'express';
 
-// import all controllers
-// import SessionController from './app/controllers/SessionController';
+import { validateSchema } from '../middlewares/validateSchema.middlewares.js';
+import { requireSocio } from '../middlewares/auth.middlewares.js';
+import { PortalSocioController as controller } from '../modules/portalSocio/portalSocio.controller.js';
+import { changePasswordSchema } from '../modules/portalSocio/portalSocio.schema.js';
 
 const routes = new Router();
 
-// Add routes
-// routes.get('/', SessionController.store);
-// routes.post('/', SessionController.store);
-// routes.put('/', SessionController.store);
-// routes.delete('/', SessionController.store);
+routes.use(requireSocio);
+routes.get('/me', controller.perfil);
+routes.get('/me/resumen', controller.resumen);
+routes.get('/me/acciones', controller.acciones);
+routes.get('/me/lecturas', controller.lecturas);
+routes.get('/me/cobros', controller.cobros);
+routes.get('/me/recibos', controller.recibos);
+routes.patch(
+  '/me/password',
+  validateSchema(changePasswordSchema),
+  controller.cambiarPassword,
+);
 
 export default routes;

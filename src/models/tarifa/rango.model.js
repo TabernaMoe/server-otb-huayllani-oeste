@@ -16,7 +16,7 @@ export const rangoTarifaModel = sequelize.define(
         model: 'tarifas',
         key: 'id',
       },
-      onDelete: 'CASCADE',
+      onDelete: 'RESTRICT',
       onUpdate: 'CASCADE',
     },
     consumo_minimo: {
@@ -25,7 +25,6 @@ export const rangoTarifaModel = sequelize.define(
     },
     consumo_maximo: {
       type: DataTypes.INTEGER,
-      allowNull: false,
     },
     precio: {
       type: DataTypes.DECIMAL(10, 2),

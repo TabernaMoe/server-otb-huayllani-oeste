@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import { AccionController as controller } from '../controllers/accion.controller.js';
 import { validateSchema } from '../../../middlewares/validateSchema.middlewares.js';
-import { accionSchema, accionUpdateSchema } from '../schema/acciones.schema.js';
+import {
+  accionSchema,
+  accionUpdateSchema,
+  estadoAccionSchema,
+  cambiarNombreSchema,
+} from '../schema/acciones.schema.js';
 import { checkPermiss } from '../../../middlewares/auth.middlewares.js';
 import { TipoAccionController } from '../controllers/tipoAccion.controller.js';
 import { DetallePagoAccionController } from '../controllers/detallePagoAccion.controller.js';
@@ -27,6 +32,7 @@ routes
     checkPermiss('acciones.accion.ver'),
     TipoAccionController.getSelect,
   )
+  .get('/caratula/:id', controller.getDataPdf)
   .get(
     '/detalle-accion/:id',
     checkPermiss('acciones.accion.ver'),
@@ -44,6 +50,18 @@ routes
     checkPermiss('acciones.accion.editar'),
     validateSchema(accionUpdateSchema),
     controller.update,
+  )
+  .patch(
+    '/camibiar-estado/:id',
+    checkPermiss('acciones.accion.cambiarEstado'),
+    validateSchema(estadoAccionSchema),
+    controller.cambiarEstado,
+  )
+  .patch(
+    '/cambiar-nombre/:id',
+    validateSchema(cambiarNombreSchema),
+    checkPermiss('acciones.accion.cambiarNombre'),
+    controller.cambiarNombreAccion,
   );
 
 export default routes;

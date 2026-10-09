@@ -1,4 +1,7 @@
 import { accionServices as services } from '../services/accion.services.js';
+import { generarCaratulaAccion } from '../utils/generarCaratulaAccion.js';
+import { UpdateUseCase } from '../accionesAgua/use-case/update.use-case.js';
+import { GetAccionesWithMoraUseCase } from '../accionesAgua/use-case/get-acciones-mora.use-case.js';
 
 export class AccionController {
   static async getAll(req, res, next) {
@@ -52,12 +55,121 @@ export class AccionController {
     try {
       const { id } = req.params;
       const payload = req.body;
+      const data = await UpdateUseCase.execute({ id, payload });
       const dataUpdated = await services.update(id, payload);
       return res.status(200).json({
         ok: true,
         message: 'Accion actuzalizada correctamente',
-        dataUpdated,
+        data,
       });
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async cambiarEstado(req, res, next) {
+    try {
+      const { id } = req.params;
+      const payload = req.body;
+      let idNumber = Number(id);
+      if (isNaN(idNumber) && !Number.isInteger(idNumber)) {
+        const err = new Error('El id debe ser un numero entero');
+        throw err;
+      }
+      await services.cambiarEstado(idNumber, payload);
+      return res.status(200).json({
+        ok: true,
+        message: 'Se cambio el estado correctamente',
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async cambiarNombreAccion(req, res, next) {
+    try {
+      const { id } = req.params;
+      const payload = req.body;
+      let numberId = Number(id);
+      if (isNaN(numberId) || !Number.isInteger(numberId)) {
+        const err = new Error('El id debe ser un numero');
+        err.statusCode = 409;
+        throw err;
+      }
+      const data = await services.cambiarNombreAccion(id, payload);
+      return res.status(200).json({
+        ok: true,
+        message: 'Se logro cambiar el nombre de la accion correctamente',
+        data,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async getAcciones(req, res, next) {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const search = req.query.search || '';
+
+      const result = await services.getAcciones(page, limit, search);
+
+      return res.status(200).json({
+        ok: true,
+        message: 'Acciones obtenidas correctamente',
+        ...result,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async getSelect(req, res, next) {
+    try {
+      let search = req.query.search;
+
+      search =
+        search && search !== 'undefined' && search !== 'null'
+          ? search.trim()
+          : '';
+
+      const result = await services.getSelect(search);
+
+      return res.status(200).json({
+        ok: true,
+        message: 'Acciones obtenidas correctamente',
+        data: result,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async getDataPdf(req, res, next) {
+    try {
+      const data = await services.getDataPdf(req.params.id);
+
+      const pdfBytes = await generarCaratulaAccion(data);
+
+      res.setHeader('Content-Type', 'application/pdf');
+
+      res.setHeader(
+        'Content-Disposition',
+        'inline; filename="caratula-accion.pdf"',
+      );
+
+      return res.send(Buffer.from(pdfBytes));
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async getAccionesWithMora(req, res, next) {
+    try {
+      const data = await GetAccionesWithMoraUseCase.execute();
+
+      return res
+        .status(200)
+        .json({
+          ok: true,
+          message: 'Se obtuvo las acciones correctamente',
+          data,
+        });
     } catch (e) {
       next(e);
     }

@@ -2,6 +2,7 @@ import { Op } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 import { rangoTarifaModel } from '../../models/tarifa/rango.model.js';
 import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
+import { accionModel } from '../../models/accion/accion.model.js';
 
 export class TarifaServices {
   static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
@@ -43,7 +44,9 @@ export class TarifaServices {
       attributes: { exclude: ['createdAt', 'updatedAt'] },
       include: [
         {
-          attributes: { exclude: ['tarifa_id', 'id'] },
+          attributes: {
+            exclude: ['tarifa_id', 'id', 'createdAt', 'updatedAt'],
+          },
           model: rangoTarifaModel,
           as: 'rangosTarifa',
         },
@@ -99,7 +102,9 @@ export class TarifaServices {
       attributes: { exclude: ['updatedAt', 'createdAt'] },
       include: [
         {
-          attributes: { exclude: ['tarifa_id', 'id'] },
+          attributes: {
+            exclude: ['tarifa_id', 'id', 'createdAt', 'updatedAt'],
+          },
           model: rangoTarifaModel,
           as: 'rangosTarifa',
         },
@@ -209,26 +214,25 @@ export class TarifaServices {
     });
     return update;
   }
-  static async toggleStatus(id) {
+  static async cambiarEstado(id) {
     const dataSearch = await tarifaModel.findByPk(id);
     if (!dataSearch) {
       const err = new Error('No exite la tarifa');
+      err.statusCode = 404;
+      throw err;
+    }
+    const accionSearch = await accionModel.findOne({
+      where: {
+        tarifa_id: dataSearch.id,
+      },
+    });
+    if (accionSearch) {
+      const err = new Error('Hay tarifas asignadas a algunas accion');
       err.statusCode = 404;
       throw err;
     }
     dataSearch.estado = !dataSearch.estado;
     await dataSearch.save();
-    return;
-  }
-  static async delete(id) {
-    const dataSearch = await tarifaModel.findByPk(id);
-    if (!dataSearch) {
-      const err = new Error('No exite la tarifa');
-      err.statusCode = 404;
-      throw err;
-    }
-    //validar que no este siendo usado
-    await dataSearch.destroy();
     return;
   }
 }

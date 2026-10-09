@@ -22,7 +22,7 @@ export const reciboModel = sequelize.define(
     },
     numero_recibo: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      // allowNull: false,
     },
     fecha_emision: {
       type: DataTypes.DATE,

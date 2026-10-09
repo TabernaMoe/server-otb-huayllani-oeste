@@ -1,9 +1,13 @@
 import { socioModel } from '../../models/socio.model.js';
 import { usuarioModel } from '../../models/auth/usuario.model.js';
+import { rolModel } from '../../models/auth/rol.model.js';
 import { sequelize } from '../../config/database.js';
 import { Op, Sequelize, fn, col } from 'sequelize';
 import { auditoriaModel } from '../../models/auth/auditoria.model.js';
 import bcrypt from 'bcrypt';
+import { accionModel } from '../../models/accion/accion.model.js';
+import { calleRamalModel } from '../../models/calleRamal.model.js';
+import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
 
 export class SocioServices {
   static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
@@ -148,8 +152,8 @@ export class SocioServices {
           'label',
         ],
       ],
-      limit: 10,
-      raw: true,
+        limit: 10,
+        raw: true,
     });
 
     return data;
@@ -163,7 +167,7 @@ export class SocioServices {
     });
     if (!dataId) {
       const err = new Error('No se encontro al socio');
-      err.statuCode = 403;
+      err.statusCode = 403;
       throw err;
     }
     return dataId;
@@ -175,7 +179,7 @@ export class SocioServices {
       const usuarioSearch = await usuarioModel.findByPk(id, { transaction: t });
       if (!usuarioSearch) {
         const err = new Error('No se encontro el usuario');
-        err.statuCode = 404;
+        err.statusCode = 404;
         throw err;
       }
 
@@ -188,7 +192,18 @@ export class SocioServices {
 
       if (socioSearch) {
         const err = new Error('El socio ya existe');
-        err.statuCode = 409;
+        err.statusCode = 409;
+        throw err;
+      }
+
+      const socioRole = await rolModel.findOne({
+        where: { nombre_rol: 'usuario_normal' },
+        transaction: t,
+      });
+
+      if (!socioRole) {
+        const err = new Error('No existe el rol usuario_normal');
+        err.statusCode = 500;
         throw err;
       }
 
@@ -196,13 +211,12 @@ export class SocioServices {
 
       const userCreated = await usuarioModel.create(
         {
-          nombre_usuario: ci_socio,
+          nombre_usuario: String(ci_socio),
           contrasenia_usuario: passwordHash,
-          rol_id: 2,
+          rol_id: socioRole.id,
+          debe_camibiar_contrasenia: true,
         },
-        {
-          transaction: t,
-        },
+        { transaction: t },
       );
 
       const socioCreated = await socioModel.create(
@@ -268,20 +282,17 @@ export class SocioServices {
           throw err;
         }
       }
-      // Actualizar socio
-      await socioSearch.update(payload, {
-        transaction: t,
-      });
+      const previousCi = socioSearch.ci_socio;
 
-      // Si cambió el CI actualizar usuario
-      if (payload.ci_socio && payload.ci_socio !== socioSearch.ci_socio) {
-        await socioSearch.socio_usuario.update(
-          {
-            nombre_usuario: payload.ci_socio,
-          },
-          {
-            transaction: t,
-          },
+      // Actualizar socio
+      await socioSearch.update(payload, { transaction: t });
+
+      // Si cambió el CI, mantener sincronizado el nombre de usuario.
+      // La contraseña NO se reinicia automáticamente por seguridad.
+      if (payload.ci_socio && Number(payload.ci_socio) !== Number(previousCi)) {
+        await usuarioModel.update(
+          { nombre_usuario: String(payload.ci_socio) },
+          { where: { id: socioSearch.user_id }, transaction: t },
         );
       }
 
@@ -336,5 +347,33 @@ export class SocioServices {
         socioSearch,
       };
     });
+  }
+  static async getDetalle(id) {
+    const socioSearch = await socioModel.findByPk(id, {
+      attributes: { exclude: ['createdAt', 'updatedAt', 'user_id'] },
+    });
+    if (!socioSearch) {
+      const err = new Error('No se econtro el socio');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const accionesSearch = await accionModel.findAll({
+      attributes: {
+        include: [
+          [col('calleAccion.nombre_calle'), 'nombre_calle'],
+          [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
+        ],
+        exclude: ['socio_id', 'calle_id', 'tarifa_id'],
+      },
+      where: {
+        socio_id: id,
+      },
+      include: [
+        { model: calleRamalModel, as: 'calleAccion', attributes: [] },
+        { model: tarifaModel, as: 'tarifaAccion', attributes: [] },
+      ],
+    });
+    return { ...socioSearch.toJSON(), acciones: accionesSearch };
   }
 }

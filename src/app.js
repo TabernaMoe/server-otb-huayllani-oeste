@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import { errorHandler } from './middlewares/errorHandler.middlewares.js';
 import IndexRoutes from './routes/index.routes.js';
+import { BancoEconomicoEncrypt } from './integrations/bancoEconomico/bancoEconomico.encrypt.js';
 
 const app = express();
 // Middleware

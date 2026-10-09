@@ -18,7 +18,7 @@ export class RolServices {
 
     let where = {
       nombre_rol: {
-        [Op.ne]: 'ADMIN',
+        [Op.notIn]: ['super_admin', 'usuario_normalGE'],
       },
     };
 
@@ -54,6 +54,15 @@ export class RolServices {
       totalPages: Math.ceil(count / limit),
       data: rows,
     };
+  }
+  static async getSelect() {
+    const data = await rolModel.findAll({
+      attributes: [
+        ['id', 'value'],
+        ['nombre_rol', 'label'],
+      ],
+    });
+    return data;
   }
   static async getPermissos() {
     const dataPermiso = permisoModel.findAll();
@@ -203,22 +212,5 @@ export class RolServices {
       return rolReload;
     });
     return updated;
-  }
-  static async delete(id) {
-    const deleted = await rolModel.findByPk(id);
-    if (!deleted) {
-      const err = new Error('No existe el rol');
-      err.statuCode = 404;
-      throw err;
-    }
-    const usuarios = await deleted.getUsuarios();
-    if (usuarios.length > 0) {
-      const err = new Error('Hay usuario utilizando este rol');
-      err.statuCode = 404;
-      throw err;
-    }
-
-    await deleted.destroy();
-    return;
   }
 }
