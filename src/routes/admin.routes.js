@@ -21,6 +21,8 @@ import AlcantarilladoRoutes from '../modules/accionesAlcantarillado/index.routes
 import CambioNombreRoutes from '../modules/cambioNombre/cambioNombre.routes.js';
 //
 import CobroUniversal from '../modules/cobroUniversal/cobroUniversal.routes.js';
+//
+import EgresosRoutes from '../modules/egresos/routes.js';
 
 const routes = new Router();
 
@@ -40,6 +42,7 @@ routes
   .use('/multa', MultaRoutes)
   .use('/alcantarillado', AlcantarilladoRoutes)
   .use('/cambio-nombre', CambioNombreRoutes)
-  .use('/cobro-universal', CobroUniversal);
+  .use('/cobro-universal', CobroUniversal)
+  .use('/egresos', EgresosRoutes);
 
 export default routes;

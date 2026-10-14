@@ -69,6 +69,9 @@ import {
 //
 import { cambiarNombreModel } from '../models/cambioNombre.model.js';
 import { cobroCambioNombreModel } from '../models/cobros/tipoCobros/cobroCambioNombre.model.js';
+//Egresos
+import { CategoriaGastosModel } from '../models/egresos/categoriaGasto.model.js';
+import { EgresosModel } from '../models/egresos/egresos.model.js';
 
 export async function ConnectDB() {
   const shouldResetDatabase = process.env.RESET_DB_ON_START === 'true';
@@ -83,72 +86,77 @@ export async function ConnectDB() {
     }
 
     // //Primera migracion
-     await permisoModel.sync({ force: false });
-     await rolModel.sync({ force: false });
-     await permisoRolModel.sync({ force: false });
-     await usuarioModel.sync({ force: false });
-     await personaAdminModel.sync({ force: false });
-     await auditoriaModel.sync({ force: false });
-    // //Segunda Migracion
-     await calleRamalModel.sync({ force: false });
-    // //Tercera migracion
-     await tarifaModel.sync({ force: false });
-     await rangoTarifaModel.sync({ force: false });
-    // //Cuartea migracion
-     await socioModel.sync({ force: false });
-    // //Quinta Migracion
-     await tipoAccionModel.sync({ force: false });
-     await detallePagoAccion.sync({ force: false });
-    // //
-     await accionModel.sync({ force: false });
-     await accionDetalleModel.sync({ force: false });
-    // Gestiones
-     await gestionModel.sync({ force: false });
-     await periodoModel.sync({ force: false });
-    // //
-     await cobroModel.sync({ force: false });
-     await cobroAccionModel.sync({ force: false });
-     await pagoModel.sync({ force: false });
-     await pagoDetalleModel.sync({ force: false });
-     await reciboModel.sync({ force: false });
-
-    // //
-    await lecturaAguaModel.sync({ force: false });
-    await cambioMedidor.sync({ force: false });
-    // //
-     await cobroAguaModel.sync({ force: false });
-     await CobroLecturaModel.sync({ force: false });
-     await pagoAguaModel.sync({ force: false });
-     await reciboAguaModel.sync({ force: false });
-
-     await inventarioModel.sync({ force: false });
-
-     await asambleaModel.sync({ force: false });
-     await asistenciaAsambleaModel.sync({ force: false });
-     await cobroAsamblea.sync({ force: false });
-
-     await pagoQrModel.sync({ force: false });
-     await PagoQrDetalleModel.sync({ force: false });
-
-     await multaModel.sync({ force: false });
-     await cobroMultaModel.sync({ force: false });
-
-    // // cambio nombre
-     await cambiarNombreModel.sync({ force: false });
-     await cobroCambioNombreModel.sync({ force: false });
-
-     await detalleAlcantarilladoModel.sync({ force: false });
-     await accionAlcantarilladoModel.sync({ force: false });
-     await accionDetalleAlcantarilladoModel.sync({ force: false });
+    // await permisoModel.sync({ alter: false });
+    // await rolModel.sync({ alter: false });
+    // await permisoRolModel.sync({ alter: false });
+    // await usuarioModel.sync({ alter: false });
+    // await personaAdminModel.sync({ alter: false });
+    // await auditoriaModel.sync({ alter: false });
+    // // //Segunda Migracion
+    // await calleRamalModel.sync({ alter: false });
+    // // //Tercera migracion
+    // await tarifaModel.sync({ alter: false });
+    // await rangoTarifaModel.sync({ alter: false });
+    // // //Cuartea migracion
+    // await socioModel.sync({ alter: false });
+    // // //Quinta Migracion
+    // await tipoAccionModel.sync({ alter: false });
+    // await detallePagoAccion.sync({ alter: false });
+    // // //
+    // await accionModel.sync({ alter: false });
+    // await accionDetalleModel.sync({ alter: false });
+    // // Gestiones
+    // await gestionModel.sync({ alter: false });
+    // await periodoModel.sync({ alter: false });
+    // // //
+    // await cobroModel.sync({ alter: false });
+    // await cobroAccionModel.sync({ alter: false });
+    // await pagoModel.sync({ alter: false });
+    // await pagoDetalleModel.sync({ alter: false });
+    // await reciboModel.sync({ alter: false });
 
     // // //
-     await cobroAlcantarilladoModel.sync({ force: false });
-   await pagoAlcantarilladoModel.sync({ force: false });
-     await pagoDetalleAlcantarilladoModel.sync({ force: false });
-     await reciboAlcantarilladoModel.sync({ force: false });
-     await cobroAccionAlcantarilladoModel.sync({ force: false });
+    // await lecturaAguaModel.sync({ alter: false });
+    // await cambioMedidor.sync({ alter: false });
+    // // //
+    // await cobroAguaModel.sync({ alter: false });
+    // await CobroLecturaModel.sync({ alter: false });
+    // await pagoAguaModel.sync({ alter: false });
+    // await reciboAguaModel.sync({ alter: false });
 
-    console.log(`✅ Tablas cargadas correctamente${shouldResetDatabase ? ' (reiniciadas)' : ''}`);
+    // await inventarioModel.sync({ alter: false });
+
+    // await asambleaModel.sync({ alter: false });
+    // await asistenciaAsambleaModel.sync({ alter: false });
+    // await cobroAsamblea.sync({ alter: false });
+
+    // await pagoQrModel.sync({ alter: false });
+    // await PagoQrDetalleModel.sync({ alter: false });
+
+    // await multaModel.sync({ alter: false });
+    // await cobroMultaModel.sync({ alter: false });
+
+    // // // cambio nombre
+    // await cambiarNombreModel.sync({ alter: false });
+    // await cobroCambioNombreModel.sync({ alter: false });
+
+    // await detalleAlcantarilladoModel.sync({ alter: false });
+    // await accionAlcantarilladoModel.sync({ alter: false });
+    // await accionDetalleAlcantarilladoModel.sync({ alter: false });
+
+    // // // //
+    // await cobroAlcantarilladoModel.sync({ alter: false });
+    // await pagoAlcantarilladoModel.sync({ alter: false });
+    // await pagoDetalleAlcantarilladoModel.sync({ alter: false });
+    // await reciboAlcantarilladoModel.sync({ alter: false });
+    // await cobroAccionAlcantarilladoModel.sync({ alter: false });
+
+    await CategoriaGastosModel.sync({ alter: true });
+    await EgresosModel.sync({ alter: true });
+
+    console.log(
+      `✅ Tablas cargadas correctamente${shouldResetDatabase ? ' (reiniciadas)' : ''}`,
+    );
   } catch (e) {
     console.error('❌ Error DB:', e.message);
     process.exit(1);
