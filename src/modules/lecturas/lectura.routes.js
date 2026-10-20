@@ -5,6 +5,7 @@ import {
   lecturaSchema,
   cambiarM3Schema,
   modificarMoraSchema,
+  updateOblyLecturaSchema,
 } from './lectura.schema.js';
 import { checkPermiss } from '../../middlewares/auth.middlewares.js';
 import {
@@ -64,6 +65,15 @@ routes
       bodySchema: modificarMoraSchema,
     }),
     controller.updateMora,
+  )
+  .patch(
+    '/update-only-lectura/:id',
+    checkPermiss('lectura.editar'),
+    validateRequest({
+      paramsSchema: idParamSchema,
+      bodySchema: updateOblyLecturaSchema,
+    }),
+    controller.UpdateOnlyLectura,
   );
 
 export default routes;

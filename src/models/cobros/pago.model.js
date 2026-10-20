@@ -75,6 +75,7 @@ cobroModel.belongsToMany(pagoModel, {
 });
 
 pagoModel.belongsToMany(cobroModel, {
+  as: 'cobrosRecibo',
   through: pagoDetalleModel,
   foreignKey: 'pago_id',
   otherKey: 'cobro_id',

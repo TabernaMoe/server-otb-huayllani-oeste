@@ -2,6 +2,7 @@ import { LecturaServices as services } from './lectura.services.js';
 import { GetLecturasByAccionUseCase } from './use-case/get-lecturas-accion.use-case.js';
 import { UpdateM3UseCase } from './use-case/update-m3.use-case.js';
 import { UpdateMoraUseCase } from './use-case/update-mora.use.case.js';
+import { UpdateOnlyLecturaUseCase } from './use-case/update-only-lectura.use-case.js';
 
 export class LecturaController {
   static async getAll(req, res, next) {
@@ -159,13 +160,26 @@ export class LecturaController {
         id: req.validated.params.id,
         payload: req.validated.body,
       });
-      return res
-        .status(200)
-        .json({
-          ok: true,
-          message: 'Se acutalizo correctamente la mora',
-          data,
-        });
+      return res.status(200).json({
+        ok: true,
+        message: 'Se acutalizo correctamente la mora',
+        data,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  static async UpdateOnlyLectura(req, res, next) {
+    try {
+      const data = await UpdateOnlyLecturaUseCase.execute({
+        id: req.validated.params.id,
+        payload: req.validated.body,
+      });
+      return res.status(200).json({
+        ok: true,
+        message: 'Se acutalizo correctamente la mora',
+        data,
+      });
     } catch (e) {
       next(e);
     }

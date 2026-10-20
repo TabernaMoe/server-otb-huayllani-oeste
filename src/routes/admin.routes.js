@@ -42,7 +42,7 @@ routes
   .use('/multa', MultaRoutes)
   .use('/alcantarillado', AlcantarilladoRoutes)
   .use('/cambio-nombre', CambioNombreRoutes)
-  .use('/cobro-universal', CobroUniversal)
+  .use('/recibo-universal', CobroUniversal)
   .use('/egresos', EgresosRoutes);
 
 export default routes;

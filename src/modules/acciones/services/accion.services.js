@@ -790,7 +790,7 @@ export class accionServices {
   }
   static async getSelect(search = '') {
     search = search?.trim() || '';
-
+    console.log('pasa por aca');
     let where = {
       estado: {
         [Op.ne]: 'ANULADO',
