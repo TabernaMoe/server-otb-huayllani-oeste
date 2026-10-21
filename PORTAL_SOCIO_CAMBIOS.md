@@ -1,31 +1,16 @@
-# Integración portal del socio
+# Portal Socio - filtros por acción
 
-## Flujo de autenticación
+Cambios principales:
 
-- El administrador crea un socio desde `POST /api/admin/socio`.
-- Se crea automáticamente una cuenta con:
-  - usuario: CI del socio
-  - contraseña inicial: CI del socio (guardada con bcrypt)
-  - rol: `usuario_normal`
-  - cambio de contraseña inicial: obligatorio
-- El login continúa en `POST /api/login`.
-- El token JWT siempre usa el ID de `auth_usuarios`, tanto para administradores como para socios.
-- `checkAuth` resuelve el tipo de cuenta y expone `req.usuario`.
-
-## Endpoints del portal
-
-Todos requieren `Authorization: Bearer <token>`.
-
-- `GET /api/socio/me`
-- `GET /api/socio/me/resumen`
 - `GET /api/socio/me/acciones`
-- `GET /api/socio/me/lecturas`
-- `GET /api/socio/me/cobros`
-- `GET /api/socio/me/recibos`
-- `PATCH /api/socio/me/password`
+  - Ahora devuelve también `tipo` y `detalles` obtenidos desde `detalle_pago_accion` + `tipos_accion`.
+- `GET /api/socio/me/lecturas?accion_id=ID`
+  - Filtra lecturas por acción y además valida implícitamente que la acción pertenezca al socio autenticado.
+  - Sin `accion_id`, conserva el comportamiento anterior y devuelve todas las lecturas del socio.
+- `GET /api/socio/me/cobros?accion_id=ID`
+  - Filtra cobros generales y de agua por acción.
+  - Sin `accion_id`, conserva el comportamiento anterior.
+- El mapeo de respuestas se separó a `portalSocio.mappers.js`.
+- `getResumen()` sigue trabajando con todas las acciones/cobros/lecturas del socio.
 
-`/api/cliente/*` queda como alias temporal por compatibilidad.
-
-## Seguridad
-
-El frontend nunca envía un `socio_id` para consultar información privada. El backend toma el socio desde el JWT y `req.usuario.socio_id`.
+No se agregaron nuevas rutas: se reutilizan las existentes mediante query params.

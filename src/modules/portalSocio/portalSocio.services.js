@@ -3,6 +3,8 @@ import { Op, QueryTypes } from 'sequelize';
 
 import { sequelize } from '../../config/database.js';
 import { accionModel } from '../../models/accion/accion.model.js';
+import { detallePagoAccion } from '../../models/accion/detallePagoAccion.model.js';
+import { tipoAccionModel } from '../../models/accion/tipoAccion.model.js';
 import { usuarioModel } from '../../models/auth/usuario.model.js';
 import { calleRamalModel } from '../../models/calleRamal.model.js';
 import { cobroAguaModel } from '../../models/cobroAgua/cobroAgua.model.js';
@@ -13,8 +15,35 @@ import { lecturaAguaModel } from '../../models/lecturasAgua/lecturasAgua.model.j
 import { socioModel } from '../../models/socio.model.js';
 import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
 
-function toNumber(value) {
-  return Number(value ?? 0);
+import {
+  mapAccion,
+  mapCobroAgua,
+  mapCobroGeneral,
+  mapLectura,
+  toNumber,
+} from './portalSocio.mappers.js';
+
+function buildAccionWhere(socioId, accionId) {
+  const where = { socio_id: socioId };
+
+  if (accionId) {
+    where.id = accionId;
+  }
+
+  return where;
+}
+
+function buildCobroWhere(socioId, accionId) {
+  const where = {
+    socio_id: socioId,
+    estado: { [Op.ne]: 'ANULADO' },
+  };
+
+  if (accionId) {
+    where.accion_id = accionId;
+  }
+
+  return where;
 }
 
 export class PortalSocioServices {
@@ -38,7 +67,13 @@ export class PortalSocioServices {
   static async getAcciones(socioId) {
     const rows = await accionModel.findAll({
       where: { socio_id: socioId },
-      attributes: ['id', 'codigo_interno', 'nro_medidor', 'direccion', 'estado'],
+      attributes: [
+        'id',
+        'codigo_interno',
+        'nro_medidor',
+        'direccion',
+        'estado',
+      ],
       include: [
         {
           model: calleRamalModel,
@@ -50,23 +85,32 @@ export class PortalSocioServices {
           as: 'tarifaAccion',
           attributes: ['nombre_tarifa'],
         },
+        {
+          model: detallePagoAccion,
+          as: 'detallesAccion',
+          attributes: [
+            'id',
+            'nombre_accion',
+            'precio_accion',
+            'tipo_cobro',
+          ],
+          through: { attributes: [] },
+          include: [
+            {
+              model: tipoAccionModel,
+              as: 'tipoAccion',
+              attributes: ['id', 'nombre_tipo_accion'],
+            },
+          ],
+        },
       ],
       order: [['id', 'DESC']],
     });
 
-    return rows.map((row) => ({
-      id: row.id,
-      codigo_interno: row.codigo_interno,
-      tipo: 'AGUA',
-      nro_medidor: row.nro_medidor,
-      calle: row.calleAccion?.nombre_calle ?? '-',
-      tarifa: row.tarifaAccion?.nombre_tarifa ?? '-',
-      direccion: row.direccion,
-      estado: row.estado,
-    }));
+    return rows.map(mapAccion);
   }
 
-  static async getLecturas(socioId) {
+  static async getLecturas(socioId, accionId = null) {
     const rows = await lecturaAguaModel.findAll({
       attributes: [
         'id',
@@ -82,7 +126,7 @@ export class PortalSocioServices {
         {
           model: accionModel,
           as: 'lecturaAccion',
-          where: { socio_id: socioId },
+          where: buildAccionWhere(socioId, accionId),
           attributes: ['id', 'codigo_interno', 'nro_medidor'],
           required: true,
         },
@@ -102,27 +146,18 @@ export class PortalSocioServices {
       order: [['id', 'DESC']],
     });
 
-    return rows.map((row) => ({
-      id: row.id,
-      accion_id: row.lecturaAccion?.id,
-      codigo_interno: row.lecturaAccion?.codigo_interno,
-      nro_medidor: row.lecturaAccion?.nro_medidor,
-      gestion: row.lecturaPeriodo?.gestion?.anio ?? null,
-      mes: row.lecturaPeriodo?.mes ?? row.periodo,
-      lectura_anterior: row.lectura_anterior,
-      lectura_actual: row.lectura_actual,
-      consumo_m3: row.consumo_m3,
-      monto: toNumber(row.precio) + toNumber(row.mora),
-      fecha: row.createdAt,
-    }));
+    return rows.map(mapLectura);
   }
 
-  static async getCobros(socioId) {
+  static async getCobros(socioId, accionId = null) {
+    const where = buildCobroWhere(socioId, accionId);
+
     const [generales, agua] = await Promise.all([
       cobroModel.findAll({
-        where: { socio_id: socioId, estado: { [Op.ne]: 'ANULADO' } },
+        where,
         attributes: [
           'id',
+          'accion_id',
           'concepto',
           'descripcion',
           'monto_total',
@@ -136,9 +171,10 @@ export class PortalSocioServices {
         raw: true,
       }),
       cobroAguaModel.findAll({
-        where: { socio_id: socioId, estado: { [Op.ne]: 'ANULADO' } },
+        where,
         attributes: [
           'id',
+          'accion_id',
           'concepto',
           'descripcion',
           'monto_total',
@@ -153,19 +189,12 @@ export class PortalSocioServices {
     ]);
 
     return [
-      ...generales.map((item) => ({
-        ...item,
-        origen: 'GENERAL',
-        monto: toNumber(item.saldo),
-      })),
-      ...agua.map((item) => ({
-        ...item,
-        tipo_cobro: 'AGUA',
-        origen: 'AGUA',
-        monto: toNumber(item.saldo),
-      })),
+      ...generales.map(mapCobroGeneral),
+      ...agua.map(mapCobroAgua),
     ].sort(
-      (a, b) => new Date(b.fecha_emision).getTime() - new Date(a.fecha_emision).getTime(),
+      (a, b) =>
+        new Date(b.fecha_emision).getTime() -
+        new Date(a.fecha_emision).getTime(),
     );
   }
 
@@ -213,21 +242,30 @@ export class PortalSocioServices {
     ]);
 
     return [...recibosGenerales, ...recibosAgua].sort(
-      (a, b) => new Date(b.fecha_emision).getTime() - new Date(a.fecha_emision).getTime(),
+      (a, b) =>
+        new Date(b.fecha_emision).getTime() -
+        new Date(a.fecha_emision).getTime(),
     );
   }
 
   static async getResumen(socioId) {
     const [accionesActivas, cobros, lecturas, recibos] = await Promise.all([
-      accionModel.count({ where: { socio_id: socioId, estado: 'ACTIVO' } }),
+      accionModel.count({
+        where: { socio_id: socioId, estado: 'ACTIVO' },
+      }),
       this.getCobros(socioId),
       this.getLecturas(socioId),
       this.getRecibos(socioId),
     ]);
 
     const deudaPendiente = cobros
-      .filter((item) => ['PENDIENTE', 'PARCIAL'].includes(item.estado))
-      .reduce((total, item) => total + toNumber(item.saldo), 0);
+      .filter((item) =>
+        ['PENDIENTE', 'PARCIAL'].includes(item.estado),
+      )
+      .reduce(
+        (total, item) => total + toNumber(item.saldo),
+        0,
+      );
 
     const ultimaLectura = lecturas[0];
     const ultimoPago = recibos[0];
@@ -246,6 +284,7 @@ export class PortalSocioServices {
 
   static async cambiarPassword(userId, payload) {
     const usuario = await usuarioModel.findByPk(userId);
+
     if (!usuario) {
       const error = new Error('Usuario no encontrado');
       error.statusCode = 404;
@@ -263,7 +302,11 @@ export class PortalSocioServices {
       throw error;
     }
 
-    const passwordHash = await bcrypt.hash(payload.contrasenia_nueva, 12);
+    const passwordHash = await bcrypt.hash(
+      payload.contrasenia_nueva,
+      12,
+    );
+
     await usuario.update({
       contrasenia_usuario: passwordHash,
       debe_camibiar_contrasenia: false,
