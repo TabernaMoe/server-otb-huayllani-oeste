@@ -76,14 +76,7 @@ export class PortalSocioController {
     }
   }
 
-  static async recibos(req, res, next) {
-    try {
-      const data = await services.getRecibos(req.usuario.socio_id);
-      return res.status(200).json({ ok: true, data });
-    } catch (error) {
-      next(error);
-    }
-  }
+
 
   static async cambiarPassword(req, res, next) {
     try {
@@ -96,6 +89,20 @@ export class PortalSocioController {
         ok: true,
         message: 'Contraseña actualizada correctamente',
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+  static async recibos(req, res, next) {
+    try {
+      const accionId = getOptionalAccionId(req);
+
+      const data = await services.getRecibos(
+        req.usuario.socio_id,
+        accionId,
+      );
+
+      return res.status(200).json({ ok: true, data });
     } catch (error) {
       next(error);
     }

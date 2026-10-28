@@ -46,9 +46,6 @@ export class UpdateUseCase {
           dataNew: detallesAccion,
           transaction: t,
         });
-        console.log('***********');
-        console.log(idsAdd);
-        console.log('***********');
 
         if (idsRemove?.length !== 0) {
           const dateRemove = await AccionDetalleRepository.deleteArray({

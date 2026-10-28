@@ -33,7 +33,7 @@ export class LecturaServices {
         `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
       );
 
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
 
@@ -111,12 +111,6 @@ export class LecturaServices {
           model: tarifaModel,
           as: 'tarifaAccion',
           attributes: [],
-        },
-        {
-          model: detallePagoAccion,
-          as: 'detallesAccion',
-          attributes: [],
-          through: { attributes: [] },
         },
         {
           model: lecturaAguaModel,

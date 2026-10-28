@@ -76,7 +76,7 @@ export class CobroController {
     try {
       const { id } = req.params;
 
-      if (isNaN(id) && !Number.isInteger(id)) {
+      if (isNaN(id) || !Number.isInteger(id)) {
         const err = new Error('El id debe ser un numero entero');
         throw err;
       }

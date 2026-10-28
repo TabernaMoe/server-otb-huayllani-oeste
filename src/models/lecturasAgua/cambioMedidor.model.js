@@ -36,5 +36,5 @@ lecturaAguaModel.hasOne(cambioMedidor, {
 });
 cambioMedidor.belongsTo(lecturaAguaModel, {
   as: 'lecturaCambio',
-  foreignKey: 'id',
+  foreignKey: 'lectura_agua_id',
 });

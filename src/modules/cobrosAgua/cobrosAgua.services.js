@@ -32,7 +32,7 @@ export class CobroAguaServices {
         `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
       );
 
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
 
@@ -129,6 +129,7 @@ export class CobroAguaServices {
             },
           },
           required: false,
+          separate: true,
           order: [['createdAt', 'DESC']],
         },
       ],
@@ -148,7 +149,7 @@ export class CobroAguaServices {
     };
   }
   static async getId(id) {
-    const dataId = accionModel.findByPk(id, {
+    const dataId = await accionModel.findByPk(id, {
       attributes: {
         exclude: [
           'socio_id',
@@ -209,7 +210,7 @@ export class CobroAguaServices {
     return dataId;
   }
   static async historial(id) {
-    const dataId = accionModel.findByPk(id, {
+    const dataId = await accionModel.findByPk(id, {
       attributes: {
         exclude: [
           'socio_id',
@@ -296,7 +297,7 @@ export class CobroAguaServices {
       });
       if (!cobroSearch) {
         const err = new Error('No se encontro cobro');
-        err.statuscode = 404;
+        err.statusCode = 404;
         throw err;
       }
 
@@ -305,7 +306,7 @@ export class CobroAguaServices {
       // console.log(montoPagoValidado);
       // console.log('***********************+');
 
-      if (!montoPago != cobroSearch.monto_total && montoPago < 100) {
+      if (montoPago !== Number(cobroSearch.monto_total) && montoPago < 100) {
         throw new Error(
           'Los pagos menores a 100 solo tienen la opcion de pago unico',
         );
@@ -332,9 +333,9 @@ export class CobroAguaServices {
           },
         );
 
-        if (cobroAntSearch && !cobroAntSearch.estado != 'PAGADO') {
+        if (cobroAntSearch && cobroAntSearch.estado !== 'PAGADO') {
           const err = new Error('Debes pagar el mes anterior primero');
-          err.status = 400;
+          err.statusCode = 400;
           throw err;
         }
       }

@@ -56,10 +56,10 @@ export class AccionController {
       const { id } = req.params;
       const payload = req.body;
       const data = await UpdateUseCase.execute({ id, payload });
-      const dataUpdated = await services.update(id, payload);
+
       return res.status(200).json({
         ok: true,
-        message: 'Accion actuzalizada correctamente',
+        message: 'Accion actualizada correctamente',
         data,
       });
     } catch (e) {
@@ -70,9 +70,11 @@ export class AccionController {
     try {
       const { id } = req.params;
       const payload = req.body;
-      let idNumber = Number(id);
-      if (isNaN(idNumber) && !Number.isInteger(idNumber)) {
-        const err = new Error('El id debe ser un numero entero');
+      const idNumber = Number(id);
+
+      if (Number.isNaN(idNumber) || !Number.isInteger(idNumber) || idNumber <= 0) {
+        const err = new Error('El id debe ser un numero entero positivo');
+        err.statusCode = 400;
         throw err;
       }
       await services.cambiarEstado(idNumber, payload);

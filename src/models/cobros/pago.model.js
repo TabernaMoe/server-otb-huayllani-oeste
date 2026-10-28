@@ -20,7 +20,8 @@ export const pagoModel = sequelize.define(
     },
     fecha_pago: {
       type: DataTypes.DATE,
-      allowNull: DataTypes.NOW,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
   },
   {

@@ -1,4 +1,5 @@
-import { accionModel } from '../models/acciones/accion.model.js';
+import { accionModel } from '../models/accion/accion.model.js';
+import { lecturaAguaModel } from '../models/lecturasAgua/lecturasAgua.model.js';
 
 export const validarReferenciaCobro = async ({
   tipo_cobro,
@@ -20,7 +21,7 @@ export const validarReferenciaCobro = async ({
   }
 
   if (tipo_cobro === 'AGUA') {
-    const consumo = await consumoAguaModel.findByPk(referencia_id, {
+    const consumo = await lecturaAguaModel.findByPk(referencia_id, {
       transaction,
     });
 

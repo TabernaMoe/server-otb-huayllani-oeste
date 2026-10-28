@@ -26,7 +26,8 @@ export const reciboModel = sequelize.define(
     },
     fecha_emision: {
       type: DataTypes.DATE,
-      allowNull: DataTypes.NOW,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
     estado: {
       type: DataTypes.BOOLEAN,

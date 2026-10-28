@@ -37,7 +37,7 @@ export class DetallePagoAccionController {
     try {
       const { id } = req.params;
       let numberId = Number(id);
-      if (isNaN(numberId) && !Number.isInteger(numberId)) {
+      if (isNaN(numberId) || !Number.isInteger(numberId)) {
         const err = new Error('El id debe ser un numero');
         err.statusCode = 404;
         throw err;

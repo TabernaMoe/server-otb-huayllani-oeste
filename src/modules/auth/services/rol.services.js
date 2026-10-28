@@ -65,7 +65,7 @@ export class RolServices {
     return data;
   }
   static async getPermissos() {
-    const dataPermiso = permisoModel.findAll();
+    const dataPermiso = await permisoModel.findAll();
     return dataPermiso;
   }
   static async getId(id) {

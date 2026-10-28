@@ -108,7 +108,7 @@ lecturaAguaModel.hasOne(cobroAguaModel, {
 });
 cobroAguaModel.belongsTo(lecturaAguaModel, {
   as: 'aguaCobro',
-  foreignKey: 'id',
+  foreignKey: 'lectura_id',
 });
 //
 accionModel.hasMany(cobroAguaModel, {

@@ -1,15 +1,15 @@
-import { accionAlcantarillado } from '../../../models/accionAlcantarillado/acccionAlcantarillado.model.js';
+import { accionAlcantarilladoModel as accionAlcantarillado } from '../../../models/accionAlcantarillado/acccionAlcantarillado.model.js';
 import {
-  accionAlcantarilladoDetalle,
-  detallePagoAccionAlcantarillado,
-} from '../../../models/accionAlcantarillado/detallePagoAccionAlcantarillado.model.js';
+  accionDetalleAlcantarilladoModel as accionAlcantarilladoDetalle,
+  detalleAlcantarilladoModel as detallePagoAccionAlcantarillado,
+} from '../../../models/accionAlcantarillado/detalleAlcantarillado.model.js';
 import { sequelize } from '../../../config/database.js';
 import { col, fn, literal, Op, Sequelize } from 'sequelize';
 import { socioModel } from '../../../models/socio.model.js';
 import { calleRamalModel } from '../../../models/calleRamal.model.js';
 import { ValidacionesSequelize as Validaciones } from '../../../validators/ValidacionesSequelize.js';
 import { cobroModel } from '../../../models/cobros/cobro.model.js';
-import { cobroAccionAlcantarilladoModel } from '../../../models/cobros/tipoCobros/cobro_alcantarillado.js';
+import { cobroAccionAlcantarilladoModel } from '../../../models/accionAlcantarillado/cobroAlcantarillado/tipoCobros/cobroAccionAlcantarillado.model.js';
 
 export class Services {
   static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
@@ -27,7 +27,7 @@ export class Services {
         `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
       );
 
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
 
@@ -94,14 +94,6 @@ export class Services {
           model: calleRamalModel,
           as: 'calleAlcantarillado',
           attributes: [],
-        },
-        {
-          model: detallePagoAccionAlcantarillado,
-          as: 'detallesAlcantarrillado',
-          attributes: [],
-          through: {
-            attributes: [],
-          },
         },
       ],
       where,

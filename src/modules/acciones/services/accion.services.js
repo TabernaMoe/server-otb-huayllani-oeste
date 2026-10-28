@@ -23,22 +23,25 @@ import { lecturaAguaModel } from '../../../models/lecturasAgua/lecturasAgua.mode
 import { ValidacionesSequelize as Validaciones } from '../../../validators/ValidacionesSequelize.js';
 
 export class accionServices {
-  static async getAll(page = 1, limit = 10, search = '', estado = undefined) {
+  static async getAll(
+    page = 1,
+    limit = 10,
+    search = '',
+    estado = undefined,
+  ) {
     page = Number(page) || 1;
     limit = Number(limit) || 10;
 
     const offset = (page - 1) * limit;
-
     search = search?.trim() || '';
 
-    const valoresPermitidos = ['ACTIVO', 'PASIVO', 'ANULADO'];
+    const estadosPermitidos = ['ACTIVO', 'PASIVO', 'ANULADO'];
 
-    if (estado !== undefined && !valoresPermitidos.includes(estado)) {
+    if (estado !== undefined && !estadosPermitidos.includes(estado)) {
       const error = new Error(
-        `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
+        `Estado inválido. Valores permitidos: ${estadosPermitidos.join(', ')}`,
       );
-
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
 
@@ -52,9 +55,7 @@ export class accionServices {
       where[Op.or] = [
         Sequelize.where(
           Sequelize.cast(Sequelize.col('acciones.codigo_interno'), 'TEXT'),
-          {
-            [Op.iLike]: `%${search}%`,
-          },
+          { [Op.iLike]: `%${search}%` },
         ),
         {
           '$calleAccion.nombre_calle$': {
@@ -84,7 +85,39 @@ export class accionServices {
       ];
     }
 
-    const { count, rows } = await accionModel.findAndCountAll({
+    const buildInclude = () => [
+      {
+        model: socioModel,
+        as: 'socioAccion',
+        attributes: [],
+      },
+      {
+        model: calleRamalModel,
+        as: 'calleAccion',
+        attributes: [],
+      },
+      {
+        model: tarifaModel,
+        as: 'tarifaAccion',
+        attributes: [],
+      },
+    ];
+
+    /*
+     * Separamos COUNT y SELECT.
+     *
+     * findAndCountAll + LIMIT + joins puede producir un count correcto
+     * pero menos filas de las solicitadas cuando Sequelize arma subqueries.
+     * Como estas relaciones son belongsTo (1 a 1), subQuery:false es seguro.
+     */
+    const total = await accionModel.count({
+      where,
+      include: buildInclude(),
+      distinct: true,
+      col: 'id',
+    });
+
+    const rows = await accionModel.findAll({
       attributes: {
         exclude: [
           'socio_id',
@@ -98,9 +131,9 @@ export class accionServices {
             fn(
               'CONCAT_WS',
               ' ',
-              col(`socioAccion.nombres`),
-              col(`socioAccion.primer_apellido`),
-              col(`socioAccion.segundo_apellido`),
+              col('socioAccion.nombres'),
+              col('socioAccion.primer_apellido'),
+              col('socioAccion.segundo_apellido'),
             ),
             'nombre_completo',
           ],
@@ -108,39 +141,23 @@ export class accionServices {
           [col('tarifaAccion.nombre_tarifa'), 'nombre_tarifa'],
         ],
       },
-      include: [
-        { model: socioModel, as: 'socioAccion', attributes: [] },
-        { model: calleRamalModel, as: 'calleAccion', attributes: [] },
-        {
-          model: tarifaModel,
-          as: 'tarifaAccion',
-          attributes: [],
-        },
-        {
-          model: detallePagoAccion,
-          as: 'detallesAccion',
-          attributes: [],
-          through: {
-            attributes: [],
-          },
-        },
-      ],
+      include: buildInclude(),
       where,
       limit,
       offset,
       order: [['id', 'DESC']],
       subQuery: false,
-      distinct: true,
     });
 
     return {
-      total: count,
+      total,
       page,
       limit,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(total / limit),
       data: rows,
     };
   }
+
   static async getId(id) {
     const dataId = await accionModel.findByPk(id, {
       attributes: { exclude: ['createdAt', 'updatedAt'] },
@@ -169,7 +186,7 @@ export class accionServices {
     const dataNormalizado = {
       ...dataPlano,
       detallesAccion: detalleAccioneIds,
-      tipo_accion_id: dataPlano.detallesAccion[0].tipo_accion_id,
+      tipo_accion_id: dataPlano.detallesAccion?.[0]?.tipo_accion_id ?? null,
     };
 
     return dataNormalizado;
@@ -325,198 +342,6 @@ export class accionServices {
     });
     return create;
   }
-  static async update(id, payload) {
-    const update = await sequelize.transaction(async (t) => {
-      const {
-        calle_id,
-        tarifa_id,
-        nro_medidor,
-        detallesAccion,
-        direccion,
-        observacion,
-        estado,
-      } = payload;
-
-      const accionSearch = await accionModel.findByPk(id, { transaction: t });
-      if (!accionSearch) {
-        const err = new Error('No se encontro la accion');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      let dataUpdate = {};
-      if (calle_id) {
-        const calleSearch = await Validaciones.validarCalle(calle_id, {
-          transaction: t,
-        });
-        dataUpdate.calle_id = calleSearch.id;
-      }
-      if (tarifa_id) {
-        const tarifaSearch = await Validaciones.validarTarifa(tarifa_id, {
-          transaction: t,
-        });
-        dataUpdate.tarifa_id = tarifaSearch.id;
-      }
-      if (nro_medidor) {
-        const nroMedidorSearch = await accionModel.findOne({
-          where: {
-            nro_medidor,
-          },
-          transaction: t,
-        });
-
-        if (nroMedidorSearch) {
-          const err = new Error('Ya hay una accion con ese nro de medidor');
-          err.statusCode = 400;
-          throw err;
-        }
-        dataUpdate.nro_medidor = nro_medidor;
-      }
-      if (direccion) {
-        dataUpdate.direccion = direccion;
-      }
-      if (observacion) {
-        dataUpdate.observacion = observacion;
-      }
-      if (estado) {
-        const estadosPermitidos = ['ACTIVO', 'PASIVO'];
-        const esValido = estadosPermitidos.includes(estado);
-
-        if (estado == 'PASIVO') {
-          const err = new Error('No se puede cambiar de activo a pasivo');
-          err.statusCode = 404;
-          throw err;
-        }
-
-        if (!esValido) {
-          const err = new Error('No existe ese estado');
-          err.statusCode = 400;
-          throw err;
-        }
-        dataUpdate.estado = estado;
-      }
-
-      if (Array.isArray(detallesAccion)) {
-        const detallePagoAccionSearch = await Validaciones.ValidarPagoAcciones(
-          detallesAccion,
-          { transaction: t },
-        );
-        const detallesPagoAccionActual = await accionSearch.getDetallesAccion();
-
-        function encontrarFaltantesOptimizado(
-          completos,
-          parciales,
-          propiedad = 'id',
-        ) {
-          const setParcial = new Set(parciales.map((item) => item[propiedad]));
-          return completos.filter((item) => !setParcial.has(item[propiedad]));
-        }
-        const faltantes = encontrarFaltantesOptimizado(
-          detallesPagoAccionActual,
-          detallePagoAccionSearch,
-        );
-
-        const faltantesId = faltantes.map((row) => row.id);
-
-        const tablaIntermedia = await accionDetalleModel.findAll({
-          attributes: ['id'],
-          where: {
-            accion_id: accionSearch.id,
-            detalle_pago_accion_id: {
-              [Op.in]: faltantesId,
-            },
-          },
-          transaction: t,
-        });
-
-        const tablaIntermediaIds = tablaIntermedia.map((row) => row.id);
-
-        const cobroAcciones = await cobroAccionModel.findAll({
-          where: {
-            accion_id: accionSearch.id,
-            accion_detalle_id: {
-              [Op.in]: tablaIntermediaIds,
-            },
-          },
-          transaction: t,
-        });
-
-        const cobroAccionesIds = cobroAcciones.map((row) => row.id);
-
-        const cobrosSearch = await cobroModel.findAll({
-          where: {
-            id: {
-              [Op.in]: cobroAccionesIds,
-            },
-          },
-          transaction: t,
-        });
-
-        const CobrosEstado = cobrosSearch.filter(
-          (row) => row.estado === 'PENDIENTE',
-        );
-
-        if (CobrosEstado.length > 0) {
-          const err = new Error(
-            'No se puede eliminar algunos detalles pago accion porque ya fueron pagados o estan en proceso de pago',
-          );
-          throw err;
-        }
-        const cobrosIds = cobrosSearch.map((row) => row.id);
-
-        await cobroAccionModel.destroy({
-          where: {
-            cobro_id: {
-              [Op.in]: cobrosIds,
-            },
-          },
-          transaction: t,
-        });
-        await cobroModel.destroy({
-          where: {
-            id: {
-              [Op.in]: cobrosIds,
-            },
-          },
-          transaction: t,
-        });
-
-        await accionDetalleModel.destroy({
-          where: {
-            accion_id: accionSearch.id,
-            detalle_pago_accion_id: {
-              [Op.in]: faltantesId,
-            },
-          },
-          transaction: t,
-        });
-      }
-      await accionSearch.update(dataUpdate, { transaction: t });
-
-      const dataId = await accionModel.findByPk(id, {
-        include: [
-          { model: socioModel, as: 'socioAccion', attributes: ['id'] },
-          { model: calleRamalModel, as: 'calleAccion', attributes: ['id'] },
-          {
-            model: tarifaModel,
-            as: 'tarifaAccion',
-            attributes: ['id'],
-          },
-          {
-            model: detallePagoAccion,
-            as: 'detallesAccion',
-            attributes: ['id'],
-            through: {
-              attributes: [],
-            },
-          },
-        ],
-        transaction: t,
-      });
-      return dataId;
-    });
-    return update;
-  }
   static async cambiarEstado(id, payload) {
     const { estado } = payload;
 
@@ -530,9 +355,9 @@ export class accionServices {
     const estadosAccion = ['ACTIVO', 'PASIVO', 'ANULADO'];
     if (!estadosAccion.includes(estado)) {
       const error = new Error(
-        `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
+        `Estado inválido. Valores permitidos: ${estadosAccion.join(', ')}`,
       );
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
     //--------------ANULADO
@@ -887,6 +712,12 @@ export class accionServices {
       ],
       raw: true,
     });
+    if (!accion) {
+      const err = new Error('No se encontro la accion');
+      err.statusCode = 404;
+      throw err;
+    }
+
     const socio = await socioModel.findByPk(accion.socio_id, {
       attributes: [
         'ci_socio',
@@ -913,8 +744,8 @@ export class accionServices {
       ],
       raw: true,
     });
-    if (!accion || !socio) {
-      const err = new Error('No se encontro la accion');
+    if (!socio) {
+      const err = new Error('No se encontro el socio asociado a la accion');
       err.statusCode = 404;
       throw err;
     }

@@ -19,7 +19,7 @@ export class detallePagoAccionServices {
         `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
       );
 
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
 
@@ -167,7 +167,7 @@ export class detallePagoAccionServices {
       }
     }
     await dataSearch.update(payload);
-    const dataReload = detallePagoAccion.findByPk(dataSearch.id, { raw: true });
+    const dataReload = await detallePagoAccion.findByPk(dataSearch.id, { raw: true });
     return dataReload;
   }
   static async cambiarEstado(id) {

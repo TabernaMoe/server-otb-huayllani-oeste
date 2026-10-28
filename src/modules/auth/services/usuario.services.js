@@ -21,7 +21,7 @@ export class UsuarioServices {
         `Estado inválido. Valores permitidos: ${valoresPermitidos.join(', ')}`,
       );
 
-      error.status = 400;
+      error.statusCode = 400;
       throw error;
     }
 
