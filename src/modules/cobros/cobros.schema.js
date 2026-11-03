@@ -5,6 +5,7 @@ import {
   reqDecimal,
   reqMetodoPago,
   reqEnum,
+  reqString,
 } from '../../validators/funcionesZod.js';
 
 export const CobroSchema = z.object({
@@ -16,4 +17,11 @@ export const CobroSchema = z.object({
 
 export const AsignarMultaSchema = z.object({
   multa_id: reqIntegerId('Socio'),
+});
+
+export const CobroCreateSchema = z.object({
+  accion_id: reqIntegerId('Socio'),
+  concepto: reqString({ label: 'Concepto' }),
+  descripcion: reqString({ label: 'Descripcion' }),
+  monto: reqDecimal(),
 });

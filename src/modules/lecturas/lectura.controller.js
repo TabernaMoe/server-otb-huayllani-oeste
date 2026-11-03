@@ -71,10 +71,12 @@ export class LecturaController {
       const { id } = req.params;
       const payload = req.body;
 
-      if (isNaN(id) || !Number.isInteger(id)) {
-        const err = new Error('El id debe ser un numero entero');
-        throw err;
-      }
+      //console.log(id);
+
+      // if (isNaN(id) || !Number.isInteger(id)) {
+      //   const err = new Error('El id debe ser un numero entero');
+      //   throw err;
+      // }
       const data = await services.create(id, payload);
 
       return res.status(200).json({

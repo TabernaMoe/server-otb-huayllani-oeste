@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
 
 import { accionModel } from '../../models/accion/accion.model.js';
-import { detallePagoAccion } from '../../models/accion/detallePagoAccion.model.js';
+import { detalleAccionModel } from '../../models/accion/detalleAccion.model.js';
 import { tipoAccionModel } from '../../models/accion/tipoAccion.model.js';
 
 import { usuarioModel } from '../../models/auth/usuario.model.js';
@@ -14,9 +14,7 @@ import { pagoAguaModel } from '../../models/cobroAgua/pagoAgua.model.js';
 import { reciboAguaModel } from '../../models/cobroAgua/recibo.mode.js';
 
 import { cobroModel } from '../../models/cobros/cobro.model.js';
-import {
-  pagoModel,
-} from '../../models/cobros/pago.model.js';
+import { pagoModel } from '../../models/cobros/pago.model.js';
 import { reciboModel } from '../../models/cobros/recibo.model.js';
 
 import { gestionModel } from '../../models/gestiones/gestion.model.js';
@@ -36,7 +34,6 @@ import {
   toNumber,
 } from './portalSocio.mappers.js';
 
-
 /* =========================================================
    HELPERS
 ========================================================= */
@@ -53,7 +50,6 @@ function buildAccionWhere(socioId, accionId) {
   return where;
 }
 
-
 function buildCobroWhere(socioId, accionId) {
   const where = {
     socio_id: socioId,
@@ -69,7 +65,6 @@ function buildCobroWhere(socioId, accionId) {
   return where;
 }
 
-
 function buildReciboCobroWhere(socioId, accionId) {
   const where = {
     socio_id: socioId,
@@ -82,37 +77,26 @@ function buildReciboCobroWhere(socioId, accionId) {
   return where;
 }
 
-
 /* =========================================================
    SERVICE
 ========================================================= */
 
 export class PortalSocioServices {
-
   /* =======================================================
      PERFIL
   ======================================================= */
 
   static async getPerfil(socioId) {
-    const socio = await socioModel.findByPk(
-      socioId,
-      {
-        attributes: {
-          exclude: [
-            'user_id',
-            'createdAt',
-            'updatedAt',
-          ],
-        },
-
-        raw: true,
+    const socio = await socioModel.findByPk(socioId, {
+      attributes: {
+        exclude: ['user_id', 'createdAt', 'updatedAt'],
       },
-    );
+
+      raw: true,
+    });
 
     if (!socio) {
-      const error = new Error(
-        'Socio no encontrado',
-      );
+      const error = new Error('Socio no encontrado');
 
       error.statusCode = 404;
 
@@ -122,86 +106,69 @@ export class PortalSocioServices {
     return socio;
   }
 
-
   /* =======================================================
      ACCIONES DEL SOCIO
   ======================================================= */
 
   static async getAcciones(socioId) {
-    const rows =
-      await accionModel.findAll({
-        where: {
-          socio_id: socioId,
+    const rows = await accionModel.findAll({
+      where: {
+        socio_id: socioId,
+      },
+
+      attributes: [
+        'id',
+        'codigo_interno',
+        'nro_medidor',
+        'direccion',
+        'estado',
+      ],
+
+      include: [
+        {
+          model: calleRamalModel,
+
+          as: 'calleAccion',
+
+          attributes: ['nombre_calle'],
         },
 
-        attributes: [
-          'id',
-          'codigo_interno',
-          'nro_medidor',
-          'direccion',
-          'estado',
-        ],
+        {
+          model: tarifaModel,
 
-        include: [
-          {
-            model: calleRamalModel,
+          as: 'tarifaAccion',
 
-            as: 'calleAccion',
+          attributes: ['nombre_tarifa'],
+        },
 
-            attributes: [
-              'nombre_calle',
-            ],
+        {
+          model: detalleAccionModel,
+
+          as: 'detallesAccion',
+
+          attributes: ['id', 'nombre_accion', 'precio_accion', 'tipo_cobro'],
+
+          through: {
+            attributes: [],
           },
 
-          {
-            model: tarifaModel,
+          include: [
+            {
+              model: tipoAccionModel,
 
-            as: 'tarifaAccion',
+              as: 'tipoAccion',
 
-            attributes: [
-              'nombre_tarifa',
-            ],
-          },
-
-          {
-            model: detallePagoAccion,
-
-            as: 'detallesAccion',
-
-            attributes: [
-              'id',
-              'nombre_accion',
-              'precio_accion',
-              'tipo_cobro',
-            ],
-
-            through: {
-              attributes: [],
+              attributes: ['id', 'nombre_tipo_accion'],
             },
+          ],
+        },
+      ],
 
-            include: [
-              {
-                model: tipoAccionModel,
-
-                as: 'tipoAccion',
-
-                attributes: [
-                  'id',
-                  'nombre_tipo_accion',
-                ],
-              },
-            ],
-          },
-        ],
-
-        order: [
-          ['id', 'DESC'],
-        ],
-      });
+      order: [['id', 'DESC']],
+    });
 
     return rows.map(mapAccion);
   }
-
 
   /* =======================================================
      LECTURAS
@@ -213,75 +180,56 @@ export class PortalSocioServices {
      getLecturas(socioId, accionId)
   ======================================================= */
 
-  static async getLecturas(
-    socioId,
-    accionId = null,
-  ) {
+  static async getLecturas(socioId, accionId = null) {
+    const rows = await lecturaAguaModel.findAll({
+      attributes: [
+        'id',
+        'lectura_anterior',
+        'lectura_actual',
+        'consumo_m3',
+        'precio',
+        'mora',
+        'periodo',
+        'createdAt',
+      ],
 
-    const rows =
-      await lecturaAguaModel.findAll({
-        attributes: [
-          'id',
-          'lectura_anterior',
-          'lectura_actual',
-          'consumo_m3',
-          'precio',
-          'mora',
-          'periodo',
-          'createdAt',
-        ],
+      include: [
+        {
+          model: accionModel,
 
-        include: [
-          {
-            model: accionModel,
+          as: 'lecturaAccion',
 
-            as: 'lecturaAccion',
+          where: buildAccionWhere(socioId, accionId),
 
-            where: buildAccionWhere(
-              socioId,
-              accionId,
-            ),
+          attributes: ['id', 'codigo_interno', 'nro_medidor'],
 
-            attributes: [
-              'id',
-              'codigo_interno',
-              'nro_medidor',
-            ],
+          required: true,
+        },
 
-            required: true,
-          },
+        {
+          model: periodoModel,
 
-          {
-            model: periodoModel,
+          as: 'lecturaPeriodo',
 
-            as: 'lecturaPeriodo',
+          attributes: ['mes'],
 
-            attributes: [
-              'mes',
-            ],
+          include: [
+            {
+              model: gestionModel,
 
-            include: [
-              {
-                model: gestionModel,
+              as: 'gestion',
 
-                as: 'gestion',
+              attributes: ['anio'],
+            },
+          ],
+        },
+      ],
 
-                attributes: [
-                  'anio',
-                ],
-              },
-            ],
-          },
-        ],
-
-        order: [
-          ['id', 'DESC'],
-        ],
-      });
+      order: [['id', 'DESC']],
+    });
 
     return rows.map(mapLectura);
   }
-
 
   /* =======================================================
      COBROS
@@ -293,22 +241,10 @@ export class PortalSocioServices {
      getCobros(socioId, accionId)
   ======================================================= */
 
-  static async getCobros(
-    socioId,
-    accionId = null,
-  ) {
+  static async getCobros(socioId, accionId = null) {
+    const where = buildCobroWhere(socioId, accionId);
 
-    const where =
-      buildCobroWhere(
-        socioId,
-        accionId,
-      );
-
-    const [
-      generales,
-      agua,
-    ] = await Promise.all([
-
+    const [generales, agua] = await Promise.all([
       /* ---------------------------
          COBROS GENERALES
       --------------------------- */
@@ -329,13 +265,10 @@ export class PortalSocioServices {
           'tipo_cobro',
         ],
 
-        order: [
-          ['fecha_emision', 'DESC'],
-        ],
+        order: [['fecha_emision', 'DESC']],
 
         raw: true,
       }),
-
 
       /* ---------------------------
          COBROS AGUA
@@ -356,120 +289,74 @@ export class PortalSocioServices {
           'fecha_emision',
         ],
 
-        order: [
-          ['fecha_emision', 'DESC'],
-        ],
+        order: [['fecha_emision', 'DESC']],
 
         raw: true,
       }),
     ]);
 
-
-    return [
-      ...generales.map(
-        mapCobroGeneral,
-      ),
-
-      ...agua.map(
-        mapCobroAgua,
-      ),
-    ].sort(
+    return [...generales.map(mapCobroGeneral), ...agua.map(mapCobroAgua)].sort(
       (a, b) =>
-        new Date(
-          b.fecha_emision,
-        ).getTime() -
-        new Date(
-          a.fecha_emision,
-        ).getTime(),
+        new Date(b.fecha_emision).getTime() -
+        new Date(a.fecha_emision).getTime(),
     );
   }
-
 
   /* =======================================================
      RECIBOS GENERALES POR ACCIÓN
   ======================================================= */
 
-  static async getRecibosGenerales(
-    socioId,
-    accionId = null,
-  ) {
+  static async getRecibosGenerales(socioId, accionId = null) {
+    const recibos = await reciboModel.findAll({
+      where: {
+        [Op.or]: [
+          {
+            estado: true,
+          },
 
-    const recibos =
-      await reciboModel.findAll({
-        where: {
-          [Op.or]: [
-            {
-              estado: true,
-            },
+          {
+            estado: null,
+          },
+        ],
+      },
 
+      attributes: ['id', 'numero_recibo', 'fecha_emision'],
+
+      include: [
+        {
+          model: pagoModel,
+
+          as: 'pago',
+
+          attributes: ['id', 'monto_pagado'],
+
+          required: true,
+
+          include: [
             {
-              estado: null,
+              model: cobroModel,
+
+              as: 'cobrosRecibo',
+
+              attributes: ['id', 'accion_id', 'concepto', 'tipo_cobro'],
+
+              where: buildReciboCobroWhere(socioId, accionId),
+
+              required: true,
+
+              through: {
+                attributes: ['monto'],
+              },
             },
           ],
         },
+      ],
 
-        attributes: [
-          'id',
-          'numero_recibo',
-          'fecha_emision',
-        ],
-
-        include: [
-          {
-            model: pagoModel,
-
-            as: 'pago',
-
-            attributes: [
-              'id',
-              'monto_pagado',
-            ],
-
-            required: true,
-
-            include: [
-              {
-                model: cobroModel,
-
-                as: 'cobrosRecibo',
-
-                attributes: [
-                  'id',
-                  'accion_id',
-                  'concepto',
-                  'tipo_cobro',
-                ],
-
-                where:
-                  buildReciboCobroWhere(
-                    socioId,
-                    accionId,
-                  ),
-
-                required: true,
-
-                through: {
-                  attributes: [
-                    'monto',
-                  ],
-                },
-              },
-            ],
-          },
-        ],
-
-        order: [
-          ['fecha_emision', 'DESC'],
-        ],
-      });
-
+      order: [['fecha_emision', 'DESC']],
+    });
 
     return recibos.map((recibo) => {
-
-      const cobros =
-        recibo.pago
-          ?.cobrosRecibo ?? [];
-
+      const cobros = recibo.pago?.cobrosRecibo ?? [];
 
       /*
         Un pago general puede tener varios
@@ -479,162 +366,93 @@ export class PortalSocioServices {
         pertenecen a la acción filtrada.
       */
 
-      const monto = cobros.reduce(
-        (total, cobro) => {
+      const monto = cobros.reduce((total, cobro) => {
+        const montoDetalle = cobro.pago_detalle?.monto;
 
-          const montoDetalle =
-            cobro.pago_detalle
-              ?.monto;
-
-          return (
-            total +
-            toNumber(montoDetalle)
-          );
-        },
-        0,
-      );
-
+        return total + toNumber(montoDetalle);
+      }, 0);
 
       const conceptos = [
-        ...new Set(
-          cobros
-            .map(
-              (cobro) =>
-                cobro.concepto,
-            )
-            .filter(Boolean),
-        ),
+        ...new Set(cobros.map((cobro) => cobro.concepto).filter(Boolean)),
       ];
-
 
       return {
         id: recibo.id,
 
-        numero_recibo:
-          recibo.numero_recibo,
+        numero_recibo: recibo.numero_recibo,
 
-        fecha_emision:
-          recibo.fecha_emision,
+        fecha_emision: recibo.fecha_emision,
 
-        monto:
-          monto ||
-          toNumber(
-            recibo.pago
-              ?.monto_pagado,
-          ),
+        monto: monto || toNumber(recibo.pago?.monto_pagado),
 
         origen: 'GENERAL',
 
-        concepto:
-          conceptos.join(', '),
+        concepto: conceptos.join(', '),
 
-        accion_id:
-          accionId ??
-          cobros[0]
-            ?.accion_id ??
-          null,
+        accion_id: accionId ?? cobros[0]?.accion_id ?? null,
       };
     });
   }
-
 
   /* =======================================================
      RECIBOS DE AGUA POR ACCIÓN
   ======================================================= */
 
-  static async getRecibosAgua(
-    socioId,
-    accionId = null,
-  ) {
+  static async getRecibosAgua(socioId, accionId = null) {
+    const recibos = await reciboAguaModel.findAll({
+      attributes: ['id', 'numero_recibo', 'fecha_emision'],
 
-    const recibos =
-      await reciboAguaModel.findAll({
-        attributes: [
-          'id',
-          'numero_recibo',
-          'fecha_emision',
-        ],
+      include: [
+        {
+          model: pagoAguaModel,
 
-        include: [
-          {
-            model: pagoAguaModel,
+          as: 'reciboAguaRecibo',
 
-            as: 'reciboAguaRecibo',
+          attributes: ['id', 'monto', 'cobro_agua_id'],
 
-            attributes: [
-              'id',
-              'monto',
-              'cobro_agua_id',
-            ],
+          required: true,
 
-            required: true,
+          include: [
+            {
+              model: cobroAguaModel,
 
-            include: [
-              {
-                model: cobroAguaModel,
+              as: 'pagoAgua',
 
-                as: 'pagoAgua',
+              attributes: ['id', 'accion_id', 'concepto'],
 
-                attributes: [
-                  'id',
-                  'accion_id',
-                  'concepto',
-                ],
+              where: buildReciboCobroWhere(socioId, accionId),
 
-                where:
-                  buildReciboCobroWhere(
-                    socioId,
-                    accionId,
-                  ),
+              required: true,
+            },
+          ],
+        },
+      ],
 
-                required: true,
-              },
-            ],
-          },
-        ],
-
-        order: [
-          ['fecha_emision', 'DESC'],
-        ],
-      });
-
+      order: [['fecha_emision', 'DESC']],
+    });
 
     return recibos.map((recibo) => {
+      const pago = recibo.reciboAguaRecibo;
 
-      const pago =
-        recibo.reciboAguaRecibo;
-
-      const cobro =
-        pago?.pagoAgua;
-
+      const cobro = pago?.pagoAgua;
 
       return {
         id: recibo.id,
 
-        numero_recibo:
-          recibo.numero_recibo,
+        numero_recibo: recibo.numero_recibo,
 
-        fecha_emision:
-          recibo.fecha_emision,
+        fecha_emision: recibo.fecha_emision,
 
-        monto:
-          toNumber(
-            pago?.monto,
-          ),
+        monto: toNumber(pago?.monto),
 
         origen: 'AGUA',
 
-        concepto:
-          cobro?.concepto ??
-          'Pago de agua',
+        concepto: cobro?.concepto ?? 'Pago de agua',
 
-        accion_id:
-          cobro?.accion_id ??
-          null,
+        accion_id: cobro?.accion_id ?? null,
       };
     });
   }
-
 
   /* =======================================================
      TODOS LOS RECIBOS
@@ -646,56 +464,26 @@ export class PortalSocioServices {
      getRecibos(socioId, accionId)
   ======================================================= */
 
-  static async getRecibos(
-    socioId,
-    accionId = null,
-  ) {
+  static async getRecibos(socioId, accionId = null) {
+    const [recibosGenerales, recibosAgua] = await Promise.all([
+      this.getRecibosGenerales(socioId, accionId),
 
-    const [
-      recibosGenerales,
-      recibosAgua,
-    ] = await Promise.all([
-
-      this.getRecibosGenerales(
-        socioId,
-        accionId,
-      ),
-
-      this.getRecibosAgua(
-        socioId,
-        accionId,
-      ),
+      this.getRecibosAgua(socioId, accionId),
     ]);
 
-
-    return [
-      ...recibosGenerales,
-      ...recibosAgua,
-    ].sort(
+    return [...recibosGenerales, ...recibosAgua].sort(
       (a, b) =>
-        new Date(
-          b.fecha_emision,
-        ).getTime() -
-        new Date(
-          a.fecha_emision,
-        ).getTime(),
+        new Date(b.fecha_emision).getTime() -
+        new Date(a.fecha_emision).getTime(),
     );
   }
-
 
   /* =======================================================
      RESUMEN DEL DASHBOARD
   ======================================================= */
 
   static async getResumen(socioId) {
-
-    const [
-      accionesActivas,
-      cobros,
-      lecturas,
-      recibos,
-    ] = await Promise.all([
-
+    const [accionesActivas, cobros, lecturas, recibos] = await Promise.all([
       accionModel.count({
         where: {
           socio_id: socioId,
@@ -703,136 +491,74 @@ export class PortalSocioServices {
         },
       }),
 
-      this.getCobros(
-        socioId,
-      ),
+      this.getCobros(socioId),
 
-      this.getLecturas(
-        socioId,
-      ),
+      this.getLecturas(socioId),
 
-      this.getRecibos(
-        socioId,
-      ),
+      this.getRecibos(socioId),
     ]);
 
+    const deudaPendiente = cobros
+      .filter((item) => ['PENDIENTE', 'PARCIAL'].includes(item.estado))
+      .reduce(
+        (total, item) => total + toNumber(item.saldo),
 
-    const deudaPendiente =
-      cobros
-        .filter(
-          (item) =>
-            [
-              'PENDIENTE',
-              'PARCIAL',
-            ].includes(
-              item.estado,
-            ),
-        )
-        .reduce(
-          (
-            total,
-            item,
-          ) =>
-            total +
-            toNumber(
-              item.saldo,
-            ),
+        0,
+      );
 
-          0,
-        );
+    const ultimaLectura = lecturas[0];
 
-
-    const ultimaLectura =
-      lecturas[0];
-
-
-    const ultimoPago =
-      recibos[0];
-
+    const ultimoPago = recibos[0];
 
     return {
-      acciones_activas:
-        accionesActivas,
+      acciones_activas: accionesActivas,
 
-      deuda_pendiente:
-        deudaPendiente,
+      deuda_pendiente: deudaPendiente,
 
-      ultima_lectura:
-        ultimaLectura
-          ? `${ultimaLectura.lectura_actual} m³ - ${ultimaLectura.mes ?? ''}`.trim()
-          : null,
+      ultima_lectura: ultimaLectura
+        ? `${ultimaLectura.lectura_actual} m³ - ${ultimaLectura.mes ?? ''}`.trim()
+        : null,
 
-      ultimo_pago:
-        ultimoPago
-          ? `Bs ${toNumber(
-              ultimoPago.monto,
-            ).toFixed(2)}`
-          : null,
+      ultimo_pago: ultimoPago
+        ? `Bs ${toNumber(ultimoPago.monto).toFixed(2)}`
+        : null,
     };
   }
-
 
   /* =======================================================
      CAMBIAR CONTRASEÑA
   ======================================================= */
 
-  static async cambiarPassword(
-    userId,
-    payload,
-  ) {
-
-    const usuario =
-      await usuarioModel.findByPk(
-        userId,
-      );
-
+  static async cambiarPassword(userId, payload) {
+    const usuario = await usuarioModel.findByPk(userId);
 
     if (!usuario) {
-      const error =
-        new Error(
-          'Usuario no encontrado',
-        );
+      const error = new Error('Usuario no encontrado');
 
-      error.statusCode =
-        404;
+      error.statusCode = 404;
 
       throw error;
     }
 
-
-    const valid =
-      await bcrypt.compare(
-        payload.contrasenia_actual,
-        usuario.contrasenia_usuario,
-      );
-
+    const valid = await bcrypt.compare(
+      payload.contrasenia_actual,
+      usuario.contrasenia_usuario,
+    );
 
     if (!valid) {
-      const error =
-        new Error(
-          'Contraseña actual incorrecta',
-        );
+      const error = new Error('Contraseña actual incorrecta');
 
-      error.statusCode =
-        400;
+      error.statusCode = 400;
 
       throw error;
     }
 
-
-    const passwordHash =
-      await bcrypt.hash(
-        payload.contrasenia_nueva,
-        12,
-      );
-
+    const passwordHash = await bcrypt.hash(payload.contrasenia_nueva, 12);
 
     await usuario.update({
-      contrasenia_usuario:
-        passwordHash,
+      contrasenia_usuario: passwordHash,
 
-      debe_camibiar_contrasenia:
-        false,
+      debe_camibiar_contrasenia: false,
     });
   }
 }

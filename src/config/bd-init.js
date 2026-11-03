@@ -15,8 +15,7 @@ import { rangoTarifaModel } from '../models/tarifa/rango.model.js';
 //
 import { socioModel } from '../models/socio.model.js';
 //
-import { detallePagoAccion } from '../models/accion/detallePagoAccion.model.js';
-//
+import { detalleAccionModel } from '../models/accion/detalleAccion.model.js';
 import { accionModel } from '../models/accion/accion.model.js';
 import { accionDetalleModel } from '../models/accion/accionDetalle.model.js';
 //
@@ -85,6 +84,11 @@ export async function ConnectDB() {
       await sequelize.drop({ cascade: true });
     }
 
+    //Refactorizacion
+    await tipoAccionModel.sync({ alter: true });
+    await accionModel.sync({ alter: true });
+    await detalleAccionModel.sync({ alter: true });
+    await accionDetalleModel.sync({ alert: true });
     // //Primera migracion
     // await permisoModel.sync({ alter: false });
     // await rolModel.sync({ alter: false });
@@ -109,11 +113,11 @@ export async function ConnectDB() {
     // await gestionModel.sync({ alter: false });
     // await periodoModel.sync({ alter: false });
     // // //
-    // await cobroModel.sync({ alter: false });
-    // await cobroAccionModel.sync({ alter: false });
-    // await pagoModel.sync({ alter: false });
-    // await pagoDetalleModel.sync({ alter: false });
-    // await reciboModel.sync({ alter: false });
+    await cobroModel.sync({ alert: true });
+    await cobroAccionModel.sync({ alert: true });
+    await pagoModel.sync({ alert: true });
+    await pagoDetalleModel.sync({ alert: true });
+    await reciboModel.sync({ alert: true });
 
     // // //
     // await lecturaAguaModel.sync({ alter: false });

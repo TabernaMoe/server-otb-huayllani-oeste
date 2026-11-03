@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { CobroUniversalController } from './cobroUniversal.controller.js';
-import { AccionController } from '../acciones/controllers/accion.controller.js';
+import { AccionController } from '../accionesBorrador/controllers/accion.controller.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import {
   validateRequest,

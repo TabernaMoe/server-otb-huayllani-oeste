@@ -10,6 +10,9 @@ export const reciboModel = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    socio_id: {
+      type: DataTypes.INTEGER,
+    },
     pago_id: {
       type: DataTypes.INTEGER,
       allowNull: false,

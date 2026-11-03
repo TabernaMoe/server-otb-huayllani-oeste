@@ -1,0 +1,26 @@
+import z from 'zod';
+import {
+  reqString,
+  reqDecimal,
+  reqEnum,
+  reqIntegerId,
+} from '../../../../validators/funcionesZod.js';
+
+export const detalleAccionSchema = z.object({
+  tipo_accion_id: reqIntegerId({ label: 'Tipo accion' }),
+  nombre_accion: reqString({
+    label: 'Nombre de calle',
+    min: 3,
+    max: 100,
+    regex: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s#.\-]+$/,
+    regexMessage:
+      'El nombre de la calle solo puede contener letras, números, espacios y los caracteres # . -',
+  }),
+  precio_accion: reqDecimal('Precio accion'),
+  tipo_cobro: reqEnum({
+    label: 'Tipo de cobro',
+    values: ['UNICO', 'MENSUAL'],
+  }),
+});
+
+export const detalleAccionUpdateSchema = detalleAccionSchema.partial();

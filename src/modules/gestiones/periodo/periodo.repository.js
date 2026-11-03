@@ -1,7 +1,7 @@
 import { periodoModel } from '../../../models/gestiones/periodo.model.js';
 
 export class PeriodoRepository {
-  static async getPeriodoActual({ transaction = null }) {
+  static async getPeriodoActual({ transaction = null } = {}) {
     const data = await periodoModel.findOne({
       where: {
         estado: 'ACTIVO',

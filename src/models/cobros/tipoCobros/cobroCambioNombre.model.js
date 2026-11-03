@@ -31,6 +31,10 @@ export const cobroCambioNombreModel = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+    tipo_servicio: {
+      type: DataTypes.ENUM('AGUA', 'ALCANTARILLADO'),
+      defaultValue: 'AGUA',
+    },
   },
   {
     tableName: 'cobro_cambio_nombres',

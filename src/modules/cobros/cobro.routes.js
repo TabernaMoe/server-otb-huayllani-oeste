@@ -2,10 +2,20 @@ import { Router } from 'express';
 import { CobroController as controller } from './cobro.controller.js';
 import { checkPermiss } from '../../middlewares/auth.middlewares.js';
 import { validateSchema } from '../../middlewares/validateSchema.middlewares.js';
-import { CobroSchema, AsignarMultaSchema } from './cobros.schema.js';
-import { AccionController } from '../acciones/controllers/accion.controller.js';
+import {
+  CobroSchema,
+  AsignarMultaSchema,
+  CobroCreateSchema,
+} from './cobros.schema.js';
+import { AccionController } from '../accionesBorrador/controllers/accion.controller.js';
 //
 import { MultasController } from '../multas/multa.controller.js';
+import { CobroController } from './cobros/controller.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import {
+  idParamSchema,
+  validateRequest,
+} from '../../middlewares/validateRequest.middlewares.js';
 
 const routes = new Router();
 
@@ -39,6 +49,11 @@ routes
     '/multas/:id',
     validateSchema(AsignarMultaSchema),
     controller.AsignarMulta,
+  )
+  .post(
+    '/crear-cobro',
+    validateRequest({ bodySchema: CobroCreateSchema }),
+    asyncHandler(CobroController.create),
   );
 
 export default routes;

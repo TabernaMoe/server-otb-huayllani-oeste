@@ -1,11 +1,11 @@
 import { CobroAguaRepository } from '../../cobros/cobrosAgua.repository.js';
 
-import { PagoAguaRepository } from '../../acciones/cobroAccionAgua/PagoAccion.repository.js';
-import { PagoDetalleAguaRepository } from '../../acciones/cobroAccionAgua/PagoDetalle.repository.js';
-import { ReciboAguaRepository } from '../../acciones/cobroAccionAgua/Recibo.repository.js';
+import { PagoAguaRepository } from '../../accionesBorrador/cobroAccionAgua/PagoAccion.repository.js';
+import { PagoDetalleAguaRepository } from '../../accionesBorrador/cobroAccionAgua/PagoDetalle.repository.js';
+import { ReciboAguaRepository } from '../../accionesBorrador/cobroAccionAgua/Recibo.repository.js';
 
 import { PeriodoRepository } from '../../gestiones/periodo/periodo.repository.js';
-import { AccionAguaAlcantarillado } from '../../acciones/accionesAgua/accion.repository.js';
+import { AccionAguaAlcantarillado } from '../../accionesBorrador/accionesAgua/accion.repository.js';
 import { sequelize } from '../../../config/database.js';
 import { SocioRepository } from '../../socios/socio.repository.js';
 

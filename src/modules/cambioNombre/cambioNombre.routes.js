@@ -2,7 +2,7 @@ import { Router } from 'express';
 import CambioNombreController from './cambioNombre.controller.js';
 import { cambioNombreSchema } from './cambioNombre.schema.js';
 import { validateSchema } from '../../middlewares/validateSchema.middlewares.js';
-import { AccionController } from '../acciones/controllers/accion.controller.js';
+import { AccionController } from '../accionesBorrador/controllers/accion.controller.js';
 import { SocioController } from '../socios/socios.controller.js';
 
 const routes = new Router();

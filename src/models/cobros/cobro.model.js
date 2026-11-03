@@ -44,11 +44,16 @@ export const cobroModel = sequelize.define(
     },
     tipo_cobro: {
       type: DataTypes.ENUM(
+        'ACCION_AGUA',
+        'ACCION_ALCANTARILLADO',
         'ACCION',
         'MULTA',
-        'CAMBIO_NOMBRE_ACCION',
-        'MANTENIMIENTO',
+        'CAMBIO_NOMBRE_ACCION_AGUA',
+        'CAMBIO_NOMBRE_ACCION_ALCANTARILLADO',
+        'MANTENIMIENTO_ALCANTARILLADO',
+        'MANTENIMIENTO_AGUA',
         'ASAMBLEA',
+        'LECTURA_AGUA',
         'OTRO',
       ),
       allowNull: false,

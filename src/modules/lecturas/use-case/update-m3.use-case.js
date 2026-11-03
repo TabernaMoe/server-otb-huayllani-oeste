@@ -1,6 +1,6 @@
 import { LecturaAguaRepository } from '../lectura.respository.js';
 import { TarifaRespository } from '../../tarifa/tarifa.repository.js';
-import { AccionAguaAlcantarillado } from '../../acciones/accionesAgua/accion.repository.js';
+import { AccionAguaAlcantarillado } from '../../accionesBorrador/accionesAgua/accion.repository.js';
 import { CobroAguaRepository } from '../../cobrosAgua/cobroAgua.repository.js';
 import { sequelize } from '../../../config/database.js';
 

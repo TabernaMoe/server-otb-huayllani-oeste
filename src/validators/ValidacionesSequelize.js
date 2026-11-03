@@ -2,7 +2,7 @@ import { Op } from 'sequelize';
 import { calleRamalModel } from '../models/calleRamal.model.js';
 import { socioModel } from '../models/socio.model.js';
 import { tarifaModel } from '../models/tarifa/tarifa.model.js';
-import { detallePagoAccion } from '../models/accion/detallePagoAccion.model.js';
+import { detalleAccionModel } from '../models/accion/detalleAccion.model.js';
 import { gestionModel } from '../models/gestiones/gestion.model.js';
 import { periodoModel } from '../models/gestiones/periodo.model.js';
 
@@ -66,7 +66,7 @@ export class ValidacionesSequelize {
   static async ValidarPagoAcciones(array, options = {}) {
     const detallePagoAccionIds = [...new Set(array)];
 
-    const detallePagoAccionSearch = await detallePagoAccion.findAll({
+    const detallePagoAccionSearch = await detalleAccionModel.findAll({
       where: {
         id: {
           [Op.in]: detallePagoAccionIds,

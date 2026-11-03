@@ -3,7 +3,7 @@ import { sequelize } from '../../config/database.js';
 import { calleRamalModel } from '../calleRamal.model.js';
 import { socioModel } from '../socio.model.js';
 import { tarifaModel } from '../tarifa/tarifa.model.js';
-import { detallePagoAccion } from './detallePagoAccion.model.js';
+import { detalleAccionModel } from './detalleAccion.model.js';
 import { accionDetalleModel } from './accionDetalle.model.js';
 
 export const accionModel = sequelize.define(
@@ -37,14 +37,16 @@ export const accionModel = sequelize.define(
     },
     tarifa_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: { model: tarifaModel, key: 'id' },
       onUpdate: 'CASCADE',
       onDelete: 'RESTRICT',
     },
+    tipo_servicio: {
+      type: DataTypes.ENUM('AGUA', 'ALCANTARILLADO'),
+      defaultValue: 'AGUA',
+    },
     codigo_interno: {
       type: DataTypes.INTEGER,
-      unique: true,
       allowNull: false,
     },
     nro_medidor: {
@@ -59,7 +61,12 @@ export const accionModel = sequelize.define(
       type: DataTypes.STRING,
     },
     estado: {
-      type: DataTypes.ENUM('ACTIVO', 'PASIVO', 'ANULADO'),
+      type: DataTypes.ENUM(
+        'ACTIVO',
+        'PASIVO',
+        'ANULADO',
+        'TRASPASO_A_ACCION_AGUA',
+      ),
       defaultValue: 'ACTIVO',
     },
   },
@@ -89,17 +96,17 @@ accionModel.belongsTo(calleRamalModel, {
   foreignKey: 'calle_id',
 });
 //detalles
-accionModel.belongsToMany(detallePagoAccion, {
+accionModel.belongsToMany(detalleAccionModel, {
   as: 'detallesAccion',
   through: accionDetalleModel,
   foreignKey: 'accion_id',
-  otherKey: 'detalle_pago_accion_id',
+  otherKey: 'detalle_accion_id',
 });
 
-detallePagoAccion.belongsToMany(accionModel, {
+detalleAccionModel.belongsToMany(accionModel, {
   as: 'AccionesDetalles',
   through: accionDetalleModel,
-  foreignKey: 'detalle_pago_accion_id',
+  foreignKey: 'detalle_accion_id',
   otherKey: 'accion_id',
 });
 //

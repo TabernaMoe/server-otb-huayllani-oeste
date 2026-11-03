@@ -12,7 +12,7 @@ import {
   idParamSchema,
   validateRequest,
 } from '../../middlewares/validateRequest.middlewares.js';
-import { AccionController } from '../acciones/controllers/accion.controller.js';
+import { AccionController } from '../accionesBorrador/controllers/accion.controller.js';
 
 const routes = new Router();
 

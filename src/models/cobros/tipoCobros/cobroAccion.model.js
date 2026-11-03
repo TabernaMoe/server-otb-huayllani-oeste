@@ -13,16 +13,6 @@ export const cobroAccionModel = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
-    accion_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'acciones',
-        key: 'id',
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'RESTRICT',
-    },
     cobro_id: {
       type: DataTypes.INTEGER,
       allowNull: false,

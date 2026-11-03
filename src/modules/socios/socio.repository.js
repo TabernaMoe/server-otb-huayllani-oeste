@@ -6,9 +6,7 @@ export class SocioRepository {
       transaction,
       raw: true,
     });
-    if (!data) {
-      return null;
-    }
-    return data;
+
+    return !data ? null : data;
   }
 }

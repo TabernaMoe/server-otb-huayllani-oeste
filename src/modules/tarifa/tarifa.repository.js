@@ -19,4 +19,11 @@ export class TarifaRespository {
     }
     return data;
   }
+  static async getById({ id, transaction = null }) {
+    const data = await tarifaModel.findByPk(id, { transaction });
+    if (!data) {
+      return null;
+    }
+    return data;
+  }
 }

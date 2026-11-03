@@ -9,12 +9,14 @@ import { ValidacionesSequelize as validaciones } from '../../validators/Validaci
 import { cobroAguaModel } from '../../models/cobroAgua/cobroAgua.model.js';
 import { pagoAguaModel } from '../../models/cobroAgua/pagoAgua.model.js';
 import { reciboAguaModel } from '../../models/cobroAgua/recibo.mode.js';
+//
+import { cobroModel } from '../../models/cobros/cobro.model.js';
 
 //
 import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
 import { rangoTarifaModel } from '../../models/tarifa/rango.model.js';
 import { socioModel } from '../../models/socio.model.js';
-import { detallePagoAccion } from '../../models/accion/detallePagoAccion.model.js';
+import { detalleAccionModel } from '../../models/accion/detalleAccion.model.js';
 import { calleRamalModel } from '../../models/calleRamal.model.js';
 
 export class LecturaServices {
@@ -37,7 +39,7 @@ export class LecturaServices {
       throw error;
     }
 
-    const where = {};
+    const where = { tipo_servicio: 'AGUA' };
 
     if (estado !== undefined) {
       where.estado = estado;
@@ -176,7 +178,7 @@ export class LecturaServices {
           attributes: [],
         },
         {
-          model: detallePagoAccion,
+          model: detalleAccionModel,
           as: 'detallesAccion',
           attributes: [],
           through: { attributes: [] },
@@ -239,7 +241,7 @@ export class LecturaServices {
           attributes: [],
         },
         {
-          model: detallePagoAccion,
+          model: detalleAccionModel,
           as: 'detallesAccion',
           attributes: [],
           through: { attributes: [] },
@@ -379,12 +381,11 @@ export class LecturaServices {
         { transaction: t },
       );
 
-      await cobroAguaModel.create(
+      await cobroModel.create(
         {
-          lectura_id: createdLectura.id,
           socio_id: accionSearch.socio_id,
-          periodo_id: periodoActivo.id,
           accion_id: accionSearch.id,
+          periodo_id: periodoActivo.id,
           tipo_cobro: 'LECTURA_AGUA',
           concepto: `LECTURA DEL MES ${periodoActivo.mes}`,
           descripcion: `LECTURA DEL MES ${periodoActivo.mes}`,

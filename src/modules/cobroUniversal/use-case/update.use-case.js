@@ -1,5 +1,5 @@
 import { CobroAguaRepository } from '../../cobros/cobrosAgua.repository.js';
-import { AccionAguaAlcantarillado } from '../../acciones/accionesAgua/accion.repository.js';
+import { AccionAguaAlcantarillado } from '../../accionesBorrador/accionesAgua/accion.repository.js';
 import { sequelize } from '../../../config/database.js';
 
 export class UpdateUseCase {
