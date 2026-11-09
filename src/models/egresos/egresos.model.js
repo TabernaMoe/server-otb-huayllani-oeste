@@ -12,6 +12,7 @@ export const EgresosModel = sequelize.define(
     monto: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
     beneficiario: { type: DataTypes.STRING, allowNull: false },
     observaciones: { type: DataTypes.STRING, allowNull: false },
+    estado: { type: DataTypes.BOOLEAN, defaultValue: true },
   },
   {
     tableName: 'egresos',

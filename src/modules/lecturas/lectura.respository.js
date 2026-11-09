@@ -29,6 +29,10 @@ export class LecturaAguaRepository {
     });
     return data;
   }
+  static async create({ payload, transaction = null }) {
+    const data = await lecturaAguaModel.create(payload, { transaction });
+    return data;
+  }
   static async update({ id, payload, transaction = null }) {
     const data = await lecturaAguaModel.findByPk(id, { transaction });
     if (!data) {
@@ -37,5 +41,14 @@ export class LecturaAguaRepository {
     await data.update(payload, { transaction });
 
     return data;
+  }
+  static async getUltimaLectura({ accion_id, transaction = null }) {
+    const data = await lecturaAguaModel.findOne({
+      where: { accion_id },
+      order: [['id', 'DESC']],
+      transaction,
+    });
+
+    return !data ? null : data;
   }
 }

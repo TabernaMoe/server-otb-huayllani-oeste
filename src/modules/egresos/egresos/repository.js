@@ -7,10 +7,7 @@ export class EgresosRespository {
   }
   static async getById({ id }) {
     const data = await EgresosModel.findByPk(id);
-    if (!data) {
-      return null;
-    }
-    return data;
+    return !data ? null : data;
   }
   static async create({ payload }) {
     const data = await EgresosModel.create(payload);
@@ -22,6 +19,14 @@ export class EgresosRespository {
       return null;
     }
     await data.update(payload);
+    return data;
+  }
+  static async changeStatus({ id, transaction = null }) {
+    const data = await EgresosModel.findByPk(id, { transaction });
+    if (!data) {
+      return null;
+    }
+    await data.update({ estado: !payload.estado }, { transaction });
     return data;
   }
 }

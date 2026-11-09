@@ -26,6 +26,7 @@ import EgresosRoutes from '../modules/egresos/routes.js';
 
 //Migracion
 import AccionesRoutes from '../modules/acciones/index.routes.js';
+import CobrosGeneralesGenerales from '../modules/cobrosGenerales/index.routes.js';
 
 const routes = new Router();
 
@@ -47,6 +48,7 @@ routes
   .use('/alcantarillado', AlcantarilladoRoutes)
   .use('/cambio-nombre', CambioNombreRoutes)
   .use('/recibo-universal', CobroUniversal)
-  .use('/egresos', EgresosRoutes);
+  .use('/egresos', EgresosRoutes)
+  .use('/cobros-generales', CobrosGeneralesGenerales);
 
 export default routes;

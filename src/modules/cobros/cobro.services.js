@@ -483,6 +483,8 @@ export class CobroServices {
         const reciboCreated = await reciboModel.create(
           {
             pago_id: pagoCreated.id,
+            socio_id: socioSearch.id,
+            accion_id: buscarAccion.id,
             numero_recibo: numeroRecibo,
             fecha_emision: new Date(),
           },

@@ -71,6 +71,7 @@ import { cobroCambioNombreModel } from '../models/cobros/tipoCobros/cobroCambioN
 //Egresos
 import { CategoriaGastosModel } from '../models/egresos/categoriaGasto.model.js';
 import { EgresosModel } from '../models/egresos/egresos.model.js';
+import { BeneficiarioEgresosModel } from '../models/egresos/beneficiario.model.js';
 
 export async function ConnectDB() {
   const shouldResetDatabase = process.env.RESET_DB_ON_START === 'true';
@@ -88,7 +89,7 @@ export async function ConnectDB() {
     await tipoAccionModel.sync({ alter: true });
     await accionModel.sync({ alter: true });
     await detalleAccionModel.sync({ alter: true });
-    await accionDetalleModel.sync({ alert: true });
+    await accionDetalleModel.sync({ alter: true });
     // //Primera migracion
     // await permisoModel.sync({ alter: false });
     // await rolModel.sync({ alter: false });
@@ -113,11 +114,11 @@ export async function ConnectDB() {
     // await gestionModel.sync({ alter: false });
     // await periodoModel.sync({ alter: false });
     // // //
-    await cobroModel.sync({ alert: true });
-    await cobroAccionModel.sync({ alert: true });
-    await pagoModel.sync({ alert: true });
-    await pagoDetalleModel.sync({ alert: true });
-    await reciboModel.sync({ alert: true });
+    await cobroModel.sync({ alter: true });
+    await cobroAccionModel.sync({ alter: true });
+    await pagoModel.sync({ alter: true });
+    await pagoDetalleModel.sync({ alter: true });
+    await reciboModel.sync({ alter: true });
 
     // // //
     // await lecturaAguaModel.sync({ alter: false });
@@ -157,6 +158,7 @@ export async function ConnectDB() {
 
     await CategoriaGastosModel.sync({ alter: true });
     await EgresosModel.sync({ alter: true });
+    await BeneficiarioEgresosModel.sync({ alter: true });
 
     console.log(
       `✅ Tablas cargadas correctamente${shouldResetDatabase ? ' (reiniciadas)' : ''}`,

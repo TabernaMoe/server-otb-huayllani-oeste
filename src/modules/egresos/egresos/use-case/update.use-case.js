@@ -1,4 +1,6 @@
 import { EgresosRespository } from '../repository.js';
+import { CategoriaGastosRespository } from '../../categoriaGastos/repository.js';
+import { BeneficiarioRepository } from '../../beneficiario/repository.js';
 
 export class UpdateUseCase {
   static async execute({ id, payload }) {
@@ -12,6 +14,21 @@ export class UpdateUseCase {
         throw err;
       }
     }
+
+    if (!payload?.beneficiario) {
+      const buscarBeneficiario = await BeneficiarioRepository.getByName({
+        nombre_beneficiario: payload.beneficiario,
+      });
+
+      if (!buscarBeneficiario) {
+        await BeneficiarioRepository.create({
+          payload: {
+            nombre_beneficiario: payload.beneficiario,
+          },
+        });
+      }
+    }
+
     const data = await EgresosRespository.update({ id, payload });
     if (!data) {
       const err = new Error('No se pudo actualizar el gasto');

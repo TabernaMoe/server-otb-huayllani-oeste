@@ -1,6 +1,8 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 import { pagoModel } from './pago.model.js';
+import { socioModel } from '../socio.model.js';
+import { accionModel } from '../accion/accion.model.js';
 
 export const reciboModel = sequelize.define(
   'recibos',
@@ -12,6 +14,21 @@ export const reciboModel = sequelize.define(
     },
     socio_id: {
       type: DataTypes.INTEGER,
+      references: {
+        model: 'socios',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
+    },
+    accion_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'acciones',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
     },
     pago_id: {
       type: DataTypes.INTEGER,
@@ -50,4 +67,21 @@ pagoModel.hasOne(reciboModel, {
 reciboModel.belongsTo(pagoModel, {
   as: 'pago',
   foreignKey: 'pago_id',
+});
+//
+socioModel.hasMany(reciboModel, {
+  as: 'recibos',
+  foreignKey: 'socio_id',
+});
+reciboModel.belongsTo(socioModel, {
+  as: 'socioRecibo',
+  foreignKey: 'socio_id',
+});
+accionModel.hasMany(reciboModel, {
+  as: 'accionRecibo',
+  foreignKey: 'accion_id',
+});
+reciboModel.belongsTo(accionModel, {
+  as: 'reciboAccion',
+  foreignKey: 'accion_id',
 });

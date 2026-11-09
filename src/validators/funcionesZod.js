@@ -1,12 +1,17 @@
 import z from 'zod';
 
-export const reqEnum = ({ label = 'Campo', values = [] } = {}) => {
-  return z.enum(values, {
+export const reqEnum = ({
+  label = 'Campo',
+  values = [],
+  required = true,
+} = {}) => {
+  const schema = z.enum(values, {
     required_error: `Debe seleccionar ${label.toLowerCase()}`,
     invalid_type_error: `Debe seleccionar ${label.toLowerCase()}`,
   });
-};
 
+  return required ? schema : schema.optional();
+};
 export const reqEstadoSocio = (label = 'Estado', required = true) => {
   let schema = z.enum(['HABILITADO', 'DESHABILITADO'], {
     required_error: `Debe seleccionar ${label.toLowerCase()}`,
