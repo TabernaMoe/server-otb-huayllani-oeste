@@ -2,8 +2,8 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 import { tipoAccionModel } from './tipoAccion.model.js';
 
-export const detallePagoAccion = sequelize.define(
-  'detalle_pago_accion',
+export const detalleAccionModel = sequelize.define(
+  'detalleAccion',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -13,13 +13,16 @@ export const detallePagoAccion = sequelize.define(
     },
     tipo_accion_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: 'tipos_accion',
         key: 'id',
       },
       onDelete: 'RESTRICT',
       onUpdate: 'CASCADE',
+    },
+    tipo_servicio: {
+      type: DataTypes.ENUM('AGUA', 'ALCANTARILLADO'),
+      defaultValue: 'AGUA',
     },
     nombre_accion: {
       type: DataTypes.STRING,
@@ -39,16 +42,16 @@ export const detallePagoAccion = sequelize.define(
     },
   },
   {
-    tableName: 'detalle_pago_accion',
+    tableName: 'detalle_accion',
     timestamps: true,
   },
 );
 
-tipoAccionModel.hasMany(detallePagoAccion, {
+tipoAccionModel.hasMany(detalleAccionModel, {
   as: 'DetallesPagoAccion',
   foreignKey: 'tipo_accion_id',
 });
-detallePagoAccion.belongsTo(tipoAccionModel, {
+detalleAccionModel.belongsTo(tipoAccionModel, {
   as: 'tipoAccion',
   foreignKey: 'tipo_accion_id',
 });

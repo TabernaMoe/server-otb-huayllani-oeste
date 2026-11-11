@@ -10,6 +10,9 @@ export const reciboModel = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    socio_id: {
+      type: DataTypes.INTEGER,
+    },
     pago_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -22,11 +25,12 @@ export const reciboModel = sequelize.define(
     },
     numero_recibo: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      // allowNull: false,
     },
     fecha_emision: {
       type: DataTypes.DATE,
-      allowNull: DataTypes.NOW,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
     estado: {
       type: DataTypes.BOOLEAN,

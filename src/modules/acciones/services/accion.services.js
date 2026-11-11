@@ -5,7 +5,7 @@ import { accionDetalleModel } from '../../../models/accion/accionDetalle.model.j
 import { calleRamalModel } from '../../../models/calleRamal.model.js';
 import { socioModel } from '../../../models/socio.model.js';
 import { tarifaModel } from '../../../models/tarifa/tarifa.model.js';
-import { detallePagoAccion } from '../../../models/accion/detallePagoAccion.model.js';
+import { detallePagoAccion } from '../../../models/accion/detalleAccion.model.js';
 import { cobroModel } from '../../../models/cobros/cobro.model.js';
 import { cobroAccionModel } from '../../../models/cobros/tipoCobros/cobroAccion.model.js';
 import { gestionModel } from '../../../models/gestiones/gestion.model.js';

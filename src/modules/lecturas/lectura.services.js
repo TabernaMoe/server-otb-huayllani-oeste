@@ -15,7 +15,7 @@ import { reciboAguaModel } from '../../models/cobroAgua/recibo.mode.js';
 import { tarifaModel } from '../../models/tarifa/tarifa.model.js';
 import { rangoTarifaModel } from '../../models/tarifa/rango.model.js';
 import { socioModel } from '../../models/socio.model.js';
-import { detallePagoAccion } from '../../models/accion/detallePagoAccion.model.js';
+import { detallePagoAccion } from '../../models/accion/detalleAccion.model.js';
 import { calleRamalModel } from '../../models/calleRamal.model.js';
 
 export class LecturaServices {
