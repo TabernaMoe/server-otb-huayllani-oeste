@@ -20,7 +20,8 @@ export const pagoModel = sequelize.define(
     },
     fecha_pago: {
       type: DataTypes.DATE,
-      allowNull: DataTypes.NOW,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
@@ -75,6 +76,7 @@ cobroModel.belongsToMany(pagoModel, {
 });
 
 pagoModel.belongsToMany(cobroModel, {
+  as: 'cobrosRecibo',
   through: pagoDetalleModel,
   foreignKey: 'pago_id',
   otherKey: 'cobro_id',

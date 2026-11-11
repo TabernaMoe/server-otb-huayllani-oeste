@@ -16,3 +16,35 @@ export const lecturaSchema = z.object({
     regexMessage: 'La observacion contiene caracteres inválidos',
   }),
 });
+
+export const cambiarM3Schema = z.object({
+  consumo_m3: reqInteger('Consumo m3'),
+  observacion_modificacion: reqString({
+    label: 'Observacion',
+    min: 5,
+    max: 255,
+    regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s#\-.,/]+$/,
+    regexMessage: 'La observacion contiene caracteres inválidos',
+  }),
+});
+
+export const modificarMoraSchema = z.object({
+  mora: reqInteger('Mora'),
+  observacion_mora: reqString({
+    label: 'Observacion',
+    min: 5,
+    max: 255,
+    regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s#\-.,/]+$/,
+    regexMessage: 'La observacion contiene caracteres inválidos',
+  }),
+});
+
+export const updateOblyLecturaSchema = z
+  .object({
+    lectura_actual: reqInteger('Lectura actual', true, 1),
+    lectura_anterior: reqInteger('Lectura anterior', true, 1),
+  })
+  .refine((data) => data.lectura_actual >= data.lectura_anterior, {
+    message: 'La lectura actual no puede ser menor que la lectura anterior',
+    path: ['lectura_actual'],
+  });

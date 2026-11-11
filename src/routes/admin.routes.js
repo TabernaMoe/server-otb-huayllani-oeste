@@ -1,10 +1,11 @@
 import { Router } from 'express';
+import personaAdminRoutes from '../modules/personaAdmin/PersonaAdmin.routes.js';
 import loginRoutes from '../modules/login/login.routes.js';
 import authRoutes from '../modules/auth/routes/index.routes.js';
 import calleRoutes from '../modules/calleRamal/calleRamal.routes.js';
 import tarifaRoutes from '../modules/tarifa/tarifa.routes.js';
 import socioRoutes from '../modules/socios/socio.routes.js';
-import accionRoutes from '../modules/acciones/routes/index.routes.js';
+import accionRoutes from '../modules/accionesBorrador/routes/index.routes.js';
 import gestionRoutes from '../modules/gestiones/routes/index.routes.js';
 import cobroRoutes from '../modules/cobros/cobro.routes.js';
 //
@@ -12,20 +13,42 @@ import lecturaRoutes from '../modules/lecturas/lectura.routes.js';
 import cobroAguaRoutes from '../modules/cobrosAgua/cobrosAgua.routes.js';
 import InventarioRoutes from '../modules/inventario/inventario.routes.js';
 import AsambleaRotues from '../modules/asambleas/asamblea.routes.js';
+//
+import MultaRoutes from '../modules/multas/multa.routes.js';
+
+import AlcantarilladoRoutes from '../modules/accionesAlcantarillado/index.routes.js';
+//
+import CambioNombreRoutes from '../modules/cambioNombre/cambioNombre.routes.js';
+//
+import CobroUniversal from '../modules/cobroUniversal/cobroUniversal.routes.js';
+//
+import EgresosRoutes from '../modules/egresos/routes.js';
+
+//Migracion
+import AccionesRoutes from '../modules/acciones/index.routes.js';
+import CobrosGeneralesGenerales from '../modules/cobrosGenerales/index.routes.js';
 
 const routes = new Router();
 
 routes
   .use('/auth', authRoutes)
+  .use('/persona-admin', personaAdminRoutes)
   .use('/calle', calleRoutes)
   .use('/tarifa', tarifaRoutes)
   .use('/socio', socioRoutes)
+  .use('/acciones', AccionesRoutes)
   .use('/accion', accionRoutes)
   .use('/gestion', gestionRoutes)
   .use('/cobro', cobroRoutes)
   .use('/lectura', lecturaRoutes)
   .use('/pago-agua', cobroAguaRoutes)
   .use('/inventario', InventarioRoutes)
-  .use('/asamblea', AsambleaRotues);
+  .use('/asamblea', AsambleaRotues)
+  .use('/multa', MultaRoutes)
+  .use('/alcantarillado', AlcantarilladoRoutes)
+  .use('/cambio-nombre', CambioNombreRoutes)
+  .use('/recibo-universal', CobroUniversal)
+  .use('/egresos', EgresosRoutes)
+  .use('/cobros-generales', CobrosGeneralesGenerales);
 
 export default routes;
