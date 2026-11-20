@@ -58,5 +58,14 @@ asistenciaAsambleaModel.hasMany(cobroAsamblea, {
   foreignKey: 'asistencia_asamblea_id',
 });
 cobroAsamblea.belongsTo(asistenciaAsambleaModel, {
+  as: 'asambleaCobro',
   foreignKey: 'asistencia_asamblea_id',
+});
+cobroModel.hasMany(cobroAsamblea, {
+  as: 'cobroCobroAsamblea',
+  foreignKey: 'cobro_id',
+});
+
+cobroAsamblea.belongsTo(cobroModel, {
+  foreignKey: 'cobro_id',
 });

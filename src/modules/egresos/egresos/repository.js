@@ -13,12 +13,12 @@ export class EgresosRespository {
     const data = await EgresosModel.create(payload);
     return data;
   }
-  static async update({ id, payload }) {
-    const data = await EgresosModel.findByPk(id);
+  static async update({ id, payload, transaction = null }) {
+    const data = await EgresosModel.findByPk(id, { transaction });
     if (!data) {
       return null;
     }
-    await data.update(payload);
+    await data.update(payload, { transaction });
     return data;
   }
   static async changeStatus({ id, transaction = null }) {

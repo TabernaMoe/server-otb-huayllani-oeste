@@ -81,3 +81,17 @@ pagoModel.belongsToMany(cobroModel, {
   foreignKey: 'pago_id',
   otherKey: 'cobro_id',
 });
+//--------------
+cobroModel.hasMany(pagoDetalleModel, {
+  foreignKey: 'cobro_id',
+});
+pagoDetalleModel.belongsTo(cobroModel, { foreignKey: 'cobro_id' });
+//--------------
+
+pagoModel.hasMany(pagoDetalleModel, {
+  foreignKey: 'pago_id',
+});
+pagoDetalleModel.belongsTo(pagoModel, {
+  foreignKey: 'pago_id',
+});
+//--------------
