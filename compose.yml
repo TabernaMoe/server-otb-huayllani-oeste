@@ -5,12 +5,18 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: '2002'
+      POSTGRES_PASSWORD: "2002"
       POSTGRES_DB: bd_otb
     ports:
-      - '5434:5432'
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bd_otb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
     build:
       context: .
@@ -18,7 +24,7 @@ services:
     container_name: server_otb_dev
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - "3000:3000"
     volumes:
       - .:/app
       - node_modules_otb_backend:/app/node_modules
@@ -40,7 +46,9 @@ services:
       - BANCO_ECONOMICO_AES_KEY=40A318B299F245C2B697176723088629
       - BANCO_ECONOMICO_ACCOUNT=1061602532
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   node_modules_otb_backend:

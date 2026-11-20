@@ -16,11 +16,12 @@ export class ReciboReporteController {
     });
     return res.status(200).json({ ok: true, data });
   }
-  static async getRecibosPorAccion(req, res) {
+   static async getRecibosPorAccion(req, res) {
     const data = await GetRecibosPorAccionUseCase.execute({
       accion_id: req.validated.params.id,
       query: req.validated.query,
     });
+    return res.status(200).json({ ok: true, data });
   }
   static async GetRecibosPorFechaPorAccion(req, res) {
     const data = await GetRecibosPorFechaPorAccionUseCase.execute({

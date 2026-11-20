@@ -2,7 +2,7 @@ import { cobroModel } from '../../../models/cobros/cobro.model.js';
 import { socioModel } from '../../../models/socio.model.js';
 import { accionModel } from '../../../models/accion/accion.model.js';
 import { calleRamalModel } from '../../../models/calleRamal.model.js';
-import { col, fn, Op } from 'sequelize';
+import { col, fn, Op, where as sequelizeWhere } from 'sequelize';
 import { getRangoFechas } from '../../../utils/funciones.js';
 
 export class CobroReportesRepository {
@@ -123,8 +123,9 @@ export class CobroReportesRepository {
       fechaInicio: fecha_inicio,
       fechaFin: fecha_final,
     });
-    const data = await cobroModel.findAll({
+       const data = await cobroModel.findAll({
       attributes: [
+        'id',
         [
           fn(
             'CONCAT_WS',
@@ -143,17 +144,18 @@ export class CobroReportesRepository {
         [col('accionCobro.calleAccion.nombre_calle'), 'nombre_calle'],
         [col('accionCobro.tipo_servicio'), 'tipo_servicio'],
         [col('accionCobro.codigo_interno'), 'codigo_interno'],
-        'fecha_emision',
       ],
       include: [
         {
           model: socioModel,
           as: 'socioCobro',
+          attributes: [],
         },
         {
           model: accionModel,
           as: 'accionCobro',
-          include: [{ model: calleRamalModel, as: 'calleAccion' }],
+          attributes: [],
+          include: [{ model: calleRamalModel, as: 'calleAccion', attributes: [] }],
         },
       ],
       where: {
@@ -164,6 +166,8 @@ export class CobroReportesRepository {
         ...(estado && estado !== 'TODOS' && { estado }),
         ...(tipo_cobro && tipo_cobro !== 'TODOS' && { tipo_cobro }),
       },
+      order: [['fecha_emision', 'DESC']],
+      raw: true,
     });
     return data;
   }
@@ -292,8 +296,9 @@ export class CobroReportesRepository {
       fechaInicio: fecha_inicio,
       fechaFin: fecha_final,
     });
-    const data = await cobroModel.findAll({
+        const data = await cobroModel.findAll({
       attributes: [
+        'id',
         [
           fn(
             'CONCAT_WS',
@@ -312,17 +317,18 @@ export class CobroReportesRepository {
         [col('accionCobro.calleAccion.nombre_calle'), 'nombre_calle'],
         [col('accionCobro.tipo_servicio'), 'tipo_servicio'],
         [col('accionCobro.codigo_interno'), 'codigo_interno'],
-        'fecha_emision',
       ],
       include: [
         {
           model: socioModel,
           as: 'socioCobro',
+          attributes: [],
         },
         {
           model: accionModel,
           as: 'accionCobro',
-          include: [{ model: calleRamalModel, as: 'calleAccion' }],
+          attributes: [],
+          include: [{ model: calleRamalModel, as: 'calleAccion', attributes: [] }],
         },
       ],
       where: {
@@ -334,6 +340,8 @@ export class CobroReportesRepository {
         ...(estado && estado !== 'TODOS' && { estado }),
         ...(tipo_cobro && tipo_cobro !== 'TODOS' && { tipo_cobro }),
       },
+      order: [['fecha_emision', 'DESC']],
+      raw: true,
     });
     return data;
   }

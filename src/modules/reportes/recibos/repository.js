@@ -7,7 +7,7 @@ import { reciboModel } from '../../../models/cobros/recibo.model.js';
 import { socioModel } from '../../../models/socio.model.js';
 import { accionModel } from '../../../models/accion/accion.model.js';
 import { calleRamalModel } from '../../../models/calleRamal.model.js';
-import { col, fn, Op } from 'sequelize';
+import { col, fn, Op, where as sequelizeWhere } from 'sequelize';
 import { getRangoFechas } from '../../../utils/funciones.js';
 
 export class ReciboReporteRepository {
@@ -22,10 +22,9 @@ export class ReciboReporteRepository {
 
     const filtroRercibo = {};
 
-    if (estado) {
+    if (estado !== undefined && estado !== null && estado !== '') {
       filtroRercibo.estado = estado;
     }
-
     const filtros = {};
 
     // FILTRAR POR TIPO DE COBRO
@@ -176,11 +175,13 @@ export class ReciboReporteRepository {
       },
     };
   }
-  static async getRecibosPorFecha({
+   static async getRecibosPorFecha({
     fecha_inicio,
     fecha_final,
     tipo_cobro,
     estado,
+    page = 1,
+    limit = 100,
   }) {
     const offset = (page - 1) * limit;
     const { inicio, fin } = getRangoFechas({
@@ -333,13 +334,14 @@ export class ReciboReporteRepository {
     tipo_cobro,
     estado,
   }) {
-    const offset = (page - 1) * limit;
+        const offset = (page - 1) * limit;
+    const filtroRercibo = {};
 
-    if (estado) {
+    if (estado !== undefined && estado !== null && estado !== '') {
       filtroRercibo.estado = estado;
     }
 
-    const filtros = { accion_id };
+    const filtros = { '$cobro.accion_id$': accion_id };
 
     // FILTRAR POR TIPO DE COBRO
     if (tipo_cobro && tipo_cobro !== 'TODOS') {
@@ -489,12 +491,14 @@ export class ReciboReporteRepository {
       },
     };
   }
-  static async getRecibosPorFechaPorAccion({
+   static async getRecibosPorFechaPorAccion({
     accion_id,
     fecha_inicio,
     fecha_final,
     tipo_cobro,
     estado,
+    page = 1,
+    limit = 100,
   }) {
     const offset = (page - 1) * limit;
     const { inicio, fin } = getRangoFechas({
@@ -502,7 +506,7 @@ export class ReciboReporteRepository {
       fechaFin: fecha_final,
     });
 
-    const filtros = { accion_id };
+    const filtros = { '$cobro.accion_id$': accion_id };
 
     // FILTRAR POR TIPO DE COBRO
     if (tipo_cobro && tipo_cobro !== 'TODOS') {

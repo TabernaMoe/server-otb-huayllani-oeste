@@ -8,7 +8,7 @@ import { calleRamalModel } from '../models/calleRamal.model.js';
 import { tarifaModel } from '../models/tarifa/tarifa.model.js';
 import { rangoTarifaModel } from '../models/tarifa/rango.model.js';
 import { tipoAccionModel } from '../models/accion/tipoAccion.model.js';
-import { detallePagoAccion } from '../models/accion/detallePagoAccion.model.js';
+import { detalleAccionModel } from '../models/accion/detalleAccion.model.js';
 import { accionModel } from '../models/accion/accion.model.js';
 import { accionDetalleModel } from '../models/accion/accionDetalle.model.js';
 import { gestionModel } from '../models/gestiones/gestion.model.js';
@@ -74,6 +74,7 @@ const STREETS = [
   'Samuel Fino',
   'Toroncho',
 ];
+
 const SOCIOS = [
   [
     '80000001',
@@ -156,6 +157,7 @@ const SOCIOS = [
     'Toroncho #17',
   ],
 ];
+
 const MONTHS = [
   'ENERO',
   'FEBRERO',
@@ -361,9 +363,9 @@ async function seedCatalogs() {
   ]) {
     details.push(
       await findOrCreateBy(
-        detallePagoAccion,
+        detalleAccionModel,
         { tipo_accion_id, nombre_accion },
-        { precio_accion, tipo_cobro, estado: true },
+        { tipo_servicio: 'AGUA', precio_accion, tipo_cobro, estado: true },
       ),
     );
   }
@@ -487,6 +489,7 @@ async function seedActions({
         socio_id: socios[i].id,
         calle_id: streets[i % streets.length].id,
         tarifa_id: tariffs[i % tariffs.length].id,
+        tipo_servicio: 'AGUA',
         nro_medidor: `MED-${String(i + 1).padStart(4, '0')}`,
         direccion: SOCIOS[i][7],
         observacion:
@@ -503,7 +506,7 @@ async function seedActions({
         : [details[1], details[2]];
     for (const detail of selected)
       await accionDetalleModel.findOrCreate({
-        where: { accion_id: action.id, detalle_pago_accion_id: detail.id },
+        where: { accion_id: action.id, detalle_accion_id: detail.id },
       });
   }
 
@@ -609,7 +612,7 @@ async function seedReadingsAndCharges({ socios, actions, periods }) {
       },
       defaults: {
         socio_id: socios[i].id,
-        tipo_cobro: 'MANTENIMIENTO',
+        tipo_cobro: 'MANTENIMIENTO_AGUA',
         descripcion: 'Mantenimiento mensual de acción',
         monto_total: 20,
         monto_pagado: paid ? 20 : 0,
@@ -629,6 +632,8 @@ async function seedReadingsAndCharges({ socios, actions, periods }) {
       await reciboModel.findOrCreate({
         where: { pago_id: payment.id },
         defaults: {
+          socio_id: socios[i].id,
+          accion_id: actions[i].id,
           numero_recibo: 6000 + payment.id,
           fecha_emision: new Date('2026-10-05T10:05:00Z'),
           estado: true,

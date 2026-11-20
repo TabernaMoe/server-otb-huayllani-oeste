@@ -5,11 +5,11 @@ import { GetCobrosUseCase } from './use-case/get-cobros.use-case.js';
 
 export class CobroReportesController {
   static async getCobros(req, res) {
-    const data = GetCobrosUseCase.execute({ query: req.validated.query });
+    const data = await GetCobrosUseCase.execute({ query: req.validated.query });
     return res.status(200).json({ ok: true, data });
   }
   static async getcobrosPorFecha(req, res) {
-    const data = GetCobrosPorFechaUseCase.execute({ body: req.validated.body });
+    const data =  await GetCobrosPorFechaUseCase.execute({ body: req.validated.body });
     return res.status(200).json({ ok: true, data });
   }
   static async getCobrosAccion(req, res) {
