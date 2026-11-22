@@ -10,11 +10,22 @@ import { sequelize } from '../../../config/database.js';
 import { SocioRepository } from '../../socios/socio.repository.js';
 
 import { fechaBonita } from '../.././../utils/funciones.js';
+import { AccionRepository } from '../../acciones/accion/repository.js';
 
 export class CreateUseCase {
   static async execute({ payload }) {
     return sequelize.transaction(async (t) => {
       const { accion_id, concepto, descripcion, monto } = payload;
+
+      const buscarPeriodoActual = await PeriodoRepository.getPeriodoActual({
+        transaction: t,
+      });
+      if (!buscarPeriodoActual) {
+        const err = new Error('No hay periodo activo');
+        err.statusCode = 404;
+        throw err;
+      }
+
       const buscarAccion = await AccionAguaAlcantarillado.getAccionById({
         id: accion_id,
         transaction: t,
@@ -29,14 +40,6 @@ export class CreateUseCase {
         transaction: t,
       });
 
-      const buscarPeriodoActual = await PeriodoRepository.getPeriodoActual({
-        transaction: t,
-      });
-      if (!buscarPeriodoActual) {
-        const err = new Error('No hay periodo activo');
-        err.statusCode = 404;
-        throw err;
-      }
       const createCobro = await CobroAguaRepository.create({
         payload: {
           socio_id: buscarAccion.socio_id,

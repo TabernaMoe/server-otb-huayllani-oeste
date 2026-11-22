@@ -5,6 +5,13 @@ import { PeriodoRepository } from '../../../gestiones/periodo/periodo.repository
 export class CreateUseCase {
   static async execute({ payload }) {
     const { accion_id, concepto, descripcion, monto } = payload;
+    const periodoAcutal = await PeriodoRepository.getPeriodoActual();
+    if (!periodoAcutal) {
+      const err = new Error('No existe un periodo activo');
+      err.statusCode = 404;
+      throw err;
+    }
+
     const buscarAccion = await AccionRepository.getById({
       id: accion_id,
     });
@@ -13,7 +20,7 @@ export class CreateUseCase {
       err.statusCode = 404;
       throw err;
     }
-    const periodoAcutal = await PeriodoRepository.getPeriodoActual();
+
     const crearCobro = await CobroRepository.create({
       payload: {
         socio_id: buscarAccion.socio_id,

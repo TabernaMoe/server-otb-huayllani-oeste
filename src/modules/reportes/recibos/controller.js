@@ -3,6 +3,9 @@ import { GetRecibosPorFechaPorAccionUseCase } from './use-case/get-recibos-por-f
 import { GetRecibosPorFechaUseCase } from './use-case/get-recibos-por-fecha.use-case.js';
 import { GetRecibosUseCase } from './use-case/get-recibos.use-case.js';
 
+import { GetRecibosPorSocioUseCase } from './use-case/get-recibos-por-socio.use-case.js';
+import { GetRecibosPorFechaPorSocioUseCase } from './use-case/get-recibos-por-fecha-por-socio.use-case.js';
+
 export class ReciboReporteController {
   static async getRecibos(req, res) {
     const data = await GetRecibosUseCase.execute({
@@ -16,7 +19,7 @@ export class ReciboReporteController {
     });
     return res.status(200).json({ ok: true, data });
   }
-   static async getRecibosPorAccion(req, res) {
+  static async getRecibosPorAccion(req, res) {
     const data = await GetRecibosPorAccionUseCase.execute({
       accion_id: req.validated.params.id,
       query: req.validated.query,
@@ -25,6 +28,20 @@ export class ReciboReporteController {
   }
   static async GetRecibosPorFechaPorAccion(req, res) {
     const data = await GetRecibosPorFechaPorAccionUseCase.execute({
+      body: req.validated.body,
+      accion_id: req.validated.params.id,
+    });
+    return res.status(200).json({ ok: true, data });
+  }
+  static async getRecibosPorSocio(req, res) {
+    const data = await GetRecibosPorSocioUseCase.execute({
+      accion_id: req.validated.params.id,
+      query: req.validated.query,
+    });
+    return res.status(200).json({ ok: true, data });
+  }
+  static async GetRecibosPorFechaPorSocio(req, res) {
+    const data = await GetRecibosPorFechaPorSocioUseCase.execute({
       body: req.validated.body,
       accion_id: req.validated.params.id,
     });

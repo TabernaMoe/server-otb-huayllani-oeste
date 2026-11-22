@@ -157,7 +157,7 @@ export const reqDecimal = ({ label = 'Monto', required = true } = {}) => {
       invalid_type_error: `${label} debe ser un número`,
     })
     .finite(`${label} debe ser un número válido`)
-    .min(1, `${label} debe ser mayor a 0`);
+    .min(0, `${label} debe ser mayor a 0`);
 
   if (!required) {
     schema = schema.optional();

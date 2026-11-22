@@ -123,7 +123,7 @@ export class CobroReportesRepository {
       fechaInicio: fecha_inicio,
       fechaFin: fecha_final,
     });
-       const data = await cobroModel.findAll({
+    const data = await cobroModel.findAll({
       attributes: [
         'id',
         [
@@ -155,7 +155,9 @@ export class CobroReportesRepository {
           model: accionModel,
           as: 'accionCobro',
           attributes: [],
-          include: [{ model: calleRamalModel, as: 'calleAccion', attributes: [] }],
+          include: [
+            { model: calleRamalModel, as: 'calleAccion', attributes: [] },
+          ],
         },
       ],
       where: {
@@ -296,7 +298,7 @@ export class CobroReportesRepository {
       fechaInicio: fecha_inicio,
       fechaFin: fecha_final,
     });
-        const data = await cobroModel.findAll({
+    const data = await cobroModel.findAll({
       attributes: [
         'id',
         [
@@ -328,7 +330,9 @@ export class CobroReportesRepository {
           model: accionModel,
           as: 'accionCobro',
           attributes: [],
-          include: [{ model: calleRamalModel, as: 'calleAccion', attributes: [] }],
+          include: [
+            { model: calleRamalModel, as: 'calleAccion', attributes: [] },
+          ],
         },
       ],
       where: {
@@ -337,6 +341,182 @@ export class CobroReportesRepository {
           [Op.lt]: fin,
         },
         accion_id,
+        ...(estado && estado !== 'TODOS' && { estado }),
+        ...(tipo_cobro && tipo_cobro !== 'TODOS' && { tipo_cobro }),
+      },
+      order: [['fecha_emision', 'DESC']],
+      raw: true,
+    });
+    return data;
+  }
+  static async getCobrosPorSocio({
+    page,
+    limit,
+    search,
+    tipo_cobro,
+    estado,
+    socio_id,
+  }) {
+    const offset = (page - 1) * limit;
+    const filtros = { socio_id };
+
+    //   estado: {
+    //     [Op.in]: ['PENDIENTE', 'PARCIAL'],
+    //   },
+
+    if (tipo_cobro) {
+      filtros.tipo_cobro = tipo_cobro; //ACCION_AGUA,ACCION_ALCANTARILLADO,.ETC
+    }
+
+    if (estado) {
+      filtros.estado = estado; //ANULADO PENDIENTE PARCIAL PAGADOS
+    }
+    // FILTRAR POR NOMBRE O CI
+    if (search) {
+      const busqueda = `%${search}%`;
+
+      filtros[Op.or] = [
+        {
+          '$socioCobro.ci_socio$': {
+            [Op.iLike]: busqueda,
+          },
+        },
+        sequelizeWhere(
+          fn(
+            'CONCAT_WS',
+            ' ',
+            col('socioCobro.nombres'),
+            col('socioCobro.primer_apellido'),
+            col('socioCobro.segundo_apellido'),
+          ),
+          {
+            [Op.iLike]: busqueda,
+          },
+        ),
+      ];
+    }
+
+    const { count, rows } = await cobroModel.findAndCountAll({
+      attributes: [
+        'id',
+        [
+          fn(
+            'CONCAT_WS',
+            ' ',
+            col('socioCobro.nombres'),
+            col('socioCobro.primer_apellido'),
+            col('socioCobro.segundo_apellido'),
+          ),
+          'nombre_socio',
+        ],
+        [col('socioCobro.ci_socio'), 'ci_socio'],
+        'concepto',
+        'descripcion',
+        ['monto_total', 'monto_pagar'],
+        'fecha_emision',
+        [col('accionCobro.calleAccion.nombre_calle'), 'nombre_calle'],
+        [col('accionCobro.tipo_servicio'), 'tipo_servicio'],
+        [col('accionCobro.codigo_interno'), 'codigo_interno'],
+      ],
+
+      include: [
+        {
+          model: socioModel,
+          as: 'socioCobro',
+          attributes: [],
+        },
+        {
+          model: accionModel,
+          as: 'accionCobro',
+          attributes: [],
+          include: [
+            {
+              model: calleRamalModel,
+              as: 'calleAccion',
+              attributes: [],
+            },
+          ],
+        },
+      ],
+
+      where: filtros,
+      limit,
+      offset,
+      order: [
+        ['fecha_emision', 'DESC'],
+        ['id', 'DESC'],
+      ],
+      distinct: true,
+      subQuery: false,
+      raw: true,
+    });
+
+    return {
+      data: rows,
+      pagination: {
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+        hasNextPage: page * limit < count,
+        hasPreviousPage: page > 1,
+      },
+    };
+  }
+  static async getCobrosPorFechaPorSocio({
+    tipo_cobro,
+    fecha_inicio,
+    fecha_final,
+    socio_id,
+    estado,
+  }) {
+    const { inicio, fin } = getRangoFechas({
+      fechaInicio: fecha_inicio,
+      fechaFin: fecha_final,
+    });
+    const data = await cobroModel.findAll({
+      attributes: [
+        'id',
+        [
+          fn(
+            'CONCAT_WS',
+            ' ',
+            col('socioCobro.nombres'),
+            col('socioCobro.primer_apellido'),
+            col('socioCobro.segundo_apellido'),
+          ),
+          'nombre_socio',
+        ],
+        [col('socioCobro.ci_socio'), 'ci_socio'],
+        'concepto',
+        'descripcion',
+        ['monto_total', 'monto_pagar'],
+        'fecha_emision',
+        [col('accionCobro.calleAccion.nombre_calle'), 'nombre_calle'],
+        [col('accionCobro.tipo_servicio'), 'tipo_servicio'],
+        [col('accionCobro.codigo_interno'), 'codigo_interno'],
+      ],
+      include: [
+        {
+          model: socioModel,
+          as: 'socioCobro',
+          attributes: [],
+        },
+        {
+          model: accionModel,
+          as: 'accionCobro',
+          attributes: [],
+          include: [
+            { model: calleRamalModel, as: 'calleAccion', attributes: [] },
+          ],
+        },
+      ],
+      where: {
+        fecha_emision: {
+          [Op.gte]: inicio,
+          [Op.lt]: fin,
+        },
+        socio_id,
         ...(estado && estado !== 'TODOS' && { estado }),
         ...(tipo_cobro && tipo_cobro !== 'TODOS' && { tipo_cobro }),
       },

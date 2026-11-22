@@ -3,13 +3,18 @@ import { GetCobrosPorFechaUseCase } from './use-case/get-cobro-por-fecha.use-cas
 import { GetCobrosPorFechaPorAccionUseCase } from './use-case/get-cobros-por-fecha-por-accion.use-case.js';
 import { GetCobrosUseCase } from './use-case/get-cobros.use-case.js';
 
+import { GetCobrosPorFechaPorSocioUseCase } from './use-case/get-cobro-por-fecha-por-socio.use-case.js';
+import { GetCobrosSocioUseCase } from './use-case/get-cobro-por-socio.use-case.js';
+
 export class CobroReportesController {
   static async getCobros(req, res) {
     const data = await GetCobrosUseCase.execute({ query: req.validated.query });
     return res.status(200).json({ ok: true, data });
   }
   static async getcobrosPorFecha(req, res) {
-    const data =  await GetCobrosPorFechaUseCase.execute({ body: req.validated.body });
+    const data = await GetCobrosPorFechaUseCase.execute({
+      body: req.validated.body,
+    });
     return res.status(200).json({ ok: true, data });
   }
   static async getCobrosAccion(req, res) {
@@ -21,6 +26,21 @@ export class CobroReportesController {
   }
   static async getCobrosPorFechaPorAccion(req, res) {
     const data = await GetCobrosPorFechaPorAccionUseCase.execute({
+      accion_id: req.validated.params.id,
+      body: req.validated.body,
+    });
+    return res.status(200).json({ ok: true, data });
+  }
+
+  static async getCobrosSocio(req, res) {
+    const data = await GetCobrosSocioUseCase.execute({
+      accion_id: req.validated.params.id,
+      query: req.validated.query,
+    });
+    return res.status(200).json({ ok: true, data });
+  }
+  static async getCobrosPorFechaPorSocio(req, res) {
+    const data = await GetCobrosPorFechaPorSocioUseCase.execute({
       accion_id: req.validated.params.id,
       body: req.validated.body,
     });

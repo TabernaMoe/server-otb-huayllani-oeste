@@ -98,7 +98,6 @@ export class AccionAguaRepository {
     const data = await accionModel.create(payload, { transaction });
     return data.toJSON();
   }
-
   static async getUltimaAccion({ transaction }) {
     const data = await accionModel.findOne({
       attributes: ['codigo_interno'],

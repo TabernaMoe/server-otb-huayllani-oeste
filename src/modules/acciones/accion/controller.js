@@ -3,7 +3,8 @@ import { GetSelectByServicioUseCase } from './use-case/get-select-by-servicio.us
 export class AccionController {
   static async getSelectByServicio(req, res) {
     const data = await GetSelectByServicioUseCase.execute({
-      tipo_servicio: req.validated.body.tipo_servicio,
+      tipo_servicio: req.validated.query.tipo_servicio,
+      search: req.validated.query.search,
     });
     return res
       .status(200)

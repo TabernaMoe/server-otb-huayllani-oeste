@@ -10,9 +10,7 @@ export class CambioNombreRepository {
     if (!data) {
       return data;
     }
-
     await data.update(payload, { transaction });
-
     return !data ? null : data;
   }
 }
