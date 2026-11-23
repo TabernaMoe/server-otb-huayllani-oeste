@@ -35,7 +35,7 @@ export class ReciboReporteController {
   }
   static async getRecibosPorSocio(req, res) {
     const data = await GetRecibosPorSocioUseCase.execute({
-      accion_id: req.validated.params.id,
+      socio_id: req.validated.params.id,
       query: req.validated.query,
     });
     return res.status(200).json({ ok: true, data });
@@ -43,7 +43,7 @@ export class ReciboReporteController {
   static async GetRecibosPorFechaPorSocio(req, res) {
     const data = await GetRecibosPorFechaPorSocioUseCase.execute({
       body: req.validated.body,
-      accion_id: req.validated.params.id,
+      socio_id: req.validated.params.id,
     });
     return res.status(200).json({ ok: true, data });
   }

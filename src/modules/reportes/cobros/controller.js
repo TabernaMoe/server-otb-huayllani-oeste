@@ -34,14 +34,14 @@ export class CobroReportesController {
 
   static async getCobrosSocio(req, res) {
     const data = await GetCobrosSocioUseCase.execute({
-      accion_id: req.validated.params.id,
+      socio_id: req.validated.params.id,
       query: req.validated.query,
     });
     return res.status(200).json({ ok: true, data });
   }
   static async getCobrosPorFechaPorSocio(req, res) {
     const data = await GetCobrosPorFechaPorSocioUseCase.execute({
-      accion_id: req.validated.params.id,
+      socio_id: req.validated.params.id,
       body: req.validated.body,
     });
     return res.status(200).json({ ok: true, data });

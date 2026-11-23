@@ -48,7 +48,7 @@ routes
   .get(
     '/socio/:id',
     validateRequest({
-      bodySchema: getCobrosSchema,
+      querySchema: getCobrosSchema,
       paramsSchema: idParamSchema,
     }),
     asyncHandler(CobroReportesController.getCobrosSocio),
@@ -56,7 +56,7 @@ routes
   .post(
     '/socio/fechas/:id',
     validateRequest({
-      bodySchema: getCobrosSchema,
+      bodySchema: getCobrosPorFechaSchema,
       paramsSchema: idParamSchema,
     }),
     asyncHandler(CobroReportesController.getCobrosPorFechaPorSocio),

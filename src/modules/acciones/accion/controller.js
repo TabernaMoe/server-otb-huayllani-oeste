@@ -2,9 +2,10 @@ import { GetSelectByServicioUseCase } from './use-case/get-select-by-servicio.us
 
 export class AccionController {
   static async getSelectByServicio(req, res) {
+    const filtros = req.validated?.query ?? req.validated?.body ?? {};
     const data = await GetSelectByServicioUseCase.execute({
-      tipo_servicio: req.validated.query.tipo_servicio,
-      search: req.validated.query.search,
+      tipo_servicio: filtros.tipo_servicio,
+      search: filtros.search,
     });
     return res
       .status(200)

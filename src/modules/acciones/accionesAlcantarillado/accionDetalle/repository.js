@@ -7,16 +7,22 @@ export class AccionDetalleRepository {
     const data = await accionDetalleModel.bulkCreate(payload, { transaction });
     return data;
   }
-  static async getAccionDetalleWithDetalle({ accion_id, transaction = null }) {
+  static async getAccionDetalleWithDetalle({
+    accion_id,
+    accionDetalleIds = null,
+    transaction = null,
+  }) {
+    const where = { accion_id };
+    if (Array.isArray(accionDetalleIds) && accionDetalleIds.length > 0) {
+      where.id = { [Op.in]: accionDetalleIds };
+    }
     const data = await accionDetalleModel.findAll({
       attributes: [
         'id',
         [col('detalleAccionAD.nombre_accion'), 'nombre_accion'],
         [col('detalleAccionAD.precio_accion'), 'precio_accion'],
       ],
-      where: {
-        accion_id,
-      },
+      where,
       include: [{ model: detalleAccionModel, as: 'detalleAccionAD' }],
       transaction,
       raw: true,

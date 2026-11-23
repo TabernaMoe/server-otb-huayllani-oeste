@@ -13,9 +13,9 @@ export class ReciboRepository {
       transaction,
       order: [['id', 'DESC']],
     });
-    const { numero_recibo } = ultimoRecibo;
+    const numero_recibo = ultimoRecibo?.numero_recibo ?? 0;
     const data = await reciboModel.create(
-      { ...payload, numero_recibo: numero_recibo ? numero_recibo + 1 : 1 },
+      { ...payload, numero_recibo: numero_recibo + 1 },
       { transaction },
     );
     return data;

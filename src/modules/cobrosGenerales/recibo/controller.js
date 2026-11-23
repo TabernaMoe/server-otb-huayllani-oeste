@@ -18,8 +18,8 @@ export class ReciboController {
       .json({ ok: true, message: 'Se obtuvo los recibos correctamente', data });
   }
   static async getAllBySocio(req, res) {
-    const data = await GetAllByAccionUseCase.execute({
-      accion_id: req.validated.params.id,
+    const data = await GetAllBySocioUseCase.execute({
+      socio_id: req.validated.params.id,
     });
     return res
       .status(200)

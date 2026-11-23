@@ -48,9 +48,10 @@ export class UpdateUseCase {
         });
       }
       if (detallesAccion.length > 0) {
+        const uniqueDetalles = [...new Set(detallesAccion.map(Number))];
         const buscarDetallesAccion =
           await DetalleAccionRepository.getByArrayIds({
-            detallesAccion,
+            detallesAccion: uniqueDetalles,
             transaction: t,
           });
 
@@ -63,7 +64,7 @@ export class UpdateUseCase {
         const { aEliminar, aAgregar } =
           await AccionDetalleRepository.getCambios({
             accion_id: id,
-            detallesAccion,
+            detallesAccion: uniqueDetalles,
             transaction: t,
           });
 
@@ -73,26 +74,21 @@ export class UpdateUseCase {
             transaction: t,
           });
 
-          const cobroAccionDelete =
+          if (cobrosAEliminar.length > 0) {
             await CobroAccionRespository.deleteByAccionDetalle({
               payload: aEliminar,
               transaction: t,
             });
 
-          if (aEliminar.length != cobroAccionDelete) {
-            const err = new Error('No se pudo eliminar los cobros accion');
-            err.statusCode = 409;
-            throw err;
-          }
-
-          const cobrosDelete = await CobroRepository.deleteByArray({
-            payload: cobrosAEliminar,
-            transaction: t,
-          });
-          if (cobrosAEliminar.length != cobrosDelete) {
-            const err = new Error('No se pudo eliminar los cobros accion');
-            err.statusCode = 409;
-            throw err;
+            const cobrosDelete = await CobroRepository.deleteByArray({
+              payload: cobrosAEliminar,
+              transaction: t,
+            });
+            if (cobrosAEliminar.length !== cobrosDelete) {
+              const err = new Error('No se pudo eliminar los cobros accion');
+              err.statusCode = 409;
+              throw err;
+            }
           }
 
           const accionDetalleDelete =
@@ -101,7 +97,7 @@ export class UpdateUseCase {
               transaction: t,
             });
 
-          if (accionDetalleDelete != aEliminar.length) {
+          if (accionDetalleDelete !== aEliminar.length) {
             const err = new Error('No se pudo eliminar los accion detalle');
             err.statusCode = 409;
             throw err;
@@ -109,19 +105,22 @@ export class UpdateUseCase {
         }
 
         if (aAgregar.length > 0) {
-          await AccionDetalleRepository.createByArray({
-            payload: aAgregar.map((row) => ({
-              accion_id: id,
-              detalle_accion_id: row,
-            })),
-            transaction: t,
-          });
+          const accionDetallesCreados =
+            await AccionDetalleRepository.createByArray({
+              payload: aAgregar.map((row) => ({
+                accion_id: id,
+                detalle_accion_id: row,
+              })),
+              transaction: t,
+            });
           const periodoActual = await PeriodoRepository.getPeriodoActual({
             transaction: t,
           });
+          const createdIds = accionDetallesCreados.map((item) => item.id);
           const obtenerAccionDetalle =
             await AccionDetalleRepository.getAccionDetalleWithDetalle({
               accion_id: id,
+              accionDetalleIds: createdIds,
               transaction: t,
             });
           for (let row of obtenerAccionDetalle) {

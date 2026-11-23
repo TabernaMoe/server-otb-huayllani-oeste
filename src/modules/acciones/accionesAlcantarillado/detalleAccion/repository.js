@@ -24,16 +24,17 @@ export class DetalleAccionRepository {
     return data;
   }
   static async getByArrayIds({ detallesAccion = [], transaction = null }) {
+    const uniqueIds = [...new Set(detallesAccion.map(Number))];
     const data = await detalleAccionModel.findAll({
       where: {
         id: {
-          [Op.in]: detallesAccion,
+          [Op.in]: uniqueIds,
         },
       },
       transaction,
       raw: true,
     });
-    if (data.length != detallesAccion.length) {
+    if (data.length !== uniqueIds.length) {
       return null;
     }
     return data;
