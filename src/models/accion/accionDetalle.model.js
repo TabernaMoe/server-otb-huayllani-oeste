@@ -33,7 +33,7 @@ export const accionDetalleModel = sequelize.define(
   },
   {
     tableName: 'accion_detalle',
-    underscored: true,
+
     timestamps: false,
   },
 );

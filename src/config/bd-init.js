@@ -32,10 +32,6 @@ import { reciboModel } from '../models/cobros/recibo.model.js';
 // Lecturas y cobro de agua
 import { lecturaAguaModel } from '../models/lecturasAgua/lecturasAgua.model.js';
 import { cambioMedidor } from '../models/lecturasAgua/cambioMedidor.model.js';
-import { cobroAguaModel } from '../models/cobroAgua/cobroAgua.model.js';
-import { CobroLecturaModel } from '../models/cobroAgua/cobrosLectura.model.js';
-import { pagoAguaModel } from '../models/cobroAgua/pagoAgua.model.js';
-import { reciboAguaModel } from '../models/cobroAgua/recibo.mode.js';
 
 // Inventario y asambleas
 import { inventarioModel } from '../models/inventario.model.js';
@@ -46,20 +42,6 @@ import { cobroAsamblea } from '../models/cobros/tipoCobros/cobroAsamblea.model.j
 // Multas
 import { multaModel } from '../models/multas.model.js';
 import { cobroMultaModel } from '../models/cobros/tipoCobros/cobroMulta.model.js';
-
-// Alcantarillado
-import {
-  accionDetalleAlcantarilladoModel,
-  detalleAlcantarilladoModel,
-} from '../models/accionAlcantarillado/detalleAlcantarillado.model.js';
-import { accionAlcantarilladoModel } from '../models/accionAlcantarillado/acccionAlcantarillado.model.js';
-import { cobroAlcantarilladoModel } from '../models/accionAlcantarillado/cobroAlcantarillado/cobroAlcantarillado.model.js';
-import {
-  pagoAlcantarilladoModel,
-  pagoDetalleAlcantarilladoModel,
-} from '../models/accionAlcantarillado/cobroAlcantarillado/pagoAlcantarillado.model.js';
-import { reciboAlcantarilladoModel } from '../models/accionAlcantarillado/cobroAlcantarillado/reciboAlcantarillado.model.js';
-import { cobroAccionAlcantarilladoModel } from '../models/accionAlcantarillado/cobroAlcantarillado/tipoCobros/cobroAccionAlcantarillado.model.js';
 
 // Pago QR
 import {
@@ -122,10 +104,6 @@ export async function ConnectDB() {
     // 6. Lecturas y Cobros de agua
     await lecturaAguaModel.sync({ alter: false });
     await cambioMedidor.sync({ alter: false });
-    await cobroAguaModel.sync({ alter: false });
-    await CobroLecturaModel.sync({ alter: false });
-    await pagoAguaModel.sync({ alter: false });
-    await reciboAguaModel.sync({ alter: false });
 
     // 7. Inventario
     await inventarioModel.sync({ alter: false });
@@ -146,16 +124,6 @@ export async function ConnectDB() {
     // 11. Cambio de nombre
     await cambiarNombreModel.sync({ alter: false });
     await cobroCambioNombreModel.sync({ alter: false });
-
-    // 12. Alcantarillado
-    await detalleAlcantarilladoModel.sync({ alter: false });
-    await accionAlcantarilladoModel.sync({ alter: false });
-    await accionDetalleAlcantarilladoModel.sync({ alter: false });
-    await cobroAlcantarilladoModel.sync({ alter: false });
-    await pagoAlcantarilladoModel.sync({ alter: false });
-    await pagoDetalleAlcantarilladoModel.sync({ alter: false });
-    await reciboAlcantarilladoModel.sync({ alter: false });
-    await cobroAccionAlcantarilladoModel.sync({ alter: false });
 
     // 13. Egresos
     await CategoriaGastosModel.sync({ alter: false });

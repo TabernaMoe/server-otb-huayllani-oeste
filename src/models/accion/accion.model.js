@@ -72,7 +72,6 @@ export const accionModel = sequelize.define(
   },
   {
     tableName: 'acciones',
-    underscored: true,
     timestamps: true,
   },
 );
