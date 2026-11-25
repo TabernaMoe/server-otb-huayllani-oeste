@@ -1,13 +1,22 @@
 import { Router } from 'express';
 import { MultasController as controller } from './multa.controller.js';
 import { validateSchema } from '../../middlewares/validateSchema.middlewares.js';
-import { multaSchema, multaUpdateSchema } from './multa.schema.js';
+import {
+  multaSchema,
+  multaUpdateSchema,
+  AsignarMultaSchema,
+} from './multa.schema.js';
 
 const routes = new Router();
 
 routes
   .get('/', controller.getAll)
   .post('/', validateSchema(multaSchema), controller.create)
+  .post(
+    '/multas/:id',
+    validateSchema(AsignarMultaSchema),
+    controller.AsignarMulta,
+  )
   .patch('/:id', validateSchema(multaUpdateSchema), controller.update)
   .patch('/cambiar-estado/:id', controller.changeStatus);
 

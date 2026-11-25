@@ -1,5 +1,9 @@
 import z from 'zod';
-import { reqDecimal, reqString } from '../../validators/funcionesZod.js';
+import {
+  reqDecimal,
+  reqString,
+  reqIntegerId,
+} from '../../validators/funcionesZod.js';
 
 export const multaSchema = z.object({
   nombre_multa: reqString({
@@ -11,6 +15,10 @@ export const multaSchema = z.object({
       'El nombre de la calle solo puede contener letras, números, espacios y los caracteres # . -',
   }),
   precio: reqDecimal('Monto'),
+});
+
+export const AsignarMultaSchema = z.object({
+  multa_id: reqIntegerId('Socio'),
 });
 
 export const multaUpdateSchema = multaSchema.partial();

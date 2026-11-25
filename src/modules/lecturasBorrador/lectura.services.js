@@ -6,9 +6,6 @@ import { sequelize } from '../../config/database.js';
 import { ValidacionesSequelize as validaciones } from '../../validators/ValidacionesSequelize.js';
 //
 //
-import { cobroAguaModel } from '../../models/cobroAgua/cobroAgua.model.js';
-import { pagoAguaModel } from '../../models/cobroAgua/pagoAgua.model.js';
-import { reciboAguaModel } from '../../models/cobroAgua/recibo.mode.js';
 //
 import { cobroModel } from '../../models/cobros/cobro.model.js';
 
@@ -491,25 +488,6 @@ export class LecturaServices {
           consumo_m3: consumoM3,
           precio: total_pagar,
           observacion,
-        },
-        { transaction: t },
-      );
-
-      const cobroAgua = await cobroAguaModel.findOne({
-        where: { lectura_id: lectura.id },
-        transaction: t,
-      });
-
-      if (!cobroAgua) {
-        const err = new Error('No se encontró el cobro de agua');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      await cobroAgua.update(
-        {
-          monto_total: total_pagar,
-          saldo: total_pagar,
         },
         { transaction: t },
       );

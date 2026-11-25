@@ -58,7 +58,7 @@ export class AccionRepository {
     return data;
   }
   static async getById({ id, transaction = null }) {
-    const data = await accionModel.findByPk(id, { transaction });
+    const data = await accionModel.findByPk(id, { transaction, raw: true });
     return !data ? null : data;
   }
   static async getSelectByServicio({ search, tipo_servicio }) {
@@ -126,5 +126,20 @@ export class AccionRepository {
       },
       ...data,
     ];
+  }
+  static async getByIdByTipoServicio({
+    id,
+    tipo_servicio,
+    transaction = null,
+  }) {
+    const data = await accionModel.findOne({
+      where: {
+        id,
+        tipo_servicio,
+      },
+      transaction,
+      raw: true,
+    });
+    return !data ? null : data;
   }
 }

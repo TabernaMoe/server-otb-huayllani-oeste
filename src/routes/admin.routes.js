@@ -8,7 +8,7 @@ import socioRoutes from '../modules/socios/socio.routes.js';
 import gestionRoutes from '../modules/gestiones/routes/index.routes.js';
 import cobroRoutes from '../modules/cobros/cobro.routes.js';
 //
-import lecturaRoutes from '../modules/lecturas/lectura.routes.js';
+//import lecturaRoutes from '../modules/lecturas/lectura.routes.js';
 //
 import InventarioRoutes from '../modules/inventario/inventario.routes.js';
 import AsambleaRotues from '../modules/asambleas/asamblea.routes.js';
@@ -33,7 +33,6 @@ routes
   .use('/acciones', AccionesRoutes)
   .use('/gestion', gestionRoutes)
   .use('/cobro', cobroRoutes)
-  .use('/lectura', lecturaRoutes)
   .use('/inventario', InventarioRoutes)
   .use('/asamblea', AsambleaRotues)
   .use('/multa', MultaRoutes)

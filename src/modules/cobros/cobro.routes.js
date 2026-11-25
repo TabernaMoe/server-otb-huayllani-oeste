@@ -7,7 +7,6 @@ import {
   AsignarMultaSchema,
   CobroCreateSchema,
 } from './cobros.schema.js';
-import { AccionController } from '../accionesBorrador/controllers/accion.controller.js';
 //
 import { MultasController } from '../multas/multa.controller.js';
 import { CobroController } from './cobros/controller.js';
@@ -18,7 +17,7 @@ import {
 } from '../../middlewares/validateRequest.middlewares.js';
 
 const routes = new Router();
-
+//acciones colocar
 routes
   .get('/', checkPermiss('cobro.ver'), controller.getAll)
   .get(
@@ -26,11 +25,7 @@ routes
     checkPermiss('cobros.historial'),
     controller.getHistorialCobros,
   )
-  .get(
-    '/acciones',
-    checkPermiss('cobros.acciones'),
-    AccionController.getAcciones,
-  )
+
   .get('/multas', MultasController.geSelect)
   .get('/acciones-pasivas', controller.getAccionesPasivas)
   .get('/:id', checkPermiss('cobro.ver'), controller.getId)

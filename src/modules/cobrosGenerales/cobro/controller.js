@@ -1,5 +1,6 @@
 import { GetCobrosBySocioUseCase } from './use-case/get-cobros-by-socio-use-case.js';
 import { GetCobrosByAccionUseCase } from './use-case/get-cobros-by-accion.use-case.js';
+import { PagarUseCase } from './use-case/pagar.use-case.js';
 
 export class CobroController {
   static async getCobrosBySocio(req, res) {
@@ -15,5 +16,13 @@ export class CobroController {
       tipo_cobro: req.validated.query.tipo_cobro,
     });
     return res.status(200).json({ ok: true, data });
+  }
+  static async pagar(req, res) {
+    const data = await PagarUseCase.execute({
+      metodo_pago: req.validated.body.metodo_pago,
+      monto: req.validated.body.monto,
+      cobros: req.validated.body.cobros,
+    });
+    return res.status(201).json({ ok: true, data });
   }
 }

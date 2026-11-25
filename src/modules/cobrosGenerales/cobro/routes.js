@@ -5,7 +5,7 @@ import {
   validateRequest,
 } from '../../../middlewares/validateRequest.middlewares.js';
 import { CobroController } from './controller.js';
-import { CobroQuery } from './schemas.js';
+import { CobroQuery, PagarSchema } from './schemas.js';
 
 const routes = new Router();
 
@@ -19,6 +19,11 @@ routes
     '/accion/:id',
     validateRequest({ paramsSchema: idParamSchema, querySchema: CobroQuery }),
     asyncHandler(CobroController.getCobrosByAccion),
+  )
+  .post(
+    '/pagar',
+    validateRequest({ bodySchema: PagarSchema }),
+    asyncHandler(CobroController.pagar),
   );
 
 export default routes;

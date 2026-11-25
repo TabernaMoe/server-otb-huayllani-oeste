@@ -80,6 +80,21 @@ export class MultasController {
       next(e);
     }
   }
+  static async AsignarMulta(req, res, next) {
+    try {
+      const { id } = req.params;
+      const payload = req.body;
+      const data = await services.AsignarMulta(id, payload);
+
+      return res.status(200).json({
+        ok: true,
+        message: 'Se asigno correctamente la multa al socio',
+        data,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
   static async changeStatus(req, res, next) {
     try {
       const { id } = req.params;

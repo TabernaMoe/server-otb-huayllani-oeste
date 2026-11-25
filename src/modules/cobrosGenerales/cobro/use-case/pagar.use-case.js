@@ -3,6 +3,8 @@ import { PagoRepository } from '../../pago/respository.js';
 import { PagoDetalleRepository } from '../../pagoDetalle/repository.js';
 import { ReciboRepository } from '../../recibo/repository.js';
 import { sequelize } from '../../../../config/database.js';
+import { SocioRepository } from '../../../socios/socio.repository.js';
+import { AccionRepository } from '../../../acciones/accion/repository.js';
 
 export class PagarUseCase {
   static async execute({ cobros = [], monto, metodo_pago }) {
@@ -99,7 +101,7 @@ export class PagarUseCase {
 
       const numeroRecibo = Math.floor(10000000 + Math.random() * 90000000);
 
-      await ReciboRepository.create({
+      const crearRecibo = await ReciboRepository.create({
         payload: {
           pago_id: crearPago.id,
           fecha_emision: new Date(),
@@ -107,6 +109,27 @@ export class PagarUseCase {
         },
         transaction: t,
       });
+
+      const buscarSocio = await SocioRepository.getById({
+        id: buscarCobros[0].socio_id,
+        transaction: t,
+      });
+      const buscarAccion = await AccionRepository.getById({
+        id: buscarCobros[0].accion_id,
+        transaction: t,
+      });
+      return {
+        socio: `${buscarSocio.ci_socio} ${buscarSocio.nombres} ${buscarSocio.primer_apellido} ${buscarSocio.segundo_apellido}`,
+        codigo_interno: buscarAccion.codigo_interno,
+        numero_recibo: crearRecibo.numero_recibo,
+        fecha_emision: fechaBonita(crearRecibo.createdAt),
+        monto_pagado: crearPago.monto_pagado,
+        metodo_pago: crearPago.metodo_pago,
+        cobros_pagados: buscarCobros.map((row) => ({
+          descripcion: row.descripcion,
+          monto_pagado: row.monto_total,
+        })),
+      };
     });
   }
 }

@@ -12,18 +12,11 @@ import {
   idParamSchema,
   validateRequest,
 } from '../../middlewares/validateRequest.middlewares.js';
-import { AccionController } from '../accionesBorrador/controllers/accion.controller.js';
 
 const routes = new Router();
 
 routes
   .get('/', checkPermiss('lectura.ver'), controller.getAll)
-  .get('/acciones', checkPermiss('lectura.ver'), AccionController.getSelect)
-  .get(
-    '/acciones-con-mora',
-    checkPermiss('lectura.ver'),
-    AccionController.getAccionesWithMora,
-  )
   .get(
     '/historial/:id',
     checkPermiss('lectura.ver'),
