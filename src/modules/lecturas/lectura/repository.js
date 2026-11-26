@@ -54,8 +54,7 @@ export class LecturaRespository {
           order: [['id', 'DESC']],
         },
       ],
-      limit,
-      offset,
+
       order: [['id', 'DESC']],
       subQuery: false,
       distinct: true,
@@ -79,9 +78,9 @@ export class LecturaRespository {
     const data = await lecturaAguaModel.findOne({
       where: {
         accion_id,
-        accion_id,
+        periodo_id,
       },
-      transaction: t,
+      transaction,
     });
     return !data ? null : data;
   }

@@ -21,6 +21,7 @@ import AccionesRoutes from '../modules/acciones/index.routes.js';
 import CobrosGeneralesGenerales from '../modules/cobrosGenerales/index.routes.js';
 //reportes
 import ReportesRoutes from '../modules/reportes/index.routes.js';
+import LecturaRoutes from '../modules/lecturas/index.routes.js';
 
 const routes = new Router();
 
@@ -38,6 +39,7 @@ routes
   .use('/multa', MultaRoutes)
   .use('/egresos', EgresosRoutes)
   .use('/cobros-generales', CobrosGeneralesGenerales)
-  .use('/reportes', ReportesRoutes);
+  .use('/reportes', ReportesRoutes)
+  .use('/lectura', LecturaRoutes);
 
 export default routes;

@@ -1,4 +1,4 @@
-import { cambioMedidor } from '../../../models/lecturasAgua/cambioMedidor.model';
+import { cambioMedidor } from '../../../models/lecturasAgua/cambioMedidor.model.js';
 
 export class CambioMedidorRepository {
   static async getByUltimaCambioByLectura({
